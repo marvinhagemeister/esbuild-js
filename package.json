@@ -1,0 +1,23 @@
+{
+	"name": "js-parser",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"husky": "^4.2.5",
+		"lint-staged": "^10.2.11",
+		"mochette": "^1.0.0",
+		"prettier": "^2.0.5",
+		"ts-node": "^8.10.2",
+		"typescript": "^3.9.7"
+	},
+	"prettier": {
+		"useTabs": true,
+		"arrowParens": "avoid"
+	}
+}
