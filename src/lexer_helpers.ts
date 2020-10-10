@@ -170,6 +170,7 @@ export function isKeyword(text: string) {
 }
 
 export function isWhitespace(codePoint: number) {
+	console.log("isWhitespace", codePoint);
 	switch (codePoint) {
 		case CodePoint.Tab:
 		case CodePoint.LineTab:
