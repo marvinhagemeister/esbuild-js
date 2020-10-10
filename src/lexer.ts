@@ -65,7 +65,7 @@ function addError(lexer: Lexer, loc: number, text: string) {
 	}
 }
 
-function getRaw(lexer: Lexer) {
+export function getRaw(lexer: Lexer) {
 	return lexer.source.slice(lexer.start, lexer.end);
 }
 
@@ -102,6 +102,14 @@ function filterOutUnderscores(lexer: Lexer, underscoreCount: number) {
 		return out;
 	}
 	return text;
+}
+
+export function expectToken(lexer: Lexer, token: Token) {
+	if (lexer.token !== token) {
+		throw new Error("Expected another Token");
+	}
+
+	next(lexer);
 }
 
 function parseNumericLiteralOrDot(lexer: Lexer) {

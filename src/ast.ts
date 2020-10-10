@@ -81,7 +81,7 @@ export interface Directive extends BaseNode {
 }
 
 export type Declaration = VariableDeclaration;
-export type Statement = Declaration;
+export type Statement = Declaration | ForStatement;
 export type ModuleDeclaration = t.ImportDeclaration;
 
 export interface Program extends BaseNode {
@@ -114,6 +114,31 @@ export function identifier(name: string): Identifier {
 		name,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface ForStatement extends BaseNode {
+	type: "ForStatement";
+	init: Expression | VariableDeclarator[] | null;
+	update: Expression | null;
+	test: Expression | null;
+	body: Statement;
+}
+
+export function forStatement(
+	body: ForStatement["body"],
+	init: ForStatement["init"],
+	update: ForStatement["update"],
+	test: ForStatement["test"]
+): ForStatement {
+	return {
+		type: "ForStatement",
+		body,
+		init,
+		start: 0,
+		len: 0,
+		test,
+		update,
 	};
 }
 

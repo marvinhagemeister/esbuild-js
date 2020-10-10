@@ -1,5 +1,5 @@
 import * as t from "estree";
-import { Lexer, newLexer, next } from "./lexer";
+import { expectToken, getRaw, Lexer, newLexer, next } from "./lexer";
 import { Token } from "./tokens";
 import * as tt from "./ast";
 
@@ -68,13 +68,73 @@ function parseStatement(p: Parser): tt.Statement {
 		}
 		case Token.For: {
 			next(p.lexer);
-			break;
+
+			// TODO: "for await (let x of y) {}"
+
+			// TODO: Disallow in expressions
+			let init: tt.Expression | tt.VariableDeclarator[] | null = null;
+			let test: tt.Expression | null = null;
+			let update: tt.Expression | null = null;
+			switch (p.lexer.token as number) {
+				case Token.Var: {
+					next(p.lexer);
+					init = parseDeclarations(p);
+				}
+				case Token.SemiColon:
+					break;
+				default:
+					init = parseExpressionOrLetStatement(p);
+					console.log("NOT IMPLEMENTED");
+			}
+
+			// TODO: Detect for-of loops
+			// TODO: Detect for-in loops
+
+			// Normal for loop
+			expectToken(p.lexer, Token.SemiColon);
+
+			if ((p.lexer.token as number) !== Token.SemiColon) {
+				test = parseExpression(p);
+			}
+
+			expectToken(p.lexer, Token.SemiColon);
+
+			if ((p.lexer.token as number) !== Token.CloseParen) {
+				update = parseExpression(p);
+			}
+
+			expectToken(p.lexer, Token.CloseParen);
+
+			const body = parseStatement(p);
+			return tt.forStatement(body, init, update, test);
 		}
 	}
 
 	console.log(p.lexer);
 	console.log(p.lexer.source.slice(p.lexer.start));
 	throw new Error(`Could not parse token: ${p.lexer.token}`);
+}
+
+function parseExpressionOrLetStatement(p: Parser) {
+	const raw = getRaw(p.lexer);
+
+	if (p.lexer.token !== Token.Identifier || raw !== "let") {
+		return parseExpression(p);
+	}
+
+	next(p.lexer);
+
+	switch (p.lexer.token as number) {
+		case Token.Identifier:
+		case Token.OpenBracket:
+		case Token.OpenBrace: {
+			// TODO: Check lexical declarations
+			const declarations = parseDeclarations(p);
+			return null;
+		}
+	}
+
+	return null;
 }
 
 function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
