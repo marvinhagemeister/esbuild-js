@@ -42,12 +42,10 @@ export function parse(source: string): tt.Program {
 	return program;
 }
 
-let ii = 0;
 function parseStatementsUpTo(p: Parser, end: Token) {
 	const statements: tt.Statement[] = [];
 
 	while (true) {
-		if (ii++ > 50) throw new Error("infinite");
 		if (p.lexer.token === end) {
 			break;
 		} else if (p.lexer.token === Token.SemiColon) {
@@ -204,7 +202,6 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 		if (p.lexer.token === Token.EOF) {
 			break;
 		}
-		if (ii++ > 50) throw new Error("infinite");
 		// TODO: Forbid "let let" and "const let" but not "var let"
 		const binding = parseBinding(p);
 
@@ -260,6 +257,32 @@ function parsePrefix(p: Parser): tt.Expression {
 
 			next(p.lexer);
 			return identifier;
+		}
+		case Token.OpenBracket: {
+			next(p.lexer);
+
+			const items = [];
+			while ((p.lexer.token as number) !== Token.CloseBracket) {
+				switch (p.lexer.token as number) {
+					case Token.Comma: {
+						items.push(tt.emptyExpression());
+						break;
+					}
+					// TODO: Spread
+					default:
+						const item = parseExpression(p);
+						items.push(item);
+				}
+
+				if ((p.lexer.token as number) !== Token.Comma) {
+					break;
+				}
+
+				next(p.lexer);
+			}
+
+			expectToken(p.lexer, Token.CloseBracket);
+			return tt.arrayExpression(items);
 		}
 	}
 	console.log(p.lexer);

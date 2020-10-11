@@ -17,7 +17,23 @@ export type AstNode =
 	| ObjectProperty
 	| Expression;
 
-export type Expression = Literal | Identifier;
+export type Expression =
+	| Literal
+	| Identifier
+	| ArrayExpression
+	| EmptyExpression;
+
+export interface EmptyExpression extends BaseNode {
+	type: "EmptyExpression";
+}
+
+export function emptyExpression(): EmptyExpression {
+	return {
+		type: "EmptyExpression",
+		start: 0,
+		len: 0,
+	};
+}
 
 export interface EmptyStatement extends BaseNode {
 	type: "EmptyStatement";
@@ -44,6 +60,21 @@ export function literal(value: Literal["value"]): Literal {
 		type: "Literal",
 		value,
 		raw: "" + value,
+		start: 0,
+		len: 0,
+	};
+}
+
+export interface ArrayExpression extends BaseNode {
+	type: "ArrayExpression";
+	elements: Expression[];
+}
+export function arrayExpression(
+	elements: ArrayExpression["elements"]
+): ArrayExpression {
+	return {
+		type: "ArrayExpression",
+		elements,
 		start: 0,
 		len: 0,
 	};

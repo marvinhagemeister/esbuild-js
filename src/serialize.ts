@@ -70,6 +70,23 @@ function serializeAst(
 			}
 			break;
 		}
+		case "ArrayExpression": {
+			out += "[";
+			for (let i = 0; i < node.elements.length; i++) {
+				out += serializeAst(node.elements[i], node, options);
+				if (
+					i + 1 < node.elements.length ||
+					node.elements[i].type === "EmptyExpression"
+				) {
+					out += ",";
+				}
+			}
+			out += "]";
+			if (!parent || parent.type === "Program") {
+				out += ";\n";
+			}
+			return out;
+		}
 		case "ForStatement": {
 			out += "for (";
 			if (node.init) out += serializeAst(node.init, node, options);
@@ -107,6 +124,9 @@ function serializeAst(
 				out += options.newLineChar;
 			}
 			return out;
+		}
+		case "EmptyExpression": {
+			return "";
 		}
 		case "Program": {
 			if (node.hashbang) {

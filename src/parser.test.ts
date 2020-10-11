@@ -407,18 +407,18 @@ describe("Parser", () => {
 	// 	expectParseError(t, "for (const let of x) ;", "<stdin>: error: Cannot use \"let\" as an identifier here\n")
 	// }
 
-	// func TestArrays(t *testing.T) {
-	// 	expectPrinted(t, "[]", "[];\n")
-	// 	expectPrinted(t, "[,]", "[,];\n")
-	// 	expectPrinted(t, "[1]", "[1];\n")
-	// 	expectPrinted(t, "[1,]", "[1];\n")
-	// 	expectPrinted(t, "[,1]", "[, 1];\n")
-	// 	expectPrinted(t, "[1,2]", "[1, 2];\n")
-	// 	expectPrinted(t, "[,1,2]", "[, 1, 2];\n")
-	// 	expectPrinted(t, "[1,,2]", "[1, , 2];\n")
-	// 	expectPrinted(t, "[1,2,]", "[1, 2];\n")
-	// 	expectPrinted(t, "[1,2,,]", "[1, 2, ,];\n")
-	// }
+	it("should parse Arrays", () => {
+		expectPrinted("[]", "[];\n");
+		expectPrinted("[,]", "[,];\n");
+		expectPrinted("[1]", "[1];\n");
+		expectPrinted("[1,]", "[1];\n");
+		expectPrinted("[,1]", "[,1];\n");
+		expectPrinted("[1,2]", "[1,2];\n");
+		expectPrinted("[,1,2]", "[,1,2];\n");
+		expectPrinted("[1,,2]", "[1,,2];\n");
+		expectPrinted("[1,2,]", "[1,2];\n");
+		expectPrinted("[1,2,,]", "[1,2,,];\n");
+	});
 
 	// func TestPattern(t *testing.T) {
 	// 	expectPrinted(t, "let {if: x} = y", "let {if: x} = y;\n")
