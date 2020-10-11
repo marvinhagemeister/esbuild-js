@@ -1,4 +1,3 @@
-import * as t from "estree";
 import {
 	expectOrInsertSemicolon,
 	expectToken,
@@ -10,7 +9,6 @@ import {
 } from "./lexer";
 import { Token } from "./tokens";
 import * as tt from "./ast";
-import { platform } from "os";
 
 // TODO: Sourcemap
 // TODO: Sourcelocation
