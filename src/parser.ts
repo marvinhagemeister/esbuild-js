@@ -445,13 +445,22 @@ function parseSuffix(
 }
 
 function parseProperty(p: Parser, kind: tt.PropertyKind) {
-	let key;
+	let key = null;
+	let isComputed = false;
 	switch (p.lexer.token) {
 		case Token.NumericLiteral: {
 			const raw = getRaw(p.lexer);
 			// FIXME: Number literals
 			key = tt.literal(Number(raw));
 			next(p.lexer);
+			break;
+		}
+		case Token.OpenBracket: {
+			isComputed = true;
+			next(p.lexer);
+			const expression = parseExpression(p, tt.Precedence.Comma);
+			expectToken(p.lexer, Token.CloseBracket);
+			key = expression;
 			break;
 		}
 		default:
@@ -477,7 +486,7 @@ function parseProperty(p: Parser, kind: tt.PropertyKind) {
 
 	expectToken(p.lexer, Token.Colon);
 	const value = parseExpression(p, tt.Precedence.Comma);
-	return tt.property(key, value, key.type !== "Identifier");
+	return tt.property(key, value, isComputed);
 }
 
 function parseParenExpression(p: Parser) {

@@ -57,11 +57,16 @@ function serializeAst(
 			if (node.key === node.value) {
 				return serializeAst(node.key, node, options);
 			}
-			return (
-				serializeAst(node.key, node, options) +
-				": " +
-				serializeAst(node.value, node, options)
-			);
+
+			if (node.computed) {
+				out += "[";
+			}
+			out += serializeAst(node.key, node, options);
+			if (node.computed) {
+				out += "]";
+			}
+			out += ": " + serializeAst(node.value, node, options);
+			return out;
 		}
 		case "VariableDeclaration": {
 			out += node.kind + " ";

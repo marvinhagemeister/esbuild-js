@@ -221,7 +221,7 @@ describe("Parser", () => {
 			// 	expectParseError(t, "for (var a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
 			// 	expectParseError(t, "for (let a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
 			// 	expectParseError(t, "for (const a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
-			// 	expectPrinted(t, "for (var x = 0 in y) ;", "for (var x = 0 in y)\n  ;\n") // This is a weird special-case
+			expectPrinted("for (var x = 0 in y) ;", "for (var x = 0 in y);\n"); // This is a weird special-case
 			// 	expectParseError(t, "for (let x = 0 in y) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
 			// 	expectParseError(t, "for (const x = 0 in y) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
 			// 	expectParseError(t, "for (var x = 0 of y) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
@@ -481,23 +481,20 @@ describe("Parser", () => {
 		// 	expectParseError(t, "({set [foo](x, y) {}})", "<stdin>: error: Setter property must have exactly one argument\n")
 	});
 
-	// func TestComputedProperty(t *testing.T) {
-	// 	expectPrinted(t, "({[a]: foo})", "({[a]: foo});\n")
-	// 	expectPrinted(t, "({[(a, b)]: foo})", "({[(a, b)]: foo});\n")
-	// 	expectParseError(t, "({[a, b]: foo})", "<stdin>: error: Expected \"]\" but found \",\"\n")
-
-	// 	expectPrinted(t, "({[a]: foo}) => {}", "({[a]: foo}) => {\n};\n")
-	// 	expectPrinted(t, "({[(a, b)]: foo}) => {}", "({[(a, b)]: foo}) => {\n};\n")
-	// 	expectParseError(t, "({[a, b]: foo}) => {}", "<stdin>: error: Expected \"]\" but found \",\"\n")
-
-	// 	expectPrinted(t, "var {[a]: foo} = bar", "var {[a]: foo} = bar;\n")
-	// 	expectPrinted(t, "var {[(a, b)]: foo} = bar", "var {[(a, b)]: foo} = bar;\n")
-	// 	expectParseError(t, "var {[a, b]: foo} = bar", "<stdin>: error: Expected \"]\" but found \",\"\n")
-
-	// 	expectPrinted(t, "class Foo {[a] = foo}", "class Foo {\n  [a] = foo;\n}\n")
-	// 	expectPrinted(t, "class Foo {[(a, b)] = foo}", "class Foo {\n  [(a, b)] = foo;\n}\n")
-	// 	expectParseError(t, "class Foo {[a, b] = foo}", "<stdin>: error: Expected \"]\" but found \",\"\n")
-	// }
+	it("should parse computed properties", () => {
+		expectPrinted("({[a]: foo})", "({[a]: foo});\n");
+		expectPrinted("({[(a, b)]: foo})", "({[(a, b)]: foo});\n");
+		// expectParseError(t, "({[a, b]: foo})", "<stdin>: error: Expected \"]\" but found \",\"\n")
+		// expectPrinted("({[a]: foo}) => {}", "({[a]: foo}) => {\n};\n");
+		// expectPrinted("({[(a, b)]: foo}) => {}", "({[(a, b)]: foo}) => {\n};\n");
+		// 	expectParseError(t, "({[a, b]: foo}) => {}", "<stdin>: error: Expected \"]\" but found \",\"\n")
+		// 	expectPrinted(t, "var {[a]: foo} = bar", "var {[a]: foo} = bar;\n")
+		// 	expectPrinted(t, "var {[(a, b)]: foo} = bar", "var {[(a, b)]: foo} = bar;\n")
+		// 	expectParseError(t, "var {[a, b]: foo} = bar", "<stdin>: error: Expected \"]\" but found \",\"\n")
+		// 	expectPrinted(t, "class Foo {[a] = foo}", "class Foo {\n  [a] = foo;\n}\n")
+		// 	expectPrinted(t, "class Foo {[(a, b)] = foo}", "class Foo {\n  [(a, b)] = foo;\n}\n")
+		// 	expectParseError(t, "class Foo {[a, b] = foo}", "<stdin>: error: Expected \"]\" but found \",\"\n")
+	});
 
 	// func TestLexicalDecl(t *testing.T) {
 	// 	expectPrinted(t, "if (1) var x", "if (1)\n  var x;\n")
