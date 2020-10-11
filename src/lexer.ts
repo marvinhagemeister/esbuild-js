@@ -711,7 +711,26 @@ export function next(lexer: Lexer) {
 				break;
 			case CodePoint["#"]:
 				// Hashbang
-				continue;
+				if (lexer.i === 1 && lexer.source.startsWith("#!")) {
+					// "#!/usr/bin/env node"
+					lexer.token = Token.Hashbang;
+					hashbang: while (true) {
+						step(lexer);
+						switch (lexer.codePoint as number) {
+							case CodePoint["\r"]:
+							case CodePoint.NewLine:
+							case CodePoint["\u2028"]:
+							case CodePoint["\u2029"]:
+								break hashbang;
+							case CodePoint.EOF:
+								break hashbang;
+						}
+					}
+					lexer.identifier = getRaw(lexer);
+				} else {
+					// TOOD: Private fields
+				}
+				break;
 
 			case CodePoint["\r"]:
 			case CodePoint.NewLine:

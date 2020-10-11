@@ -33,6 +33,12 @@ function expectString(input: string, expected: string) {
 	expect(lexer.string).toBe(expected);
 }
 
+function expectHashbang(input: string, expected: string) {
+	const lexer = newLexer(input);
+	expect(lexer.token).toBe(Token.Hashbang);
+	expect(lexer.identifier).toBe(expected);
+}
+
 function expectLexerError(input: string, typeOrRegex: any) {
 	try {
 		newLexer(input);
@@ -401,5 +407,12 @@ describe("lexer", () => {
 		// expectLexerError("'\\u0'", '<stdin>: error: Syntax error "\'"\n');
 		// expectLexerError("'\\u00'", '<stdin>: error: Syntax error "\'"\n');
 		// expectLexerError("'\\u000'", '<stdin>: error: Syntax error "\'"\n');
+	});
+
+	it("should lex hashbang", () => {
+		expectHashbang("#!/usr/bin/env node", "#!/usr/bin/env node");
+		expectHashbang("#!/usr/bin/env node\n", "#!/usr/bin/env node");
+		expectHashbang("#!/usr/bin/env node\nlet x", "#!/usr/bin/env node");
+		expectLexerError(" #!/usr/bin/env node", SyntaxError);
 	});
 });

@@ -112,6 +112,8 @@ export const enum Token {
 	Public,
 	Static,
 	Yield,
+
+	Hashbang,
 }
 
 export const keywords = {
