@@ -2,11 +2,22 @@ import { Node } from "estree";
 import { AstNode } from "./ast";
 
 export interface SerializeOptions {
-	indentChar: string;
-	newLineChar: string;
+	indentChar?: string;
+	newLineChar?: string;
 }
 
-export function serialize(node: AstNode, options: SerializeOptions): string {
+export function serialize(node: AstNode, options: SerializeOptions = {}) {
+	return serializeAst(node, null, {
+		indentChar: options.indentChar || "  ",
+		newLineChar: options.newLineChar || "\n",
+	});
+}
+
+function serializeAst(
+	node: AstNode,
+	parent: AstNode | null,
+	options: Required<SerializeOptions>
+): string {
 	const { indentChar, newLineChar } = options;
 	let out = "";
 
@@ -20,7 +31,7 @@ export function serialize(node: AstNode, options: SerializeOptions): string {
 		case "ObjectPattern": {
 			out += "{";
 			for (let i = 0; i < node.properties.length; i++) {
-				out += serialize(node.properties[i], options);
+				out += serializeAst(node.properties[i], node, options);
 				if (i + 1 < node.properties.length) {
 					out += ", ";
 				}
@@ -34,43 +45,60 @@ export function serialize(node: AstNode, options: SerializeOptions): string {
 		case "VariableDeclaration": {
 			out += node.kind + " ";
 			for (let i = 0; i < node.declarations.length; i++) {
-				out += serialize(node.declarations[i], options);
+				out += serializeAst(node.declarations[i], node, options);
 				if (i + 1 < node.declarations.length) {
 					out += ", ";
 				}
-				out += ";";
-				if (newLineChar) {
-					out += newLineChar;
+				if (
+					!parent ||
+					(parent.type !== "ForInStatement" &&
+						parent.type !== "ForOfStatement" &&
+						parent.type !== "ForStatement")
+				) {
+					out += ";";
+					if (newLineChar) {
+						out += newLineChar;
+					}
 				}
 			}
 			break;
 		}
 		case "VariableDeclarator": {
-			out += serialize(node.id, options);
+			out += serializeAst(node.id, node, options);
 			if (node.init) {
-				out += " = " + serialize(node.init, options);
+				out += " = " + serializeAst(node.init, node, options);
 			}
 			break;
 		}
 		case "ForStatement": {
 			out += "for (";
-			if (node.init) out += serialize(node.init, options);
+			if (node.init) out += serializeAst(node.init, node, options);
 			out += ";";
-			if (node.test) out += serialize(node.test, options);
+			if (node.test) out += serializeAst(node.test, node, options);
 			out += ";";
-			if (node.update) out += serialize(node.update, options);
+			if (node.update) out += serializeAst(node.update, node, options);
 			out += ")";
-			out += serialize(node.body, options);
+			out += serializeAst(node.body, node, options);
 			return out;
+		}
+		case "ForInStatement": {
+			return (
+				"for (" +
+				serializeAst(node.left, node, options) +
+				" in " +
+				serializeAst(node.right, node, options) +
+				")" +
+				serializeAst(node.body, node, options)
+			);
 		}
 		case "ForOfStatement": {
 			return (
 				"for (" +
-				serialize(node.left, options) +
+				serializeAst(node.left, node, options) +
 				" of " +
-				serialize(node.right, options) +
+				serializeAst(node.right, node, options) +
 				")" +
-				serialize(node.body, options)
+				serializeAst(node.body, node, options)
 			);
 		}
 		case "EmptyStatement": {
@@ -85,7 +113,7 @@ export function serialize(node: AstNode, options: SerializeOptions): string {
 				out += node.hashbang + "\n";
 			}
 			for (let i = 0; i < node.body.length; i++) {
-				out += serialize(node.body[i], options);
+				out += serializeAst(node.body[i], node, options);
 			}
 
 			return out;

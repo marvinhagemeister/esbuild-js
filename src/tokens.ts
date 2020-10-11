@@ -105,7 +105,6 @@ export const enum Token {
 	With,
 	Implements,
 	Interface,
-	Let,
 	Package,
 	Private,
 	Protected,
@@ -157,7 +156,6 @@ export const keywords = {
 	//Strict mode reserved words
 	implements: Token.Implements,
 	interface: Token.Interface,
-	let: Token.Let,
 	package: Token.Package,
 	private: Token.Private,
 	protected: Token.Protected,

@@ -66,16 +66,14 @@ function parseStatement(p: Parser): tt.Statement {
 	switch (p.lexer.token) {
 		case Token.Export: {
 			next(p.lexer);
-
 			break;
 		}
 		case Token.Const:
-		case Token.Let:
 		case Token.Var: {
 			const kind: tt.VariableDeclaration["kind"] =
 				p.lexer.token === Token.Const
 					? "const"
-					: p.lexer.token === Token.Let
+					: getRaw(p.lexer) === "let"
 					? "let"
 					: "var";
 			next(p.lexer);
@@ -105,6 +103,11 @@ function parseStatement(p: Parser): tt.Statement {
 					}
 					break;
 				}
+				case Token.Const:
+					next(p.lexer);
+					const declarations = parseDeclarations(p);
+					init = tt.variableDeclaration("const", declarations);
+					break;
 				case Token.SemiColon:
 					break;
 				default:
@@ -125,7 +128,19 @@ function parseStatement(p: Parser): tt.Statement {
 				const body = parseStatement(p);
 				return tt.forOfStatement(init, value, body, false);
 			}
-			// TODO: Detect for-in loops
+
+			if ((p.lexer.token as number) === Token.In) {
+				if (init === null) {
+					throw new Error(`No left expression found in for-in loop`);
+				}
+				// TODO: Forbid "in" initializer
+				next(p.lexer);
+				const value = parseExpression(p);
+				expectToken(p.lexer, Token.CloseParen);
+
+				const body = parseStatement(p);
+				return tt.forInStatement(init, value, body);
+			}
 
 			// Normal for loop
 			expectToken(p.lexer, Token.SemiColon);
@@ -175,7 +190,7 @@ function parseExpressionOrLetStatement(p: Parser) {
 		case Token.OpenBrace: {
 			// TODO: Check lexical declarations
 			const declarations = parseDeclarations(p);
-			return null;
+			return tt.variableDeclaration("let", declarations);
 		}
 	}
 
@@ -198,11 +213,6 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 		if (p.lexer.token === Token.Equals) {
 			next(p.lexer);
 			value = parseExpression(p);
-		}
-
-		if (!value) {
-			console.log(value, p.lexer);
-			throw new Error("fail a");
 		}
 
 		const decl = tt.variableDeclarator(binding, value);

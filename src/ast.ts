@@ -99,6 +99,7 @@ export type Statement =
 	| Declaration
 	| ForStatement
 	| ForOfStatement
+	| ForInStatement
 	| EmptyStatement;
 export type ModuleDeclaration = t.ImportDeclaration;
 
@@ -159,6 +160,27 @@ export function forStatement(
 		len: 0,
 		test,
 		update,
+	};
+}
+
+export interface ForInStatement extends BaseNode {
+	type: "ForInStatement";
+	left: Expression | VariableDeclaration;
+	right: Expression;
+	body: Statement;
+}
+export function forInStatement(
+	left: ForInStatement["left"],
+	right: ForInStatement["right"],
+	body: ForInStatement["body"]
+): ForInStatement {
+	return {
+		type: "ForInStatement",
+		left,
+		right,
+		body,
+		start: 0,
+		len: 0,
 	};
 }
 

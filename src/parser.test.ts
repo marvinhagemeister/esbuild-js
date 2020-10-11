@@ -188,17 +188,6 @@ describe("Parser", () => {
 			// 	expectParseError(t, "for (; of x) ;", "<stdin>: error: Expected \";\" but found \"x\"\n")
 			// 	expectParseError(t, "for (; in; ) ;", "<stdin>: error: Unexpected \"in\"\n")
 			expectPrinted("for (; of; ) ;", "for (;of;);\n");
-			// expectPrinted("for (a in b) ;", "for (a in b)\n  ;\n");
-			// 	expectPrinted(t, "for (var a in b) ;", "for (var a in b)\n  ;\n")
-			// 	expectPrinted(t, "for (let a in b) ;", "for (let a in b)\n  ;\n")
-			// 	expectPrinted(t, "for (const a in b) ;", "for (const a in b)\n  ;\n")
-			// 	expectPrinted(t, "for (a in b, c) ;", "for (a in b, c)\n  ;\n")
-			// 	expectPrinted(t, "for (a in b = c) ;", "for (a in b = c)\n  ;\n")
-			// 	expectPrinted(t, "for (var a in b, c) ;", "for (var a in b, c)\n  ;\n")
-			// 	expectPrinted(t, "for (var a in b = c) ;", "for (var a in b = c)\n  ;\n")
-			// 	expectParseError(t, "for (var a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
-			// 	expectParseError(t, "for (let a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
-			// 	expectParseError(t, "for (const a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
 
 			// 	// Make sure "in" rules are enabled
 			// 	expectPrinted(t, "for (var x = () => a in b);", "for (var x = () => a in b)\n  ;\n")
@@ -258,8 +247,18 @@ describe("Parser", () => {
 			// TODO
 		});
 
-		it.skip("should parse for in", () => {
-			// TODO
+		it("should parse for in", () => {
+			expectPrinted("for (a in b) ;", "for (a in b);\n");
+			expectPrinted("for (var a in b) ;", "for (var a in b);\n");
+			expectPrinted("for (let a in b) ;", "for (let a in b);\n");
+			expectPrinted("for (const a in b) ;", "for (const a in b);\n");
+			// expectPrinted("for (a in b, c) ;", "for (a in b, c)\n  ;\n");
+			// expectPrinted("for (a in b = c) ;", "for (a in b = c)\n  ;\n");
+			// expectPrinted("for (var a in b, c) ;", "for (var a in b, c)\n  ;\n")
+			// expectPrinted("for (var a in b = c) ;", "for (var a in b = c)\n  ;\n")
+			// 	expectParseError(t, "for (var a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
+			// 	expectParseError(t, "for (let a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
+			// 	expectParseError(t, "for (const a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
 		});
 	});
 
