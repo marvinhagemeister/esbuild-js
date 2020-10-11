@@ -1,5 +1,13 @@
 import * as t from "estree";
-import { expectToken, getRaw, Lexer, newLexer, next } from "./lexer";
+import {
+	expectOrInsertSemicolon,
+	expectToken,
+	getRaw,
+	isContextualKeyword,
+	Lexer,
+	newLexer,
+	next,
+} from "./lexer";
 import { Token } from "./tokens";
 import * as tt from "./ast";
 
@@ -75,28 +83,48 @@ function parseStatement(p: Parser): tt.Statement {
 			const declarations = parseDeclarations(p);
 			return tt.variableDeclaration(kind, declarations);
 		}
+		case Token.SemiColon:
+			next(p.lexer);
+			return tt.emptyStatement("");
 		case Token.For: {
 			next(p.lexer);
 
 			// TODO: "for await (let x of y) {}"
+			expectToken(p.lexer, Token.OpenParen);
 
 			// TODO: Disallow in expressions
-			let init: tt.Expression | tt.VariableDeclarator[] | null = null;
+			let init: tt.Expression | tt.VariableDeclaration | null = null;
 			let test: tt.Expression | null = null;
 			let update: tt.Expression | null = null;
 			switch (p.lexer.token as number) {
 				case Token.Var: {
 					next(p.lexer);
-					init = parseDeclarations(p);
+					const declarations = parseDeclarations(p);
+					if (declarations.length > 0) {
+						init = tt.variableDeclaration("var", declarations);
+					}
+					break;
 				}
 				case Token.SemiColon:
 					break;
 				default:
 					init = parseExpressionOrLetStatement(p);
-					console.log("NOT IMPLEMENTED");
 			}
 
-			// TODO: Detect for-of loops
+			if (isContextualKeyword(p.lexer, "of")) {
+				// TODO: This is whacky
+				if (!init || Array.isArray(init)) {
+					throw new Error(`Missing left expression in for-of loop`);
+				}
+				// TODO: Forbid initializer "of"
+				// TODO: Mark syntax
+				next(p.lexer);
+				const value = parseExpression(p);
+				expectToken(p.lexer, Token.CloseParen);
+
+				const body = parseStatement(p);
+				return tt.forOfStatement(init, value, body, false);
+			}
 			// TODO: Detect for-in loops
 
 			// Normal for loop
@@ -117,6 +145,14 @@ function parseStatement(p: Parser): tt.Statement {
 			const body = parseStatement(p);
 			return tt.forStatement(body, init, update, test);
 		}
+		default:
+			const out = parseExpressionOrLetStatement(p);
+			if (out !== null) {
+				expectOrInsertSemicolon(p.lexer);
+				// FIXME: Expression vs Statement mismatch
+				return out as any;
+			}
+			expectOrInsertSemicolon(p.lexer);
 	}
 
 	console.log(p.lexer);
@@ -188,7 +224,6 @@ function parseExpression(p: Parser): tt.Expression {
 }
 
 function parsePrefix(p: Parser): tt.Expression {
-	//
 	switch (p.lexer.token) {
 		case Token.False:
 			next(p.lexer);
@@ -211,11 +246,14 @@ function parsePrefix(p: Parser): tt.Expression {
 		}
 		case Token.Identifier: {
 			const name = p.lexer.identifier;
-			return tt.identifier(name);
+			const identifier = tt.identifier(name);
+
+			next(p.lexer);
+			return identifier;
 		}
 	}
 	console.log(p.lexer);
-	throw new Error("fail");
+	throw new Error("fail #ac");
 }
 
 function parseSuffix(p: Parser, left: tt.Expression): tt.Expression {

@@ -4,7 +4,7 @@ import { serialize } from "./serialize";
 
 function expectPrinted(source: string, expected: string) {
 	const ast = parse(source);
-	const out = serialize(ast);
+	const out = serialize(ast, { newLineChar: "\n", indentChar: "  " });
 	expect(out).toBe(expected);
 }
 
@@ -103,9 +103,6 @@ describe("Parser", () => {
 		expectPrinted("var x = 0", "var x = 0;\n");
 		expectPrinted("let x = 0", "let x = 0;\n");
 		expectPrinted("const x = 0", "const x = 0;\n");
-		// 	expectParseError(t, "var x = 0", "")
-		// 	expectParseError(t, "let x = 0", "")
-		// 	expectParseError(t, "const x = 0", "")
 		// 	expectParseError(t, "for (var x = 0;;) ;", "")
 		// 	expectParseError(t, "for (let x = 0;;) ;", "")
 		// 	expectParseError(t, "for (const x = 0;;) ;", "")
@@ -185,71 +182,85 @@ describe("Parser", () => {
 	// 	expectParseError(t, "x: switch (1) { case 1: continue x }", "<stdin>: error: Cannot continue to label \"x\"\n")
 	// }
 
-	it("should parse for keyword", () => {
-		// 	expectParseError(t, "for (; in x) ;", "<stdin>: error: Unexpected \"in\"\n")
-		// 	expectParseError(t, "for (; of x) ;", "<stdin>: error: Expected \";\" but found \"x\"\n")
-		// 	expectParseError(t, "for (; in; ) ;", "<stdin>: error: Unexpected \"in\"\n")
-		expectPrinted("for (; of; ) ;", "for (; of; )\n  ;\n");
-		expectPrinted("for (a in b) ;", "for (a in b)\n  ;\n");
-		// 	expectPrinted(t, "for (var a in b) ;", "for (var a in b)\n  ;\n")
-		// 	expectPrinted(t, "for (let a in b) ;", "for (let a in b)\n  ;\n")
-		// 	expectPrinted(t, "for (const a in b) ;", "for (const a in b)\n  ;\n")
-		// 	expectPrinted(t, "for (a in b, c) ;", "for (a in b, c)\n  ;\n")
-		// 	expectPrinted(t, "for (a in b = c) ;", "for (a in b = c)\n  ;\n")
-		// 	expectPrinted(t, "for (var a in b, c) ;", "for (var a in b, c)\n  ;\n")
-		// 	expectPrinted(t, "for (var a in b = c) ;", "for (var a in b = c)\n  ;\n")
-		// 	expectParseError(t, "for (var a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
-		// 	expectParseError(t, "for (let a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
-		// 	expectParseError(t, "for (const a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
-		// 	expectPrinted(t, "for (a of b) ;", "for (a of b)\n  ;\n")
-		// 	expectPrinted(t, "for (var a of b) ;", "for (var a of b)\n  ;\n")
-		// 	expectPrinted(t, "for (let a of b) ;", "for (let a of b)\n  ;\n")
-		// 	expectPrinted(t, "for (const a of b) ;", "for (const a of b)\n  ;\n")
-		// 	expectPrinted(t, "for (a of b = c) ;", "for (a of b = c)\n  ;\n")
-		// 	expectPrinted(t, "for (var a of b = c) ;", "for (var a of b = c)\n  ;\n")
-		// 	expectParseError(t, "for (a of b, c) ;", "<stdin>: error: Expected \")\" but found \",\"\n")
-		// 	expectParseError(t, "for (var a of b, c) ;", "<stdin>: error: Expected \")\" but found \",\"\n")
-		// 	expectParseError(t, "for (var a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
-		// 	expectParseError(t, "for (let a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
-		// 	expectParseError(t, "for (const a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
-		// 	expectPrinted(t, "for (var x = 0 in y) ;", "for (var x = 0 in y)\n  ;\n") // This is a weird special-case
-		// 	expectParseError(t, "for (let x = 0 in y) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (const x = 0 in y) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (var x = 0 of y) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (let x = 0 of y) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (const x = 0 of y) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (var [x] = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (let [x] = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (const [x] = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (var [x] = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (let [x] = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (const [x] = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (var {x} = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (let {x} = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (const {x} = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (var {x} = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (let {x} = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	expectParseError(t, "for (const {x} = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
-		// 	// Make sure "in" rules are enabled
-		// 	expectPrinted(t, "for (var x = () => a in b);", "for (var x = () => a in b)\n  ;\n")
-		// 	expectPrinted(t, "for (var x = a + b in c);", "for (var x = a + b in c)\n  ;\n")
-		// 	// Make sure "in" rules are disabled
-		// 	expectPrinted(t, "for (var {[x in y]: z} = {};;);", "for (var {[x in y]: z} = {}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var {x = y in z} = {};;);", "for (var {x = y in z} = {}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var [x = y in z] = {};;);", "for (var [x = y in z] = {}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var {x: y = z in w} = {};;);", "for (var {x: y = z in w} = {}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = (a in b);;);", "for (var x = (a in b); ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = [a in b];;);", "for (var x = [a in b]; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = y(a in b);;);", "for (var x = y(a in b); ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = {y: a in b};;);", "for (var x = {y: a in b}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (a ? b in c : d;;);", "for (a ? b in c : d; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = () => { a in b };;);", "for (var x = () => {\n  a in b;\n}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = async () => { a in b };;);", "for (var x = async () => {\n  a in b;\n}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = function() { a in b };;);", "for (var x = function() {\n  a in b;\n}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = async function() { a in b };;);", "for (var x = async function() {\n  a in b;\n}; ; )\n  ;\n")
-		// 	expectPrinted(t, "for (var x = class { [a in b]() {} };;);", "for (var x = class {\n  [a in b]() {\n  }\n}; ; )\n  ;\n")
-		// 	expectParseError(t, "for (var x = class extends a in b {};;);", "<stdin>: error: Expected \"{\" but found \"in\"\n")
-		// }
+	describe("for loop", () => {
+		it("should parse for keyword", () => {
+			// 	expectParseError(t, "for (; in x) ;", "<stdin>: error: Unexpected \"in\"\n")
+			// 	expectParseError(t, "for (; of x) ;", "<stdin>: error: Expected \";\" but found \"x\"\n")
+			// 	expectParseError(t, "for (; in; ) ;", "<stdin>: error: Unexpected \"in\"\n")
+			expectPrinted("for (; of; ) ;", "for (;of;);\n");
+			// expectPrinted("for (a in b) ;", "for (a in b)\n  ;\n");
+			// 	expectPrinted(t, "for (var a in b) ;", "for (var a in b)\n  ;\n")
+			// 	expectPrinted(t, "for (let a in b) ;", "for (let a in b)\n  ;\n")
+			// 	expectPrinted(t, "for (const a in b) ;", "for (const a in b)\n  ;\n")
+			// 	expectPrinted(t, "for (a in b, c) ;", "for (a in b, c)\n  ;\n")
+			// 	expectPrinted(t, "for (a in b = c) ;", "for (a in b = c)\n  ;\n")
+			// 	expectPrinted(t, "for (var a in b, c) ;", "for (var a in b, c)\n  ;\n")
+			// 	expectPrinted(t, "for (var a in b = c) ;", "for (var a in b = c)\n  ;\n")
+			// 	expectParseError(t, "for (var a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
+			// 	expectParseError(t, "for (let a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
+			// 	expectParseError(t, "for (const a, b in b) ;", "<stdin>: error: for-in loops must have a single declaration\n")
+
+			// 	// Make sure "in" rules are enabled
+			// 	expectPrinted(t, "for (var x = () => a in b);", "for (var x = () => a in b)\n  ;\n")
+			// 	expectPrinted(t, "for (var x = a + b in c);", "for (var x = a + b in c)\n  ;\n")
+			// 	// Make sure "in" rules are disabled
+			// 	expectPrinted(t, "for (var {[x in y]: z} = {};;);", "for (var {[x in y]: z} = {}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var {x = y in z} = {};;);", "for (var {x = y in z} = {}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var [x = y in z] = {};;);", "for (var [x = y in z] = {}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var {x: y = z in w} = {};;);", "for (var {x: y = z in w} = {}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = (a in b);;);", "for (var x = (a in b); ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = [a in b];;);", "for (var x = [a in b]; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = y(a in b);;);", "for (var x = y(a in b); ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = {y: a in b};;);", "for (var x = {y: a in b}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (a ? b in c : d;;);", "for (a ? b in c : d; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = () => { a in b };;);", "for (var x = () => {\n  a in b;\n}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = async () => { a in b };;);", "for (var x = async () => {\n  a in b;\n}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = function() { a in b };;);", "for (var x = function() {\n  a in b;\n}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = async function() { a in b };;);", "for (var x = async function() {\n  a in b;\n}; ; )\n  ;\n")
+			// 	expectPrinted(t, "for (var x = class { [a in b]() {} };;);", "for (var x = class {\n  [a in b]() {\n  }\n}; ; )\n  ;\n")
+			// 	expectParseError(t, "for (var x = class extends a in b {};;);", "<stdin>: error: Expected \"{\" but found \"in\"\n")
+			// }
+		});
+
+		it("should parse for of", () => {
+			expectPrinted("for (a of b) ;", "for (a of b);\n");
+			// expectPrinted("for (var a of b) ;", "for (var a of b)\n  ;\n");
+			// 	expectPrinted(t, "for (let a of b) ;", "for (let a of b)\n  ;\n")
+			// 	expectPrinted(t, "for (const a of b) ;", "for (const a of b)\n  ;\n")
+			// 	expectPrinted(t, "for (a of b = c) ;", "for (a of b = c)\n  ;\n")
+			// 	expectPrinted(t, "for (var a of b = c) ;", "for (var a of b = c)\n  ;\n")
+			// 	expectParseError(t, "for (a of b, c) ;", "<stdin>: error: Expected \")\" but found \",\"\n")
+			// 	expectParseError(t, "for (var a of b, c) ;", "<stdin>: error: Expected \")\" but found \",\"\n")
+			// 	expectParseError(t, "for (var a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
+			// 	expectParseError(t, "for (let a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
+			// 	expectParseError(t, "for (const a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
+			// 	expectPrinted(t, "for (var x = 0 in y) ;", "for (var x = 0 in y)\n  ;\n") // This is a weird special-case
+			// 	expectParseError(t, "for (let x = 0 in y) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (const x = 0 in y) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (var x = 0 of y) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (let x = 0 of y) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (const x = 0 of y) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (var [x] = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (let [x] = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (const [x] = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (var [x] = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (let [x] = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (const [x] = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (var {x} = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (let {x} = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (const {x} = y in z) ;", "<stdin>: error: for-in loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (var {x} = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (let {x} = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+			// 	expectParseError(t, "for (const {x} = y of z) ;", "<stdin>: error: for-of loop variables cannot have an initializer\n")
+		});
+
+		it.skip("should parse for await", () => {
+			// TODO
+		});
+
+		it.skip("should parse for in", () => {
+			// TODO
+		});
 	});
 
 	// func TestScope(t *testing.T) {

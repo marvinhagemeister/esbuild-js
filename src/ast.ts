@@ -19,6 +19,20 @@ export type AstNode =
 
 export type Expression = Literal | Identifier;
 
+export interface EmptyStatement extends BaseNode {
+	type: "EmptyStatement";
+	text: string;
+}
+
+export function emptyStatement(text: string): EmptyStatement {
+	return {
+		type: "EmptyStatement",
+		text,
+		start: 0,
+		len: 0,
+	};
+}
+
 export interface Literal extends BaseNode {
 	type: "Literal";
 	value: string | number | boolean | null | undefined;
@@ -81,7 +95,11 @@ export interface Directive extends BaseNode {
 }
 
 export type Declaration = VariableDeclaration;
-export type Statement = Declaration | ForStatement;
+export type Statement =
+	| Declaration
+	| ForStatement
+	| ForOfStatement
+	| EmptyStatement;
 export type ModuleDeclaration = t.ImportDeclaration;
 
 export interface Program extends BaseNode {
@@ -121,7 +139,7 @@ export function identifier(name: string): Identifier {
 
 export interface ForStatement extends BaseNode {
 	type: "ForStatement";
-	init: Expression | VariableDeclarator[] | null;
+	init: Expression | VariableDeclaration | null;
 	update: Expression | null;
 	test: Expression | null;
 	body: Statement;
@@ -141,6 +159,31 @@ export function forStatement(
 		len: 0,
 		test,
 		update,
+	};
+}
+
+export interface ForOfStatement extends BaseNode {
+	type: "ForOfStatement";
+	await: boolean;
+	left: Expression | VariableDeclaration;
+	right: Expression;
+	body: Statement;
+}
+
+export function forOfStatement(
+	left: ForOfStatement["left"],
+	right: ForOfStatement["right"],
+	body: ForOfStatement["body"],
+	awaited: ForOfStatement["await"]
+): ForOfStatement {
+	return {
+		type: "ForOfStatement",
+		await: awaited,
+		left,
+		right,
+		body,
+		start: 0,
+		len: 0,
 	};
 }
 

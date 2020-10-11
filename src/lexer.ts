@@ -16,7 +16,7 @@ export interface Lexer {
 	codePoint: number;
 	source: string;
 	hasNewLineBefore: boolean;
-	token: number;
+	token: Token;
 	identifier: string;
 	number: number;
 	string: string;
@@ -106,10 +106,25 @@ function filterOutUnderscores(lexer: Lexer, underscoreCount: number) {
 
 export function expectToken(lexer: Lexer, token: Token) {
 	if (lexer.token !== token) {
-		throw new Error("Expected another Token");
+		throw new Error(`Expected token ${token}, but got ${lexer.token}`);
 	}
 
 	next(lexer);
+}
+
+export function expectOrInsertSemicolon(lexer: Lexer) {
+	if (
+		lexer.token === Token.SemiColon ||
+		(!lexer.hasNewLineBefore &&
+			lexer.token !== Token.CloseParen &&
+			lexer.token !== Token.EOF)
+	) {
+		expectToken(lexer, Token.SemiColon);
+	}
+}
+
+export function isContextualKeyword(lexer: Lexer, text: string) {
+	return lexer.token === Token.Identifier && getRaw(lexer) === text;
 }
 
 function parseNumericLiteralOrDot(lexer: Lexer) {
