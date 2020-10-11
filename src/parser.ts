@@ -10,6 +10,7 @@ import {
 } from "./lexer";
 import { Token } from "./tokens";
 import * as tt from "./ast";
+import { platform } from "os";
 
 // TODO: Sourcemap
 // TODO: Sourcelocation
@@ -66,6 +67,9 @@ function parseStatement(p: Parser): tt.Statement {
 			next(p.lexer);
 			break;
 		}
+		case Token.Function:
+			next(p.lexer);
+			return parseFunctionExpression(p, false);
 		case Token.Const:
 		case Token.Var: {
 			const kind: tt.VariableDeclaration["kind"] =
@@ -159,6 +163,15 @@ function parseStatement(p: Parser): tt.Statement {
 			return tt.forStatement(body, init, update, test);
 		}
 		default:
+			// Parse either an async function, an async expression, or a normal expression
+			if (p.lexer.token === Token.Identifier && getRaw(p.lexer) === "async") {
+				next(p.lexer);
+				if ((p.lexer.token as number) === Token.Function) {
+					next(p.lexer);
+					return parseFunctionExpression(p, true);
+				}
+			}
+
 			const out = parseExpressionOrLetStatement(p);
 			if (out !== null) {
 				expectOrInsertSemicolon(p.lexer);
@@ -232,6 +245,10 @@ function parseExpression(p: Parser): tt.Expression {
 
 function parsePrefix(p: Parser): tt.Expression {
 	switch (p.lexer.token) {
+		case Token.OpenParen: {
+			next(p.lexer);
+			return parseParenExpression(p);
+		}
 		case Token.False:
 			next(p.lexer);
 			return tt.literal(false);
@@ -253,10 +270,26 @@ function parsePrefix(p: Parser): tt.Expression {
 		}
 		case Token.Identifier: {
 			const name = p.lexer.identifier;
-			const identifier = tt.identifier(name);
+			const raw = getRaw(p.lexer);
 
+			switch (name) {
+				case "async": {
+					if (raw === "async") {
+						return parseAsyncPrefixExpression(p);
+					}
+
+					break;
+					// TODO: await
+					// TODO: yield
+				}
+			}
+
+			const identifier = tt.identifier(name);
 			next(p.lexer);
 			return identifier;
+		}
+		case Token.Function: {
+			return parseFunctionExpression(p, false);
 		}
 		case Token.OpenBracket: {
 			next(p.lexer);
@@ -287,6 +320,85 @@ function parsePrefix(p: Parser): tt.Expression {
 	}
 	console.log(p.lexer);
 	throw new Error("fail #ac");
+}
+
+function parseParenExpression(p: Parser) {
+	const items: tt.Expression[] = [];
+	while (p.lexer.token !== Token.CloseParen) {
+		// TODO: Spread
+		const item = parseExpression(p);
+		items.push(item);
+
+		next(p.lexer);
+	}
+
+	expectToken(p.lexer, Token.CloseParen);
+
+	// TODO: Async args
+
+	// Is this a chain of expressions and comma operators?
+	if (items.length > 0) {
+		return tt.sequenceExpression(items);
+	}
+
+	return tt.emptyExpression();
+}
+
+// Assumes "async" keyword has been parsed already
+function parseAsyncPrefixExpression(p: Parser) {
+	switch (p.lexer.token) {
+		case Token.Function:
+			return parseFunctionExpression(p, true /* isAsync */);
+	}
+
+	return tt.emptyExpression();
+}
+
+function parseFunctionExpression(p: Parser, isAsync: boolean) {
+	const isGenerator = p.lexer.token === Token["*"];
+	if (p.lexer.token === Token["*"]) {
+		next(p.lexer);
+	}
+
+	// TODO: Async
+
+	// The name is optional
+	let name = "";
+	if (p.lexer.token === Token.Identifier) {
+		name = p.lexer.identifier;
+		// TODO: Don't declare name "arguments"
+	}
+	next(p.lexer);
+
+	// Function body
+	expectToken(p.lexer, Token.OpenParen);
+
+	const args = [];
+	while (p.lexer.token !== Token.CloseParen) {
+		// TODO: Rest args
+		// TODO: Default arguments
+
+		const arg = parseBinding(p);
+		args.push(arg);
+
+		if (p.lexer.token !== Token.Comma) {
+			break;
+		}
+
+		next(p.lexer);
+	}
+
+	expectToken(p.lexer, Token.CloseParen);
+
+	const body = parseFunctionBody(p);
+	return tt.functionDeclaration(name, args, body, isGenerator, isAsync);
+}
+
+function parseFunctionBody(p: Parser) {
+	expectToken(p.lexer, Token.OpenBrace);
+	const statements = parseStatementsUpTo(p, Token.CloseBrace);
+	next(p.lexer);
+	return tt.blockStatement(statements);
 }
 
 function parseSuffix(p: Parser, left: tt.Expression): tt.Expression {

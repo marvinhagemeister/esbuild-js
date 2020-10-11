@@ -87,6 +87,51 @@ function serializeAst(
 			}
 			return out;
 		}
+		case "BlockStatement": {
+			out += "{";
+			if (options.newLineChar) {
+				out += options.newLineChar;
+			}
+
+			for (let i = 0; i < node.body.length; i++) {
+				out += serializeAst(node.body[i], node.body[i], options);
+			}
+			out += "}";
+			if (options.newLineChar) {
+				out += options.newLineChar;
+			}
+			return out;
+		}
+		case "FunctionDeclaration": {
+			if (node.async) {
+				out += "async ";
+			}
+			out += "function";
+			if (node.generator) {
+				out += "* ";
+			}
+
+			if (!node.generator && node.name) {
+				out += " ";
+			}
+			if (node.name) {
+				out += node.name;
+			}
+			out += "(";
+			for (let i = 0; i < node.params.length; i++) {
+				out += serializeAst(node.params[i], node, options);
+				if (i + 1 < node.params.length) {
+					out += ",";
+				}
+			}
+
+			out += ")";
+			if (options.indentChar) {
+				out += " ";
+			}
+			out += serializeAst(node.body, node, options);
+			return out;
+		}
 		case "ForStatement": {
 			out += "for (";
 			if (node.init) out += serializeAst(node.init, node, options);

@@ -21,6 +21,8 @@ export type Expression =
 	| Literal
 	| Identifier
 	| ArrayExpression
+	| FunctionDeclaration
+	| SequenceExpression
 	| EmptyExpression;
 
 export interface EmptyExpression extends BaseNode {
@@ -80,6 +82,33 @@ export function arrayExpression(
 	};
 }
 
+export interface FunctionDeclaration extends BaseNode {
+	type: "FunctionDeclaration";
+	name: string;
+	params: any[];
+	body: BlockStatement;
+	generator: boolean;
+	async: boolean;
+}
+export function functionDeclaration(
+	name: string,
+	params: any[],
+	body: BlockStatement,
+	generator: boolean,
+	async: boolean
+): FunctionDeclaration {
+	return {
+		type: "FunctionDeclaration",
+		name,
+		generator,
+		params,
+		body,
+		async,
+		start: 0,
+		len: 0,
+	};
+}
+
 export type Pattern = ObjectPattern;
 
 export interface VariableDeclarator extends BaseNode {
@@ -131,8 +160,54 @@ export type Statement =
 	| ForStatement
 	| ForOfStatement
 	| ForInStatement
-	| EmptyStatement;
+	| FunctionDeclaration
+	| EmptyStatement
+	| ExpressionStatement
+	| BlockStatement;
 export type ModuleDeclaration = t.ImportDeclaration;
+
+export interface BlockStatement extends BaseNode {
+	type: "BlockStatement";
+	body: Statement[];
+}
+export function blockStatement(body: Statement[]): BlockStatement {
+	return {
+		type: "BlockStatement",
+		body,
+		start: 0,
+		len: 0,
+	};
+}
+
+export interface ExpressionStatement extends BaseNode {
+	type: "ExpressionStatement";
+	expression: Expression;
+}
+export function expressionStatement(
+	expression: Expression
+): ExpressionStatement {
+	return {
+		type: "ExpressionStatement",
+		expression,
+		len: 0,
+		start: 0,
+	};
+}
+
+export interface SequenceExpression extends BaseNode {
+	type: "SequenceExpression";
+	expressions: Expression[];
+}
+export function sequenceExpression(
+	expressions: Expression[]
+): SequenceExpression {
+	return {
+		type: "SequenceExpression",
+		expressions,
+		len: 0,
+		start: 0,
+	};
+}
 
 export interface Program extends BaseNode {
 	type: "Program";

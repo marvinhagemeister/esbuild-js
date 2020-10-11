@@ -585,18 +585,41 @@ describe("Parser", () => {
 	// 	expectParseError(t, "do label: label2: function f() {} while (0)", "<stdin>: error: Cannot use a declaration in a single-statement context\n")
 	// }
 
-	// func TestFunction(t *testing.T) {
-	// 	expectPrinted(t, "function f() {} function f() {}", "function f() {\n}\nfunction f() {\n}\n")
-	// 	expectPrinted(t, "function f() {} function* f() {}", "function f() {\n}\nfunction* f() {\n}\n")
-	// 	expectPrinted(t, "function* f() {} function* f() {}", "function* f() {\n}\nfunction* f() {\n}\n")
-	// 	expectPrinted(t, "function f() {} async function f() {}", "function f() {\n}\nasync function f() {\n}\n")
-	// 	expectPrinted(t, "async function f() {} async function f() {}", "async function f() {\n}\nasync function f() {\n}\n")
-
-	// 	expectPrinted(t, "function arguments() {}", "function arguments() {\n}\n")
-	// 	expectPrinted(t, "(function arguments() {})", "(function arguments() {\n});\n")
-	// 	expectPrinted(t, "function foo(arguments) {}", "function foo(arguments) {\n}\n")
-	// 	expectPrinted(t, "(function foo(arguments) {})", "(function foo(arguments) {\n});\n")
-	// }
+	it("should parse Functions", () => {
+		expectPrinted(
+			"function f() {} function f() {}",
+			"function f() {\n}\nfunction f() {\n}\n"
+		);
+		expectPrinted(
+			"function f() {} function* f() {}",
+			"function f() {\n}\nfunction* f() {\n}\n"
+		);
+		expectPrinted(
+			"function* f() {} function* f() {}",
+			"function* f() {\n}\nfunction* f() {\n}\n"
+		);
+		expectPrinted(
+			"function f() {} async function f() {}",
+			"function f() {\n}\nasync function f() {\n}\n"
+		);
+		expectPrinted(
+			"async function f() {} async function f() {}",
+			"async function f() {\n}\nasync function f() {\n}\n"
+		);
+		expectPrinted("function arguments() {}", "function arguments() {\n}\n");
+		// expectPrinted(
+		// 	"(function arguments() {})",
+		// 	"(function arguments() {\n});\n"
+		// );
+		expectPrinted(
+			"function foo(arguments) {}",
+			"function foo(arguments) {\n}\n"
+		);
+		// expectPrinted(
+		// 	"(function foo(arguments) {})",
+		// 	"(function foo(arguments) {\n});\n"
+		// );
+	});
 
 	// func TestClass(t *testing.T) {
 	// 	expectPrinted(t, "class Foo { foo() {} }", "class Foo {\n  foo() {\n  }\n}\n")
