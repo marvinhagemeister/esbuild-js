@@ -163,6 +163,60 @@ function serializeAst(
 				serializeAst(node.body, node, options)
 			);
 		}
+		case "ExpressionStatement": {
+			return serializeAst(node.expression, node, options) + ";\n";
+		}
+		case "UpdateExpression":
+			if (node.prefix) {
+				out += node.operator;
+			}
+			out += serializeAst(node.argument, node, options);
+			if (!node.prefix) {
+				out += node.operator;
+			}
+			return out;
+		case "SequenceExpression":
+			const len = node.expressions.length;
+			if (len === 1) {
+				const expr = node.expressions[0];
+				if (
+					expr.type === "UnaryExpression" &&
+					expr.operator === "+" &&
+					expr.argument.type === "Literal"
+				) {
+					return serializeAst(expr, node, options);
+				}
+			}
+
+			out += "(";
+			for (let i = 0; i < len; i++) {
+				out += serializeAst(node.expressions[i], node, options);
+				if (i + 1 < len) {
+					out += ", ";
+				}
+			}
+			out += ")";
+			return out;
+		case "UnaryExpression": {
+			if (node.operator !== "+" || node.argument.type !== "Literal") {
+				out += node.operator;
+				// Operators: void, delete, typeof
+				if (node.operator.length > 1) {
+					out += " ";
+				}
+			}
+			out += serializeAst(node.argument, node, options);
+			return out;
+		}
+		case "BinaryExpression": {
+			return (
+				serializeAst(node.left, node, options) +
+				" " +
+				node.operator +
+				" " +
+				serializeAst(node.right, node, options)
+			);
+		}
 		case "EmptyStatement": {
 			out += ";";
 			if (options.newLineChar) {

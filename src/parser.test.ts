@@ -30,41 +30,39 @@ describe("Parser", () => {
 	// 	expectPrinted(t, "if(x-->y)z", "if (x-- > y)\n  z;\n")
 	// }
 
-	// func TestExponentiation(t *testing.T) {
-	// 	expectPrinted(t, "--x ** 2", "--x ** 2;\n")
-	// 	expectPrinted(t, "++x ** 2", "++x ** 2;\n")
-	// 	expectPrinted(t, "x-- ** 2", "x-- ** 2;\n")
-	// 	expectPrinted(t, "x++ ** 2", "x++ ** 2;\n")
-
-	// 	expectPrinted(t, "(-x) ** 2", "(-x) ** 2;\n")
-	// 	expectPrinted(t, "(+x) ** 2", "(+x) ** 2;\n")
-	// 	expectPrinted(t, "(~x) ** 2", "(~x) ** 2;\n")
-	// 	expectPrinted(t, "(!x) ** 2", "(!x) ** 2;\n")
-	// 	expectPrinted(t, "(-1) ** 2", "(-1) ** 2;\n")
-	// 	expectPrinted(t, "(+1) ** 2", "1 ** 2;\n")
-	// 	expectPrinted(t, "(~1) ** 2", "(~1) ** 2;\n")
-	// 	expectPrinted(t, "(!1) ** 2", "false ** 2;\n")
-	// 	expectPrinted(t, "(void x) ** 2", "(void x) ** 2;\n")
-	// 	expectPrinted(t, "(delete x) ** 2", "(delete x) ** 2;\n")
-	// 	expectPrinted(t, "(typeof x) ** 2", "(typeof x) ** 2;\n")
-	// 	expectPrinted(t, "undefined ** 2", "(void 0) ** 2;\n")
-
-	// 	expectParseError(t, "-x ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "+x ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "~x ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "!x ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "void x ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "delete x ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "typeof x ** 2", "<stdin>: error: Unexpected \"**\"\n")
-
-	// 	expectParseError(t, "-x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "+x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "~x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "!x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "void x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "delete x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// 	expectParseError(t, "typeof x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
-	// }
+	it("should parse exponentiation", () => {
+		expectPrinted("--x ** 2", "--x ** 2;\n");
+		expectPrinted("++x ** 2", "++x ** 2;\n");
+		expectPrinted("x-- ** 2", "x-- ** 2;\n");
+		expectPrinted("x++ ** 2", "x++ ** 2;\n");
+		expectPrinted("(-x) ** 2", "(-x) ** 2;\n");
+		expectPrinted("(+x) ** 2", "(+x) ** 2;\n");
+		expectPrinted("(~x) ** 2", "(~x) ** 2;\n");
+		expectPrinted("(!x) ** 2", "(!x) ** 2;\n");
+		expectPrinted("(-1) ** 2", "(-1) ** 2;\n");
+		expectPrinted("(+1) ** 2", "1 ** 2;\n");
+		expectPrinted("(~1) ** 2", "(~1) ** 2;\n");
+		// expectPrinted("(!1) ** 2", "false ** 2;\n");
+		expectPrinted("(void x) ** 2", "(void x) ** 2;\n");
+		expectPrinted("(delete x) ** 2", "(delete x) ** 2;\n");
+		expectPrinted("(typeof x) ** 2", "(typeof x) ** 2;\n");
+		// expectPrinted("undefined ** 2", "(void 0) ** 2;\n");
+		// 	expectParseError(t, "-x ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "+x ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "~x ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "!x ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "void x ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "delete x ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "typeof x ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "-x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "+x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "~x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "!x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "void x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "delete x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// 	expectParseError(t, "typeof x.y() ** 2", "<stdin>: error: Unexpected \"**\"\n")
+		// }
+	});
 
 	// func TestRegExp(t *testing.T) {
 	// 	expectPrinted(t, "/x/g", "/x/g;\n")
@@ -119,7 +117,7 @@ describe("Parser", () => {
 		// 	expectParseError(t, "for (let x;;) ;", "")
 		// 	expectParseError(t, "for (const x;;) ;", "<stdin>: error: This constant must be initialized\n")
 		// 	// Make sure bindings are visited during parsing
-		// 	expectPrinted(t, "var {[x]: y} = {}", "var {[x]: y} = {};\n")
+		// expectPrinted("var {[x]: y} = {}", "var {[x]: y} = {};\n");
 		// 	expectPrinted(t, "var {...x} = {}", "var {...x} = {};\n")
 		// 	// Test destructuring patterns
 		// 	expectPrinted(t, "var [...x] = []", "var [...x] = [];\n")

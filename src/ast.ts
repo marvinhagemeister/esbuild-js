@@ -1,5 +1,41 @@
 import * as t from "estree";
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
+export const enum Precedence {
+	Lowest,
+	/** , */
+	Comma,
+	/** yield */
+	Yield,
+	/** = */
+	Assignment,
+	/** ternary: ... ? ... : ... */
+	Conditional,
+	/** ?? */
+	NullishCoalescing,
+	/** || */
+	OR,
+	/** && */
+	AND,
+	/** | */
+	BitwiseOR,
+	/** ^ */
+	BitwiseXOR,
+	/** & */
+	BitwiseAND,
+	Equals,
+	Compare,
+	BitwiseShift,
+	Add,
+	Multiply,
+	Exponentiation,
+	Prefix,
+	Postfix,
+	New,
+	Call,
+	Member,
+}
+
 export interface BaseNode {
 	type: string;
 	start: number;
@@ -23,6 +59,9 @@ export type Expression =
 	| ArrayExpression
 	| FunctionDeclaration
 	| SequenceExpression
+	| UpdateExpression
+	| BinaryExpression
+	| UnaryExpression
 	| EmptyExpression;
 
 export interface EmptyExpression extends BaseNode {
@@ -77,6 +116,26 @@ export function arrayExpression(
 	return {
 		type: "ArrayExpression",
 		elements,
+		start: 0,
+		len: 0,
+	};
+}
+
+export interface BinaryExpression extends BaseNode {
+	type: "BinaryExpression";
+	left: Expression;
+	operator: "**";
+	right: Expression;
+}
+export function binaryExpression(
+	left: Expression,
+	right: Expression
+): BinaryExpression {
+	return {
+		type: "BinaryExpression",
+		left,
+		right,
+		operator: "**",
 		start: 0,
 		len: 0,
 	};
@@ -194,6 +253,24 @@ export function expressionStatement(
 	};
 }
 
+export interface UnaryExpression extends BaseNode {
+	type: "UnaryExpression";
+	operator: "+" | "-" | "~" | "!" | "void" | "delete" | "typeof";
+	argument: Expression;
+}
+export function unaryExpression(
+	operator: UnaryExpression["operator"],
+	argument: Expression
+): UnaryExpression {
+	return {
+		type: "UnaryExpression",
+		operator,
+		argument,
+		start: 0,
+		len: 0,
+	};
+}
+
 export interface SequenceExpression extends BaseNode {
 	type: "SequenceExpression";
 	expressions: Expression[];
@@ -206,6 +283,27 @@ export function sequenceExpression(
 		expressions,
 		len: 0,
 		start: 0,
+	};
+}
+
+export interface UpdateExpression extends BaseNode {
+	type: "UpdateExpression";
+	operator: "--" | "++";
+	argument: Expression;
+	prefix: boolean;
+}
+export function updateExpression(
+	operator: UpdateExpression["operator"],
+	argument: UpdateExpression["argument"],
+	prefix: boolean
+): UpdateExpression {
+	return {
+		type: "UpdateExpression",
+		operator,
+		argument,
+		prefix,
+		start: 0,
+		len: 0,
 	};
 }
 

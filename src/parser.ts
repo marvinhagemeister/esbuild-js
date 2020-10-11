@@ -124,7 +124,7 @@ function parseStatement(p: Parser): tt.Statement {
 				// TODO: Forbid initializer "of"
 				// TODO: Mark syntax
 				next(p.lexer);
-				const value = parseExpression(p);
+				const value = parseExpression(p, tt.Precedence.Comma);
 				expectToken(p.lexer, Token.CloseParen);
 
 				const body = parseStatement(p);
@@ -137,7 +137,7 @@ function parseStatement(p: Parser): tt.Statement {
 				}
 				// TODO: Forbid "in" initializer
 				next(p.lexer);
-				const value = parseExpression(p);
+				const value = parseExpression(p, tt.Precedence.Lowest);
 				expectToken(p.lexer, Token.CloseParen);
 
 				const body = parseStatement(p);
@@ -148,13 +148,13 @@ function parseStatement(p: Parser): tt.Statement {
 			expectToken(p.lexer, Token.SemiColon);
 
 			if ((p.lexer.token as number) !== Token.SemiColon) {
-				test = parseExpression(p);
+				test = parseExpression(p, tt.Precedence.Lowest);
 			}
 
 			expectToken(p.lexer, Token.SemiColon);
 
 			if ((p.lexer.token as number) !== Token.CloseParen) {
-				update = parseExpression(p);
+				update = parseExpression(p, tt.Precedence.Lowest);
 			}
 
 			expectToken(p.lexer, Token.CloseParen);
@@ -175,8 +175,10 @@ function parseStatement(p: Parser): tt.Statement {
 			const out = parseExpressionOrLetStatement(p);
 			if (out !== null) {
 				expectOrInsertSemicolon(p.lexer);
-				// FIXME: Expression vs Statement mismatch
-				return out as any;
+				if (out.type === "VariableDeclaration") {
+					return out;
+				}
+				return tt.expressionStatement(out);
 			}
 			expectOrInsertSemicolon(p.lexer);
 	}
@@ -190,7 +192,7 @@ function parseExpressionOrLetStatement(p: Parser) {
 	const raw = getRaw(p.lexer);
 
 	if (p.lexer.token !== Token.Identifier || raw !== "let") {
-		return parseExpression(p);
+		return parseExpression(p, tt.Precedence.Lowest);
 	}
 
 	next(p.lexer);
@@ -222,7 +224,7 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 
 		if (p.lexer.token === Token.Equals) {
 			next(p.lexer);
-			value = parseExpression(p);
+			value = parseExpression(p, tt.Precedence.Comma);
 		}
 
 		const decl = tt.variableDeclarator(binding, value);
@@ -237,13 +239,17 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 	return declarations;
 }
 
-function parseExpression(p: Parser): tt.Expression {
-	const expression = parsePrefix(p);
+/**
+ * @param p
+ * @param level Operator precedence
+ */
+function parseExpression(p: Parser, level: number): tt.Expression {
+	const expression = parsePrefix(p, level);
 
-	return parseSuffix(p, expression);
+	return parseSuffix(p, expression, level);
 }
 
-function parsePrefix(p: Parser): tt.Expression {
+function parsePrefix(p: Parser, level: number): tt.Expression {
 	switch (p.lexer.token) {
 		case Token.OpenParen: {
 			next(p.lexer);
@@ -268,9 +274,25 @@ function parsePrefix(p: Parser): tt.Expression {
 			next(p.lexer);
 			return tt.literal(value);
 		}
+		case Token.Void: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			return tt.unaryExpression("void", value);
+		}
+		case Token.Typeof: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			return tt.unaryExpression("typeof", value);
+		}
+		case Token.Delete: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			return tt.unaryExpression("delete", value);
+		}
 		case Token.Identifier: {
 			const name = p.lexer.identifier;
 			const raw = getRaw(p.lexer);
+			next(p.lexer);
 
 			switch (name) {
 				case "async": {
@@ -285,8 +307,53 @@ function parsePrefix(p: Parser): tt.Expression {
 			}
 
 			const identifier = tt.identifier(name);
-			next(p.lexer);
 			return identifier;
+		}
+		case Token.Plus: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			if ((p.lexer.token as number) === Token["**"]) {
+				throw new Error("Unexpected token **");
+			}
+
+			return tt.unaryExpression("+", value);
+		}
+		case Token.Minus: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			if ((p.lexer.token as number) === Token["**"]) {
+				throw new Error("Unexpected token **");
+			}
+
+			return tt.unaryExpression("-", value);
+		}
+		case Token.Tilde: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			if ((p.lexer.token as number) === Token["**"]) {
+				throw new Error("Unexpected token **");
+			}
+
+			return tt.unaryExpression("~", value);
+		}
+		case Token["!"]: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			if ((p.lexer.token as number) === Token["**"]) {
+				throw new Error("Unexpected token **");
+			}
+
+			return tt.unaryExpression("!", value);
+		}
+		case Token["--"]: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			return tt.updateExpression("--", value, true);
+		}
+		case Token["++"]: {
+			next(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Prefix);
+			return tt.updateExpression("++", value, true);
 		}
 		case Token.Function: {
 			return parseFunctionExpression(p, false);
@@ -303,7 +370,7 @@ function parsePrefix(p: Parser): tt.Expression {
 					}
 					// TODO: Spread
 					default:
-						const item = parseExpression(p);
+						const item = parseExpression(p, tt.Precedence.Lowest);
 						items.push(item);
 				}
 
@@ -317,17 +384,63 @@ function parsePrefix(p: Parser): tt.Expression {
 			expectToken(p.lexer, Token.CloseBracket);
 			return tt.arrayExpression(items);
 		}
+		default: {
+			console.log(p.lexer);
+			throw new Error("fail #ac");
+		}
 	}
-	console.log(p.lexer);
-	throw new Error("fail #ac");
+}
+
+function parseSuffix(
+	p: Parser,
+	left: tt.Expression,
+	level: number
+): tt.Expression {
+	while (true) {
+		switch (p.lexer.token) {
+			case Token["--"]: {
+				if (level >= tt.Precedence.Postfix) {
+					return left;
+				}
+
+				next(p.lexer);
+				left = tt.updateExpression("--", left, false);
+				break;
+			}
+			case Token["++"]: {
+				if (level >= tt.Precedence.Postfix) {
+					return left;
+				}
+
+				next(p.lexer);
+				left = tt.updateExpression("++", left, false);
+				break;
+			}
+			case Token["**"]: {
+				if (level >= tt.Precedence.Exponentiation) {
+					return left;
+				}
+				next(p.lexer);
+				const right = parseExpression(p, tt.Precedence.Exponentiation - 1);
+				left = tt.binaryExpression(left, right);
+				break;
+			}
+			default:
+				return left;
+		}
+	}
 }
 
 function parseParenExpression(p: Parser) {
 	const items: tt.Expression[] = [];
 	while (p.lexer.token !== Token.CloseParen) {
 		// TODO: Spread
-		const item = parseExpression(p);
+		const item = parseExpression(p, tt.Precedence.Comma);
 		items.push(item);
+
+		if (p.lexer.token !== Token.Comma) {
+			break;
+		}
 
 		next(p.lexer);
 	}
@@ -399,11 +512,6 @@ function parseFunctionBody(p: Parser) {
 	const statements = parseStatementsUpTo(p, Token.CloseBrace);
 	next(p.lexer);
 	return tt.blockStatement(statements);
-}
-
-function parseSuffix(p: Parser, left: tt.Expression): tt.Expression {
-	//
-	return left;
 }
 
 function parseBinding(p: Parser): tt.Identifier | tt.ObjectPattern {
