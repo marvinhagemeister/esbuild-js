@@ -1,4 +1,3 @@
-import { Node } from "estree";
 import { AstNode } from "./ast";
 
 export interface SerializeOptions {
