@@ -213,11 +213,11 @@ describe("Parser", () => {
 
 		it("should parse for of", () => {
 			expectPrinted("for (a of b) ;", "for (a of b);\n");
-			// expectPrinted("for (var a of b) ;", "for (var a of b)\n  ;\n");
-			// 	expectPrinted(t, "for (let a of b) ;", "for (let a of b)\n  ;\n")
-			// 	expectPrinted(t, "for (const a of b) ;", "for (const a of b)\n  ;\n")
-			// 	expectPrinted(t, "for (a of b = c) ;", "for (a of b = c)\n  ;\n")
-			// 	expectPrinted(t, "for (var a of b = c) ;", "for (var a of b = c)\n  ;\n")
+			expectPrinted("for (var a of b) ;", "for (var a of b);\n");
+			expectPrinted("for (let a of b) ;", "for (let a of b);\n");
+			expectPrinted("for (const a of b) ;", "for (const a of b);\n");
+			// expectPrinted("for (a of b = c) ;", "for (a of b = c)\n  ;\n");
+			// expectPrinted("for (var a of b = c) ;", "for (var a of b = c)\n  ;\n");
 			// 	expectParseError(t, "for (a of b, c) ;", "<stdin>: error: Expected \")\" but found \",\"\n")
 			// 	expectParseError(t, "for (var a of b, c) ;", "<stdin>: error: Expected \")\" but found \",\"\n")
 			// 	expectParseError(t, "for (var a, b of b) ;", "<stdin>: error: for-of loops must have a single declaration\n")
