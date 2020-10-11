@@ -444,48 +444,42 @@ describe("Parser", () => {
 	// 	expectParseError(t, "({x: 0 = y} = 0)", "<stdin>: error: Invalid assignment target\n")
 	// }
 
-	// func TestObject(t *testing.T) {
-	// 	expectPrinted(t, "({foo})", "({foo});\n")
-	// 	expectPrinted(t, "({foo:0})", "({foo: 0});\n")
-	// 	expectPrinted(t, "({1e9:0})", "({1e9: 0});\n")
-	// 	expectPrinted(t, "({1_2_3n:0})", "({123n: 0});\n")
-	// 	expectPrinted(t, "({0x1_2_3n:0})", "({0x123n: 0});\n")
-	// 	expectPrinted(t, "({foo() {}})", "({foo() {\n}});\n")
-	// 	expectPrinted(t, "({*foo() {}})", "({*foo() {\n}});\n")
-	// 	expectPrinted(t, "({get foo() {}})", "({get foo() {\n}});\n")
-	// 	expectPrinted(t, "({set foo(x) {}})", "({set foo(x) {\n}});\n")
-
-	// 	expectPrinted(t, "({if:0})", "({if: 0});\n")
-	// 	expectPrinted(t, "({if() {}})", "({if() {\n}});\n")
-	// 	expectPrinted(t, "({*if() {}})", "({*if() {\n}});\n")
-	// 	expectPrinted(t, "({get if() {}})", "({get if() {\n}});\n")
-	// 	expectPrinted(t, "({set if(x) {}})", "({set if(x) {\n}});\n")
-
-	// 	expectParseError(t, "({static foo() {}})", "<stdin>: error: Expected \"}\" but found \"foo\"\n")
-	// 	expectParseError(t, "({`a`})", "<stdin>: error: Expected identifier but found \"`a`\"\n")
-	// 	expectParseError(t, "({if})", "<stdin>: error: Expected \":\" but found \"}\"\n")
-
-	// 	expectParseError(t, "({__proto__: 1, __proto__: 2})", "<stdin>: error: Cannot specify the \"__proto__\" property more than once per object\n")
-	// 	expectParseError(t, "({__proto__: 1, '__proto__': 2})", "<stdin>: error: Cannot specify the \"__proto__\" property more than once per object\n")
-	// 	expectParseError(t, "({__proto__: 1, __proto__() {}})", "")
-	// 	expectParseError(t, "({__proto__: 1, get __proto__() {}})", "")
-	// 	expectParseError(t, "({__proto__: 1, set __proto__(x) {}})", "")
-	// 	expectParseError(t, "({__proto__: 1, ['__proto__']: 2})", "")
-	// 	expectParseError(t, "({__proto__, __proto__: 2})", "")
-	// 	expectParseError(t, "({__proto__: x, __proto__: y} = z)", "")
-
-	// 	expectParseError(t, "({set foo() {}})", "<stdin>: error: Setter \"foo\" must have exactly one argument\n")
-	// 	expectParseError(t, "({get foo(x) {}})", "<stdin>: error: Getter \"foo\" must have zero arguments\n")
-	// 	expectParseError(t, "({set foo(x, y) {}})", "<stdin>: error: Setter \"foo\" must have exactly one argument\n")
-
-	// 	expectParseError(t, "(class {set #foo() {}})", "<stdin>: error: Setter \"#foo\" must have exactly one argument\n")
-	// 	expectParseError(t, "(class {get #foo(x) {}})", "<stdin>: error: Getter \"#foo\" must have zero arguments\n")
-	// 	expectParseError(t, "(class {set #foo(x, y) {}})", "<stdin>: error: Setter \"#foo\" must have exactly one argument\n")
-
-	// 	expectParseError(t, "({set [foo]() {}})", "<stdin>: error: Setter property must have exactly one argument\n")
-	// 	expectParseError(t, "({get [foo](x) {}})", "<stdin>: error: Getter property must have zero arguments\n")
-	// 	expectParseError(t, "({set [foo](x, y) {}})", "<stdin>: error: Setter property must have exactly one argument\n")
-	// }
+	it("should parse Objects", () => {
+		expectPrinted("({foo})", "({foo});\n");
+		expectPrinted("({foo:0})", "({foo: 0});\n");
+		// expectPrinted("({1e9:0})", "({1e9: 0});\n");
+		// expectPrinted("({1_2_3n:0})", "({123n: 0});\n");
+		// 	expectPrinted(t, "({0x1_2_3n:0})", "({0x123n: 0});\n")
+		// 	expectPrinted(t, "({foo() {}})", "({foo() {\n}});\n")
+		// 	expectPrinted(t, "({*foo() {}})", "({*foo() {\n}});\n")
+		// 	expectPrinted(t, "({get foo() {}})", "({get foo() {\n}});\n")
+		// 	expectPrinted(t, "({set foo(x) {}})", "({set foo(x) {\n}});\n")
+		// 	expectPrinted(t, "({if:0})", "({if: 0});\n")
+		// 	expectPrinted(t, "({if() {}})", "({if() {\n}});\n")
+		// 	expectPrinted(t, "({*if() {}})", "({*if() {\n}});\n")
+		// 	expectPrinted(t, "({get if() {}})", "({get if() {\n}});\n")
+		// 	expectPrinted(t, "({set if(x) {}})", "({set if(x) {\n}});\n")
+		// 	expectParseError(t, "({static foo() {}})", "<stdin>: error: Expected \"}\" but found \"foo\"\n")
+		// 	expectParseError(t, "({`a`})", "<stdin>: error: Expected identifier but found \"`a`\"\n")
+		// 	expectParseError(t, "({if})", "<stdin>: error: Expected \":\" but found \"}\"\n")
+		// 	expectParseError(t, "({__proto__: 1, __proto__: 2})", "<stdin>: error: Cannot specify the \"__proto__\" property more than once per object\n")
+		// 	expectParseError(t, "({__proto__: 1, '__proto__': 2})", "<stdin>: error: Cannot specify the \"__proto__\" property more than once per object\n")
+		// 	expectParseError(t, "({__proto__: 1, __proto__() {}})", "")
+		// 	expectParseError(t, "({__proto__: 1, get __proto__() {}})", "")
+		// 	expectParseError(t, "({__proto__: 1, set __proto__(x) {}})", "")
+		// 	expectParseError(t, "({__proto__: 1, ['__proto__']: 2})", "")
+		// 	expectParseError(t, "({__proto__, __proto__: 2})", "")
+		// 	expectParseError(t, "({__proto__: x, __proto__: y} = z)", "")
+		// 	expectParseError(t, "({set foo() {}})", "<stdin>: error: Setter \"foo\" must have exactly one argument\n")
+		// 	expectParseError(t, "({get foo(x) {}})", "<stdin>: error: Getter \"foo\" must have zero arguments\n")
+		// 	expectParseError(t, "({set foo(x, y) {}})", "<stdin>: error: Setter \"foo\" must have exactly one argument\n")
+		// 	expectParseError(t, "(class {set #foo() {}})", "<stdin>: error: Setter \"#foo\" must have exactly one argument\n")
+		// 	expectParseError(t, "(class {get #foo(x) {}})", "<stdin>: error: Getter \"#foo\" must have zero arguments\n")
+		// 	expectParseError(t, "(class {set #foo(x, y) {}})", "<stdin>: error: Setter \"#foo\" must have exactly one argument\n")
+		// 	expectParseError(t, "({set [foo]() {}})", "<stdin>: error: Setter property must have exactly one argument\n")
+		// 	expectParseError(t, "({get [foo](x) {}})", "<stdin>: error: Getter property must have zero arguments\n")
+		// 	expectParseError(t, "({set [foo](x, y) {}})", "<stdin>: error: Setter property must have exactly one argument\n")
+	});
 
 	// func TestComputedProperty(t *testing.T) {
 	// 	expectPrinted(t, "({[a]: foo})", "({[a]: foo});\n")

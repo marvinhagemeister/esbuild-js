@@ -384,6 +384,21 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			expectToken(p.lexer, Token.CloseBracket);
 			return tt.arrayExpression(items);
 		}
+		case Token.OpenBrace: {
+			next(p.lexer);
+
+			const properties = [];
+			while ((p.lexer.token as number) !== Token.CloseBrace) {
+				// TODO: Spread
+				const property = parseProperty(p, tt.PropertyKind.Normal);
+				if (property) {
+					properties.push(property);
+				}
+			}
+
+			expectToken(p.lexer, Token.CloseBrace);
+			return tt.objectExpression(properties);
+		}
 		default: {
 			console.log(p.lexer);
 			throw new Error("fail #ac");
@@ -429,6 +444,42 @@ function parseSuffix(
 				return left;
 		}
 	}
+}
+
+function parseProperty(p: Parser, kind: tt.PropertyKind) {
+	let key;
+	switch (p.lexer.token) {
+		case Token.NumericLiteral: {
+			const raw = getRaw(p.lexer);
+			// FIXME: Number literals
+			key = tt.literal(Number(raw));
+			next(p.lexer);
+			break;
+		}
+		default:
+			const name = p.lexer.identifier;
+			// TODO: Check identifier or keyword
+			next(p.lexer);
+
+			// TODO: Check generator
+			// TODO: Check modifier keyword
+
+			// TODO: Treat name as unicode
+			key = tt.identifier(name);
+
+			// Check shorthand property
+			if (
+				kind === tt.PropertyKind.Normal &&
+				p.lexer.token !== Token.Colon &&
+				p.lexer.token !== Token.OpenParen
+			) {
+				return tt.property(key, key, false);
+			}
+	}
+
+	expectToken(p.lexer, Token.Colon);
+	const value = parseExpression(p, tt.Precedence.Comma);
+	return tt.property(key, value, key.type !== "Identifier");
 }
 
 function parseParenExpression(p: Parser) {
@@ -539,7 +590,7 @@ function parseBinding(p: Parser): tt.Identifier | tt.ObjectPattern {
 					throw new Error("Invalid token");
 				}
 
-				const property = tt.property(binding, binding);
+				const property = tt.property(binding, binding, false);
 				properties.push(property);
 				next(p.lexer);
 			}

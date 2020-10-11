@@ -50,7 +50,7 @@ export type AstNode =
 	| t.ImportDeclaration
 	| Statement
 	| Pattern
-	| ObjectProperty
+	| Property
 	| Expression;
 
 export type Expression =
@@ -62,6 +62,7 @@ export type Expression =
 	| UpdateExpression
 	| BinaryExpression
 	| UnaryExpression
+	| ObjectExpression
 	| EmptyExpression;
 
 export interface EmptyExpression extends BaseNode {
@@ -415,7 +416,7 @@ export function forOfStatement(
 
 export interface ObjectPattern extends BaseNode {
 	type: "ObjectPattern";
-	properties: ObjectProperty[];
+	properties: Property[];
 }
 
 export function objectPattern(
@@ -429,20 +430,44 @@ export function objectPattern(
 	};
 }
 
-export interface ObjectProperty extends BaseNode {
-	type: "ObjectProperty";
-	method: boolean;
-	shorthand: boolean;
-	kind: "init" | "get" | "set";
-	key: any;
-	value: any;
+export interface ObjectExpression extends BaseNode {
+	type: "ObjectExpression";
+	properties: Property[];
+}
+export function objectExpression(properties: Property[]): ObjectExpression {
+	return {
+		type: "ObjectExpression",
+		len: 0,
+		properties,
+		start: 0,
+	};
 }
 
-export function property(key: Identifier, value: Identifier): ObjectProperty {
+export const enum PropertyKind {
+	Normal,
+	Get,
+	Set,
+	Spread,
+}
+
+export interface Property extends BaseNode {
+	type: "Property";
+	method: boolean;
+	computed: boolean;
+	kind: "init" | "get" | "set";
+	key: Expression;
+	value: Expression;
+}
+
+export function property(
+	key: Property["key"],
+	value: Property["value"],
+	computed: boolean
+): Property {
 	return {
-		type: "ObjectProperty",
+		type: "Property",
 		method: false,
-		shorthand: key === value,
+		computed,
 		kind: "init",
 		key,
 		value,

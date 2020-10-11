@@ -38,8 +38,30 @@ function serializeAst(
 			out += "}";
 			break;
 		}
-		case "ObjectProperty": {
-			break;
+		case "ObjectExpression": {
+			out += "{";
+			if (node.properties.length > 1) {
+				out += options.newLineChar;
+			}
+
+			for (let i = 0; i < node.properties.length; i++) {
+				out += serializeAst(node.properties[i], node, options);
+				if (i + 1 < node.properties.length) {
+					out += "," + options.newLineChar;
+				}
+			}
+			out += "}";
+			return out;
+		}
+		case "Property": {
+			if (node.key === node.value) {
+				return serializeAst(node.key, node, options);
+			}
+			return (
+				serializeAst(node.key, node, options) +
+				": " +
+				serializeAst(node.value, node, options)
+			);
 		}
 		case "VariableDeclaration": {
 			out += node.kind + " ";
