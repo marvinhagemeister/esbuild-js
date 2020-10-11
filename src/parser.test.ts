@@ -3080,4 +3080,10 @@ describe("Parser", () => {
 	// 	expectParseErrorTarget(t, 5, "(function* () {});",
 	// 		"<stdin>: error: Transforming generator functions to the configured target environment is not supported yet\n")
 	// }
+
+	describe("Directives", () => {
+		it("should parse hashbang", () => {
+			expectPrinted("#!/usr/bin/env node", "#!/usr/bin/env node\n");
+		});
+	});
 });

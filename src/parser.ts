@@ -21,8 +21,17 @@ export function parse(source: string): tt.Program {
 	const lexer = newLexer(source);
 	const parser = newParser(lexer);
 
+	// Consume leading hashbang
+	let hashbang: string | null = null;
+	if (lexer.token === Token.Hashbang) {
+		hashbang = lexer.identifier;
+		next(lexer);
+	}
+
 	const statements = parseStatementsUpTo(parser, Token.EOF);
-	return tt.program("module", statements as any);
+	const program = tt.program("module", statements as any);
+	program.hashbang = hashbang;
+	return program;
 }
 
 let ii = 0;

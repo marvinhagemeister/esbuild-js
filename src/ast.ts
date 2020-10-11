@@ -87,6 +87,7 @@ export type ModuleDeclaration = t.ImportDeclaration;
 export interface Program extends BaseNode {
 	type: "Program";
 	sourceType: "module" | "script";
+	hashbang: string | null;
 	body: Array<Directive | Statement | ModuleDeclaration>;
 }
 
@@ -98,6 +99,7 @@ export function program(
 		type: "Program",
 		sourceType,
 		body,
+		hashbang: null,
 		start: 0,
 		len: 0,
 	};

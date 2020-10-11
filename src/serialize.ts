@@ -56,8 +56,14 @@ export function serialize(
 			break;
 		}
 		case "Program": {
-			return node.body.map(child => serialize(child, options)).join("");
-			break;
+			if (node.hashbang) {
+				out += node.hashbang + "\n";
+			}
+			for (let i = 0; i < node.body.length; i++) {
+				out += serialize(node.body[i], options);
+			}
+
+			return out;
 		}
 
 		default:
