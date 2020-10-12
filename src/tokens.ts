@@ -20,6 +20,8 @@ export const enum Token {
 	Dot,
 	NumericLiteral,
 	BigIntLiteral,
+	"/",
+	"/=",
 	"+=",
 	"++",
 	Plus,

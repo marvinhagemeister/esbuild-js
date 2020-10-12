@@ -6,6 +6,7 @@ import {
 	Lexer,
 	newLexer,
 	nextToken,
+	scanRegExp,
 } from "./lexer";
 import { strictModeReservedWords } from "./lexer_helpers";
 import { Token } from "./tokens";
@@ -297,6 +298,12 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			const value = p.lexer.number;
 			nextToken(p.lexer);
 			return tt.literal(value);
+		}
+		case Token["/"]: {
+			scanRegExp(p.lexer);
+			const raw = getRaw(p.lexer);
+			nextToken(p.lexer);
+			return tt.regexpLiteral(raw);
 		}
 		case Token.Void: {
 			nextToken(p.lexer);

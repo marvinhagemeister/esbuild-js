@@ -122,7 +122,7 @@ export const enum CodePoint {
 	y = 121,
 	z = 122,
 
-	EOF = -1,
+	EndOfFile = -1,
 }
 
 export const strictModeReservedWords = new Set<string>([
@@ -349,6 +349,7 @@ export function isIdentifierContinue(codePoint: number) {
 		return true;
 	}
 
+	if (codePoint === CodePoint.EndOfFile) return false;
 	// FIXME
 	// return unicode.Is(idContinue, codePoint);
 	return true;

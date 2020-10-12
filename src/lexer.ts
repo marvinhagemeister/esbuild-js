@@ -713,6 +713,36 @@ export function decodeEscapeSequences(
 	return decoded;
 }
 
+// TODO: Validate regex syntax
+export function scanRegExp(lexer: Lexer) {
+	while (true) {
+		switch (lexer.codePoint) {
+			case CodePoint.Slash: {
+				step(lexer);
+
+				while (isIdentifierContinue(lexer.codePoint)) {
+					switch (lexer.codePoint as number) {
+						case CodePoint.g:
+						case CodePoint.i:
+						case CodePoint.m:
+						case CodePoint.s:
+						case CodePoint.u:
+						case CodePoint.y: {
+							step(lexer);
+							break;
+						}
+						default:
+							throw new SyntaxError("Unexpected token in RegExp");
+					}
+				}
+				return;
+			}
+			default:
+				step(lexer);
+		}
+	}
+}
+
 export function nextToken(lexer: Lexer) {
 	lexer.hasNewLineBefore = lexer.end === 0;
 
@@ -721,7 +751,7 @@ export function nextToken(lexer: Lexer) {
 		lexer.token = 0;
 
 		switch (lexer.codePoint) {
-			case CodePoint.EOF:
+			case CodePoint.EndOfFile:
 				lexer.token = Token.EOF;
 				break;
 			case CodePoint["#"]:
@@ -737,7 +767,7 @@ export function nextToken(lexer: Lexer) {
 							case CodePoint["\u2028"]:
 							case CodePoint["\u2029"]:
 								break hashbang;
-							case CodePoint.EOF:
+							case CodePoint.EndOfFile:
 								break hashbang;
 						}
 					}
@@ -1007,8 +1037,63 @@ export function nextToken(lexer: Lexer) {
 				break;
 
 			case CodePoint.Slash:
+				// '/' or '/=' or '//' or '/* ... */'
 				step(lexer);
-				// TODO
+				switch (lexer.codePoint as number) {
+					case CodePoint.Equal: {
+						step(lexer);
+						lexer.token = Token["/="];
+						break;
+					}
+					case CodePoint.Slash: {
+						singleLineComment: while (true) {
+							step(lexer);
+							switch (lexer.codePoint as number) {
+								case CodePoint["\r"]:
+								case CodePoint.NewLine:
+								case CodePoint["\u2028"]:
+								case CodePoint["\u2029"]:
+								case CodePoint.EndOfFile:
+									break singleLineComment;
+							}
+						}
+
+						continue;
+					}
+					case CodePoint.Asteriks: {
+						step(lexer);
+						multiLineComment: while (true) {
+							switch (lexer.codePoint as number) {
+								case CodePoint.Asteriks: {
+									step(lexer);
+									if (lexer.codePoint === CodePoint.Slash) {
+										step(lexer);
+										break multiLineComment;
+									}
+									break;
+								}
+								case CodePoint["\r"]:
+								case CodePoint.NewLine:
+								case CodePoint["\u2028"]:
+								case CodePoint["\u2029"]:
+								case CodePoint.EndOfFile: {
+									step(lexer);
+									lexer.hasNewLineBefore = true;
+									break;
+								}
+								case CodePoint.EndOfFile: {
+									lexer.start = lexer.end;
+									throw new Error("Unterminated multiline comment");
+								}
+								default:
+									step(lexer);
+							}
+						}
+						continue;
+					}
+					default:
+						lexer.token = Token["/"];
+				}
 				break;
 
 			case CodePoint.Equal:

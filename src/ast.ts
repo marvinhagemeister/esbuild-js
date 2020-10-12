@@ -55,6 +55,7 @@ export type AstNode =
 
 export type Expression =
 	| Literal
+	| RegExpLiteral
 	| Identifier
 	| ArrayExpression
 	| FunctionDeclaration
@@ -98,7 +99,6 @@ export interface Literal extends BaseNode {
 	value: string | number | boolean | null | undefined;
 	raw: string;
 }
-
 export function literal(value: Literal["value"]): Literal {
 	return {
 		type: "Literal",
@@ -106,6 +106,19 @@ export function literal(value: Literal["value"]): Literal {
 		raw: "" + value,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface RegExpLiteral extends BaseNode {
+	type: "RegExpLiteral";
+	value: string;
+}
+export function regexpLiteral(value: string): RegExpLiteral {
+	return {
+		type: "RegExpLiteral",
+		value,
+		len: 0,
+		start: 0,
 	};
 }
 

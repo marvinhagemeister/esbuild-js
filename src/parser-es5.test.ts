@@ -27,6 +27,17 @@ describe("ES5", () => {
 		});
 	});
 
+	describe("RegExp", () => {
+		it("should parse RegExp without flags", () => {
+			expectPrinted("/foo/", "/foo/;\n");
+		});
+
+		it("should parse RegExp with flags", () => {
+			expectPrinted("/foo/i", "/foo/i;\n");
+			expectPrinted("/foo/im", "/foo/im;\n");
+		});
+	});
+
 	describe("Statements", () => {
 		describe("If-Statements", () => {
 			it("should parse if-statments", () => {
