@@ -24,10 +24,24 @@ function bench1() {
   const x = -2;
   `;
 
-	return new Suite("Simple")
+	return new Suite("Simple Class")
 		.add("custom", () => testCustom(code))
 		.add("acorn", () => testAcorn(code))
 		.run();
 }
 
-bench1();
+function bench2() {
+	const code = `for (let i = 0; i < 12; i++) {}`;
+
+	return new Suite("Simple for-loop")
+		.add("custom", () => testCustom(code))
+		.add("acorn", () => testAcorn(code))
+		.run();
+}
+
+async function run() {
+	await bench1();
+	await bench2();
+}
+
+run();
