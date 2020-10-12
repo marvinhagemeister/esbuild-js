@@ -75,6 +75,7 @@ function parseStatementsUpTo(p: Parser, end: Token) {
 }
 
 function parseStatement(p: Parser): tt.Statement {
+	console.log(p.lexer);
 	switch (p.lexer.token) {
 		case Token.Export: {
 			nextToken(p.lexer);
@@ -206,6 +207,7 @@ function parseStatement(p: Parser): tt.Statement {
 				}
 			}
 
+			console.log("DEF", p.lexer);
 			const out = parseExpressionOrLetStatement(p);
 			if (out !== null) {
 				expectOrInsertSemicolon(p.lexer);
@@ -247,6 +249,7 @@ function parseExpressionOrLetStatement(p: Parser) {
 function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 	const declarations: tt.VariableDeclarator[] = [];
 
+	console.log("DECL");
 	while (true) {
 		if (p.lexer.token === Token.EOF) {
 			break;
@@ -279,11 +282,12 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
  */
 function parseExpression(p: Parser, level: number): tt.Expression {
 	const expression = parsePrefix(p, level);
-
+	console.log("EEE", expression);
 	return parseSuffix(p, expression, level);
 }
 
 function parsePrefix(p: Parser, level: number): tt.Expression {
+	console.log("prefix", p.lexer.token);
 	switch (p.lexer.token) {
 		case Token.OpenParen: {
 			nextToken(p.lexer);
@@ -636,6 +640,7 @@ function parseClass(p: Parser, name: string | null) {
 }
 
 function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
+	console.log("parse prop");
 	let key = null;
 	let isComputed = false;
 	switch (p.lexer.token) {
@@ -653,6 +658,7 @@ function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
 			const expression = parseExpression(p, tt.Precedence.Comma);
 			expectToken(p.lexer, Token.CloseBracket);
 			key = expression;
+			console.log("MAYBE");
 			break;
 		}
 		default:
@@ -703,6 +709,7 @@ function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
 
 	expectToken(p.lexer, Token.Colon);
 	const value = parseExpression(p, tt.Precedence.Comma);
+	console.log("GOOG", value);
 	return tt.property(key, value, isComputed, false);
 }
 
@@ -802,6 +809,7 @@ function parseBinding(p: Parser): tt.Identifier | tt.ObjectPattern {
 		case Token.OpenBracket: {
 			const properties: tt.ObjectPattern["properties"] = [];
 
+			console.log("BRACKET");
 			// @ts-ignore
 			while (p.lexer.token !== Token.CloseBracket) {
 				// @ts-ignore
