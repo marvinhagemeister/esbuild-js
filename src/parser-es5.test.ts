@@ -58,4 +58,19 @@ describe("ES5", () => {
 			});
 		});
 	});
+
+	describe("Comments", () => {
+		it("should parse single line comment", () => {
+			expectPrinted("// foo", "// foo\n");
+			expectPrinted("// foo\nx = 2", "// foo\nx = 2;\n");
+		});
+
+		it("should parse multiline comment", () => {
+			expectPrinted("/* foo */", "/* foo */\n");
+			expectPrinted(
+				"/**\n * foo\n * bar\n **/x = 2",
+				"/**\n * foo\n * bar\n **/\nx = 2;\n"
+			);
+		});
+	});
 });

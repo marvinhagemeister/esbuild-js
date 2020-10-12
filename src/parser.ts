@@ -12,6 +12,7 @@ import { strictModeReservedWords } from "./lexer_helpers";
 import { Token } from "./tokens";
 import * as tt from "./ast";
 import { Property } from "estree";
+import { stat } from "fs";
 
 // TODO: Sourcemap
 // TODO: Sourcelocation
@@ -51,6 +52,14 @@ function parseStatementsUpTo(p: Parser, end: Token) {
 	const statements: tt.Statement[] = [];
 
 	while (true) {
+		if (p.lexer.commentBefore !== null && p.lexer.commentBefore.length > 0) {
+			const comments = p.lexer.commentBefore;
+			for (let i = 0; i < comments.length; i++) {
+				statements.push(tt.comment(comments[i]));
+			}
+			p.lexer.commentBefore = null;
+		}
+
 		if (p.lexer.token === end) {
 			break;
 		} else if (p.lexer.token === Token.SemiColon) {

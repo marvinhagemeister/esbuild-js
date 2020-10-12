@@ -122,6 +122,19 @@ export function regexpLiteral(value: string): RegExpLiteral {
 	};
 }
 
+export interface Comment extends BaseNode {
+	type: "Comment";
+	text: string;
+}
+export function comment(text: string): Comment {
+	return {
+		type: "Comment",
+		text,
+		start: 0,
+		len: 0,
+	};
+}
+
 export interface ArrayExpression extends BaseNode {
 	type: "ArrayExpression";
 	elements: Expression[];
@@ -251,6 +264,7 @@ export type Statement =
 	| EmptyStatement
 	| ExpressionStatement
 	| IfStatement
+	| Comment
 	| BlockStatement;
 export type ModuleDeclaration = t.ImportDeclaration;
 

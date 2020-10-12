@@ -375,6 +375,8 @@ function serializeAst(
 		case "EmptyExpression": {
 			return "";
 		}
+		case "Comment":
+			return node.text + options.newLineChar;
 		case "Program": {
 			if (node.hashbang) {
 				out += node.hashbang + "\n";

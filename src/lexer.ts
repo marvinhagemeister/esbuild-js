@@ -23,6 +23,7 @@ export interface Lexer {
 	start: number;
 	end: number;
 	isLogDisabled: boolean;
+	commentBefore: string[] | null;
 	rescanCloseBraceAsTemplateToken: boolean;
 	logger: logger.Logger;
 }
@@ -38,6 +39,7 @@ export function newLexer(source: string): Lexer {
 		number: 0,
 		string: "",
 		identifier: "",
+		commentBefore: null,
 		start: -1,
 		end: -1,
 		isLogDisabled: false,
@@ -743,6 +745,14 @@ export function scanRegExp(lexer: Lexer) {
 	}
 }
 
+function scanCommentText(lexer: Lexer) {
+	const text = lexer.source.slice(lexer.start, lexer.end);
+	if (!lexer.commentBefore) {
+		lexer.commentBefore = [];
+	}
+	lexer.commentBefore.push(text);
+}
+
 export function nextToken(lexer: Lexer) {
 	lexer.hasNewLineBefore = lexer.end === 0;
 
@@ -1057,7 +1067,7 @@ export function nextToken(lexer: Lexer) {
 									break singleLineComment;
 							}
 						}
-
+						scanCommentText(lexer);
 						continue;
 					}
 					case CodePoint.Asteriks: {
@@ -1089,6 +1099,7 @@ export function nextToken(lexer: Lexer) {
 									step(lexer);
 							}
 						}
+						scanCommentText(lexer);
 						continue;
 					}
 					default:
