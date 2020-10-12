@@ -32,6 +32,15 @@ describe("ES5", () => {
 		});
 	});
 
+	describe("Functions", () => {
+		it("should parse return keyword", () => {
+			expectPrinted(
+				"function foo() { return 1; }",
+				"function foo() {\n  return 1;\n}\n"
+			);
+		});
+	});
+
 	describe("RegExp", () => {
 		it("should parse RegExp without flags", () => {
 			expectPrinted("/foo/", "/foo/;\n");

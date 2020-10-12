@@ -264,6 +264,7 @@ export type Statement =
 	| FunctionDeclaration
 	| EmptyStatement
 	| ExpressionStatement
+	| ReturnStatement
 	| IfStatement
 	| Comment
 	| BlockStatement;
@@ -287,6 +288,19 @@ export function ifStatement(
 		alternate,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface ReturnStatement extends BaseNode {
+	type: "ReturnStatement";
+	value: Expression | null;
+}
+export function returnStatement(value: Expression | null): ReturnStatement {
+	return {
+		type: "ReturnStatement",
+		value,
+		len: 0,
+		start: 0,
 	};
 }
 

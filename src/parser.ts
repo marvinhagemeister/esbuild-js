@@ -12,8 +12,6 @@ import {
 import { strictModeReservedWords } from "./lexer_helpers";
 import { Token } from "./tokens";
 import * as tt from "./ast";
-import { Property } from "estree";
-import { stat } from "fs";
 
 // TODO: Sourcemap
 // TODO: Sourcelocation
@@ -190,6 +188,22 @@ function parseStatement(p: Parser): tt.Statement {
 
 			const body = parseStatement(p);
 			return tt.forStatement(body, init, update, test);
+		}
+		case Token.Return: {
+			nextToken(p.lexer);
+			let value: tt.Expression | null = null;
+			switch (p.lexer.token as number) {
+				case Token.SemiColon:
+				case Token.CloseBrace:
+				case Token.EndOfFile:
+					break;
+				default:
+					if (!p.lexer.hasNewLineBefore) {
+						value = parseExpression(p, tt.Precedence.Lowest);
+					}
+			}
+			expectOrInsertSemicolon(p.lexer);
+			return tt.returnStatement(value);
 		}
 		case Token.OpenBrace: {
 			nextToken(p.lexer);

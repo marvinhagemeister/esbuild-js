@@ -304,6 +304,14 @@ function serializeAst(
 			}
 			return out;
 		}
+		case "ReturnStatement": {
+			out += options.indent(level) + "return ";
+			if (node.value) {
+				out += serializeAst(node.value, node, level, skipIndent, options);
+			}
+			out += ";\n";
+			return out;
+		}
 		case "UpdateExpression":
 			if (node.prefix) {
 				out += node.operator;
