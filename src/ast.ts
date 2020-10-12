@@ -60,6 +60,7 @@ export type Expression =
 	| MemberExpression
 	| ArrayExpression
 	| FunctionDeclaration
+	| ObjectPattern
 	| SequenceExpression
 	| UpdateExpression
 	| BinaryExpression
@@ -262,10 +263,12 @@ export type Statement =
 	| ForOfStatement
 	| ForInStatement
 	| FunctionDeclaration
+	| CatchClause
 	| EmptyStatement
 	| ExpressionStatement
 	| ReturnStatement
 	| WhileStatement
+	| TryStatement
 	| IfStatement
 	| Comment
 	| BlockStatement;
@@ -289,6 +292,45 @@ export function ifStatement(
 		alternate,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface TryStatement extends BaseNode {
+	type: "TryStatement";
+	body: Statement;
+	handler: CatchClause | null;
+	finallyHandler: Statement | null;
+}
+export function tryStatement(
+	body: Statement,
+	handler: CatchClause | null,
+	finallyHandler: Statement | null
+): TryStatement {
+	return {
+		type: "TryStatement",
+		body,
+		handler,
+		finallyHandler,
+		len: 0,
+		start: 0,
+	};
+}
+
+export interface CatchClause extends BaseNode {
+	type: "CatchClause";
+	param: Expression | null;
+	body: Statement;
+}
+export function catchClause(
+	param: CatchClause["param"],
+	body: Statement
+): CatchClause {
+	return {
+		type: "CatchClause",
+		param,
+		body,
+		len: 0,
+		start: 0,
 	};
 }
 

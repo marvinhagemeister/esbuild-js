@@ -183,7 +183,11 @@ function serializeAst(
 		case "BlockStatement": {
 			out += "{";
 			if (node.body.length === 0) {
-				if (!parent || parent.type === "IfStatement") {
+				if (
+					!parent ||
+					parent.type === "IfStatement" ||
+					parent.type === "TryStatement"
+				) {
 					return out + options.newLineChar + "}";
 				}
 				return out + "}" + options.newLineChar;
@@ -253,6 +257,43 @@ function serializeAst(
 
 			out += ") ";
 			out += serializeAst(node.body, node, level, skipIndent, options);
+			return out;
+		}
+		case "TryStatement": {
+			out += "try ";
+			out += serializeAst(node.body, node, level + 1, false, options);
+			if (node.handler) {
+				out += " catch";
+				if (node.handler.param) {
+					out += " (";
+					out += serializeAst(
+						node.handler.param,
+						node.handler,
+						level + 1,
+						false,
+						options
+					);
+					out += ") ";
+				}
+
+				out += serializeAst(node.handler.body, node, level + 1, false, options);
+				if (!node.finallyHandler) {
+					out += "\n";
+				}
+			}
+
+			if (node.finallyHandler) {
+				out += " finally ";
+				out += serializeAst(
+					node.finallyHandler,
+					node,
+					level + 1,
+					false,
+					options
+				);
+				out += "\n";
+			}
+
 			return out;
 		}
 		case "WhileStatement": {

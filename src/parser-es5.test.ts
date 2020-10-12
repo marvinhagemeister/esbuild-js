@@ -42,6 +42,20 @@ describe("ES5", () => {
 		});
 	});
 
+	describe("try/catch", () => {
+		it("should parse try/catch-statement", () => {
+			expectPrinted("try {} catch(err) {}", "try {\n} catch (err) {\n}\n");
+		});
+
+		it("should parse finally-statement", () => {
+			expectPrinted("try {} finally {}", "try {\n} finally {\n}\n");
+			expectPrinted(
+				"try {} catch(err) {} finally {}",
+				"try {\n} catch (err) {\n} finally {\n}\n"
+			);
+		});
+	});
+
 	describe("Functions", () => {
 		it("should parse return keyword", () => {
 			expectPrinted(

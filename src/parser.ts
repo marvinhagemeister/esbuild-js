@@ -75,6 +75,9 @@ function parseStatementsUpTo(p: Parser, end: Token) {
 
 function parseStatement(p: Parser): tt.Statement {
 	switch (p.lexer.token) {
+		case Token.SemiColon:
+			nextToken(p.lexer);
+			return tt.emptyStatement("");
 		case Token.Export: {
 			nextToken(p.lexer);
 			break;
@@ -118,9 +121,42 @@ function parseStatement(p: Parser): tt.Statement {
 			const body = parseStatement(p);
 			return tt.whileStatement(test, body);
 		}
-		case Token.SemiColon:
+		case Token.Try: {
 			nextToken(p.lexer);
-			return tt.emptyStatement("");
+			expectToken(p.lexer, Token.OpenBrace);
+			const body = parseStatementsUpTo(p, Token.CloseBrace);
+			nextToken(p.lexer);
+
+			let handler: tt.CatchClause | null = null;
+			let finallyHandler: tt.Statement | null = null;
+
+			// catch-clause
+			if ((p.lexer.token as number) === Token.Catch) {
+				nextToken(p.lexer);
+				// TODO: Optional catch binding
+				expectToken(p.lexer, Token.OpenParen);
+				const value = parseBinding(p);
+				expectToken(p.lexer, Token.CloseParen);
+
+				expectToken(p.lexer, Token.OpenBrace);
+				const body = parseStatementsUpTo(p, Token.CloseBrace);
+				nextToken(p.lexer);
+
+				handler = tt.catchClause(value, tt.blockStatement(body));
+			}
+
+			// finally clause
+			if ((p.lexer.token as number) === Token.Finally) {
+				expectToken(p.lexer, Token.Finally);
+				expectToken(p.lexer, Token.OpenBrace);
+				const body = parseStatementsUpTo(p, Token.CloseBrace);
+				nextToken(p.lexer);
+				finallyHandler = tt.blockStatement(body);
+			}
+
+			// TODO: Finally
+			return tt.tryStatement(tt.blockStatement(body), handler, finallyHandler);
+		}
 		case Token.For: {
 			nextToken(p.lexer);
 
