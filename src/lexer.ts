@@ -47,7 +47,7 @@ export function newLexer(source: string): Lexer {
 	};
 
 	step(lexer);
-	next(lexer);
+	nextToken(lexer);
 
 	return lexer;
 }
@@ -109,7 +109,7 @@ export function expectToken(lexer: Lexer, token: Token) {
 		throw new Error(`Expected token ${token}, but got ${lexer.token}`);
 	}
 
-	next(lexer);
+	nextToken(lexer);
 }
 
 export function expectOrInsertSemicolon(lexer: Lexer) {
@@ -713,7 +713,7 @@ export function decodeEscapeSequences(
 	return decoded;
 }
 
-export function next(lexer: Lexer) {
+export function nextToken(lexer: Lexer) {
 	lexer.hasNewLineBefore = lexer.end === 0;
 
 	while (true) {

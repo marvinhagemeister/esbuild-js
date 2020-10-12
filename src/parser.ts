@@ -5,7 +5,7 @@ import {
 	isContextualKeyword,
 	Lexer,
 	newLexer,
-	next,
+	nextToken,
 } from "./lexer";
 import { strictModeReservedWords } from "./lexer_helpers";
 import { Token } from "./tokens";
@@ -34,7 +34,7 @@ export function parse(source: string): tt.Program {
 	let hashbang: string | null = null;
 	if (lexer.token === Token.Hashbang) {
 		hashbang = lexer.identifier;
-		next(lexer);
+		nextToken(lexer);
 	}
 
 	const statements = parseStatementsUpTo(parser, Token.EOF);
@@ -50,7 +50,7 @@ function parseStatementsUpTo(p: Parser, end: Token) {
 		if (p.lexer.token === end) {
 			break;
 		} else if (p.lexer.token === Token.SemiColon) {
-			next(p.lexer);
+			nextToken(p.lexer);
 			continue;
 		}
 
@@ -64,11 +64,11 @@ function parseStatementsUpTo(p: Parser, end: Token) {
 function parseStatement(p: Parser): tt.Statement {
 	switch (p.lexer.token) {
 		case Token.Export: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			break;
 		}
 		case Token.Function:
-			next(p.lexer);
+			nextToken(p.lexer);
 			return parseFunctionExpression(p, false);
 		case Token.Const:
 		case Token.Var: {
@@ -78,16 +78,16 @@ function parseStatement(p: Parser): tt.Statement {
 					: getRaw(p.lexer) === "let"
 					? "let"
 					: "var";
-			next(p.lexer);
+			nextToken(p.lexer);
 
 			const declarations = parseDeclarations(p);
 			return tt.variableDeclaration(kind, declarations);
 		}
 		case Token.SemiColon:
-			next(p.lexer);
+			nextToken(p.lexer);
 			return tt.emptyStatement("");
 		case Token.For: {
-			next(p.lexer);
+			nextToken(p.lexer);
 
 			// TODO: "for await (let x of y) {}"
 			expectToken(p.lexer, Token.OpenParen);
@@ -98,7 +98,7 @@ function parseStatement(p: Parser): tt.Statement {
 			let update: tt.Expression | null = null;
 			switch (p.lexer.token as number) {
 				case Token.Var: {
-					next(p.lexer);
+					nextToken(p.lexer);
 					const declarations = parseDeclarations(p);
 					if (declarations.length > 0) {
 						init = tt.variableDeclaration("var", declarations);
@@ -106,7 +106,7 @@ function parseStatement(p: Parser): tt.Statement {
 					break;
 				}
 				case Token.Const:
-					next(p.lexer);
+					nextToken(p.lexer);
 					const declarations = parseDeclarations(p);
 					init = tt.variableDeclaration("const", declarations);
 					break;
@@ -123,7 +123,7 @@ function parseStatement(p: Parser): tt.Statement {
 				}
 				// TODO: Forbid initializer "of"
 				// TODO: Mark syntax
-				next(p.lexer);
+				nextToken(p.lexer);
 				const value = parseExpression(p, tt.Precedence.Comma);
 				expectToken(p.lexer, Token.CloseParen);
 
@@ -136,7 +136,7 @@ function parseStatement(p: Parser): tt.Statement {
 					throw new Error(`No left expression found in for-in loop`);
 				}
 				// TODO: Forbid "in" initializer
-				next(p.lexer);
+				nextToken(p.lexer);
 				const value = parseExpression(p, tt.Precedence.Lowest);
 				expectToken(p.lexer, Token.CloseParen);
 
@@ -165,9 +165,9 @@ function parseStatement(p: Parser): tt.Statement {
 		default:
 			// Parse either an async function, an async expression, or a normal expression
 			if (p.lexer.token === Token.Identifier && getRaw(p.lexer) === "async") {
-				next(p.lexer);
+				nextToken(p.lexer);
 				if ((p.lexer.token as number) === Token.Function) {
-					next(p.lexer);
+					nextToken(p.lexer);
 					return parseFunctionExpression(p, true);
 				}
 			}
@@ -195,7 +195,7 @@ function parseExpressionOrLetStatement(p: Parser) {
 		return parseExpression(p, tt.Precedence.Lowest);
 	}
 
-	next(p.lexer);
+	nextToken(p.lexer);
 
 	switch (p.lexer.token as number) {
 		case Token.Identifier:
@@ -223,7 +223,7 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 		let value: tt.Expression | null = null;
 
 		if (p.lexer.token === Token.Equals) {
-			next(p.lexer);
+			nextToken(p.lexer);
 			value = parseExpression(p, tt.Precedence.Comma);
 		}
 
@@ -233,7 +233,7 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 			break;
 		}
 
-		next(p.lexer);
+		nextToken(p.lexer);
 	}
 
 	return declarations;
@@ -252,47 +252,47 @@ function parseExpression(p: Parser, level: number): tt.Expression {
 function parsePrefix(p: Parser, level: number): tt.Expression {
 	switch (p.lexer.token) {
 		case Token.OpenParen: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			return parseParenExpression(p);
 		}
 		case Token.False:
-			next(p.lexer);
+			nextToken(p.lexer);
 			return tt.literal(false);
 		case Token.True:
-			next(p.lexer);
+			nextToken(p.lexer);
 			return tt.literal(true);
 		case Token.Null:
-			next(p.lexer);
+			nextToken(p.lexer);
 			return tt.literal(null);
 		case Token.StringLiteral: {
 			const value = p.lexer.string;
-			next(p.lexer);
+			nextToken(p.lexer);
 			return tt.literal(value);
 		}
 		case Token.NumericLiteral: {
 			const value = p.lexer.number;
-			next(p.lexer);
+			nextToken(p.lexer);
 			return tt.literal(value);
 		}
 		case Token.Void: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			return tt.unaryExpression("void", value);
 		}
 		case Token.Typeof: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			return tt.unaryExpression("typeof", value);
 		}
 		case Token.Delete: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			return tt.unaryExpression("delete", value);
 		}
 		case Token.Identifier: {
 			const name = p.lexer.identifier;
 			const raw = getRaw(p.lexer);
-			next(p.lexer);
+			nextToken(p.lexer);
 
 			switch (name) {
 				case "async": {
@@ -310,7 +310,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			return identifier;
 		}
 		case Token.Plus: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			if ((p.lexer.token as number) === Token["**"]) {
 				throw new Error("Unexpected token **");
@@ -319,7 +319,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			return tt.unaryExpression("+", value);
 		}
 		case Token.Minus: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			if ((p.lexer.token as number) === Token["**"]) {
 				throw new Error("Unexpected token **");
@@ -328,7 +328,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			return tt.unaryExpression("-", value);
 		}
 		case Token.Tilde: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			if ((p.lexer.token as number) === Token["**"]) {
 				throw new Error("Unexpected token **");
@@ -337,7 +337,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			return tt.unaryExpression("~", value);
 		}
 		case Token["!"]: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			if ((p.lexer.token as number) === Token["**"]) {
 				throw new Error("Unexpected token **");
@@ -346,12 +346,12 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			return tt.unaryExpression("!", value);
 		}
 		case Token["--"]: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			return tt.updateExpression("--", value, true);
 		}
 		case Token["++"]: {
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			return tt.updateExpression("++", value, true);
 		}
@@ -359,7 +359,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			return parseFunctionExpression(p, false);
 		}
 		case Token.Class: {
-			next(p.lexer);
+			nextToken(p.lexer);
 
 			let name = null;
 			if (
@@ -367,13 +367,13 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 				!strictModeReservedWords.has(p.lexer.identifier)
 			) {
 				name = p.lexer.identifier;
-				next(p.lexer);
+				nextToken(p.lexer);
 			}
 
 			return parseClass(p, name);
 		}
 		case Token.OpenBracket: {
-			next(p.lexer);
+			nextToken(p.lexer);
 
 			const items = [];
 			while ((p.lexer.token as number) !== Token.CloseBracket) {
@@ -392,14 +392,14 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 					break;
 				}
 
-				next(p.lexer);
+				nextToken(p.lexer);
 			}
 
 			expectToken(p.lexer, Token.CloseBracket);
 			return tt.arrayExpression(items);
 		}
 		case Token.OpenBrace: {
-			next(p.lexer);
+			nextToken(p.lexer);
 
 			const properties = [];
 			while ((p.lexer.token as number) !== Token.CloseBrace) {
@@ -432,7 +432,7 @@ function parseSuffix(
 					return left;
 				}
 
-				next(p.lexer);
+				nextToken(p.lexer);
 				left = tt.updateExpression("--", left, false);
 				break;
 			}
@@ -441,7 +441,7 @@ function parseSuffix(
 					return left;
 				}
 
-				next(p.lexer);
+				nextToken(p.lexer);
 				left = tt.updateExpression("++", left, false);
 				break;
 			}
@@ -449,7 +449,7 @@ function parseSuffix(
 				if (level >= tt.Precedence.Exponentiation) {
 					return left;
 				}
-				next(p.lexer);
+				nextToken(p.lexer);
 				const right = parseExpression(p, tt.Precedence.Exponentiation - 1);
 				left = tt.binaryExpression(left, right);
 				break;
@@ -463,7 +463,7 @@ function parseSuffix(
 function parseClass(p: Parser, name: string | null) {
 	let extend = null;
 	if (p.lexer.token === Token.Extends) {
-		next(p.lexer);
+		nextToken(p.lexer);
 		extend = parseExpression(p, tt.Precedence.New);
 	}
 
@@ -472,7 +472,7 @@ function parseClass(p: Parser, name: string | null) {
 	const properties: tt.Property[] = [];
 	while (p.lexer.token !== Token.CloseBrace) {
 		if (p.lexer.token === Token.SemiColon) {
-			next(p.lexer);
+			nextToken(p.lexer);
 			continue;
 		}
 
@@ -496,12 +496,12 @@ function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
 			const raw = getRaw(p.lexer);
 			// FIXME: Number literals
 			key = tt.literal(Number(raw));
-			next(p.lexer);
+			nextToken(p.lexer);
 			break;
 		}
 		case Token.OpenBracket: {
 			isComputed = true;
-			next(p.lexer);
+			nextToken(p.lexer);
 			const expression = parseExpression(p, tt.Precedence.Comma);
 			expectToken(p.lexer, Token.CloseBracket);
 			key = expression;
@@ -510,7 +510,7 @@ function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
 		default:
 			const name = p.lexer.identifier;
 			// TODO: Check identifier or keyword
-			next(p.lexer);
+			nextToken(p.lexer);
 
 			// TODO: Check generator
 			// TODO: Check modifier keyword
@@ -569,7 +569,7 @@ function parseParenExpression(p: Parser) {
 			break;
 		}
 
-		next(p.lexer);
+		nextToken(p.lexer);
 	}
 
 	expectToken(p.lexer, Token.CloseParen);
@@ -597,7 +597,7 @@ function parseAsyncPrefixExpression(p: Parser) {
 function parseFunctionExpression(p: Parser, isAsync: boolean) {
 	const isGenerator = p.lexer.token === Token["*"];
 	if (p.lexer.token === Token["*"]) {
-		next(p.lexer);
+		nextToken(p.lexer);
 	}
 
 	// TODO: Async
@@ -607,7 +607,7 @@ function parseFunctionExpression(p: Parser, isAsync: boolean) {
 	if (p.lexer.token === Token.Identifier) {
 		name = p.lexer.identifier;
 		// TODO: Don't declare name "arguments"
-		next(p.lexer);
+		nextToken(p.lexer);
 	}
 
 	// Function body
@@ -625,7 +625,7 @@ function parseFunctionExpression(p: Parser, isAsync: boolean) {
 			break;
 		}
 
-		next(p.lexer);
+		nextToken(p.lexer);
 	}
 
 	expectToken(p.lexer, Token.CloseParen);
@@ -637,7 +637,7 @@ function parseFunctionExpression(p: Parser, isAsync: boolean) {
 function parseFunctionBody(p: Parser) {
 	expectToken(p.lexer, Token.OpenBrace);
 	const statements = parseStatementsUpTo(p, Token.CloseBrace);
-	next(p.lexer);
+	nextToken(p.lexer);
 	return tt.blockStatement(statements);
 }
 
@@ -647,7 +647,7 @@ function parseBinding(p: Parser): tt.Identifier | tt.ObjectPattern {
 	switch (p.lexer.token) {
 		case Token.Identifier: {
 			const name = p.lexer.identifier;
-			next(p.lexer);
+			nextToken(p.lexer);
 			return tt.identifier(name);
 		}
 
@@ -668,13 +668,13 @@ function parseBinding(p: Parser): tt.Identifier | tt.ObjectPattern {
 
 				const property = tt.property(binding, binding, false, false);
 				properties.push(property);
-				next(p.lexer);
+				nextToken(p.lexer);
 			}
 
 			return tt.objectPattern(properties);
 		}
 		case Token.OpenBrace: {
-			next(p.lexer);
+			nextToken(p.lexer);
 
 			const elements: tt.ArrayPattern["elements"] = [];
 			let hasSpread = false;
@@ -707,7 +707,7 @@ export function parsePropertyBinding(p: Parser) {
 
 	switch (p.lexer.token) {
 		case Token.DotDotDot:
-			next(p.lexer);
+			nextToken(p.lexer);
 			const value = tt.identifier(p.lexer.identifier);
 			// TODO: Expect identifier
 			return tt.restElement(value);
