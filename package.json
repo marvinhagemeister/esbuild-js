@@ -10,6 +10,8 @@
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
+		"@babel/generator": "^7.11.6",
+		"@babel/parser": "^7.11.5",
 		"@types/mocha": "^8.0.3",
 		"@types/node": "^14.0.27",
 		"@unicode/unicode-13.0.0": "^1.0.0",

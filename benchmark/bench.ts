@@ -4,6 +4,9 @@ import { serialize } from "../src/serialize";
 import * as acorn from "acorn";
 // @ts-ignore
 import * as astring from "astring";
+// @ts-ignore
+import babelGen from "@babel/generator";
+import * as babelParse from "@babel/parser";
 
 function testCustom(source: string) {
 	const ast = parse(source);
@@ -15,6 +18,19 @@ function testAcorn(source: string) {
 	return astring.generate(ast);
 }
 
+function testBabel(source: string) {
+	const ast = babelParse.parse(source);
+	return babelGen(ast);
+}
+
+function runBenchmark(name: string, code: string) {
+	return new Suite(name)
+		.add("custom", () => testCustom(code))
+		.add("acorn", () => testAcorn(code))
+		.add("babel", () => testBabel(code))
+		.run();
+}
+
 function bench1() {
 	const code = `
   class Foo {
@@ -24,19 +40,13 @@ function bench1() {
   const x = -2;
   `;
 
-	return new Suite("Simple Class")
-		.add("custom", () => testCustom(code))
-		.add("acorn", () => testAcorn(code))
-		.run();
+	return runBenchmark("Simple Class", code);
 }
 
 function bench2() {
 	const code = `for (let i = 0; i < 12; i++) {}`;
 
-	return new Suite("Simple for-loop")
-		.add("custom", () => testCustom(code))
-		.add("acorn", () => testAcorn(code))
-		.run();
+	return runBenchmark("Simple for-loop", code);
 }
 
 async function run() {
