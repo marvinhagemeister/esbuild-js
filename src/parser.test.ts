@@ -200,7 +200,7 @@ describe("Parser", () => {
 			// 	expectParseError(t, "for (var x = class extends a in b {};;);", "<stdin>: error: Expected \"{\" but found \"in\"\n")
 			expectPrinted(
 				"for (let i = 0; i < 12; i++) {}",
-				"for (let i = 0;i < 12;i++){}"
+				"for (let i = 0;i < 12;i++){}\n"
 			);
 		});
 

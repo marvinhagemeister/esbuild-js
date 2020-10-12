@@ -86,6 +86,21 @@ function parseStatement(p: Parser): tt.Statement {
 			const declarations = parseDeclarations(p);
 			return tt.variableDeclaration(kind, declarations);
 		}
+		case Token.If: {
+			nextToken(p.lexer);
+			expectToken(p.lexer, Token.OpenParen);
+			const test = parseExpression(p, tt.Precedence.Lowest);
+			expectToken(p.lexer, Token.CloseParen);
+			const body = parseStatement(p);
+
+			let alternate = null;
+			if ((p.lexer.token as number) === Token.Else) {
+				nextToken(p.lexer);
+				alternate = parseStatement(p);
+			}
+
+			return tt.ifStatement(test, body, alternate);
+		}
 		case Token.SemiColon:
 			nextToken(p.lexer);
 			return tt.emptyStatement("");
@@ -164,6 +179,12 @@ function parseStatement(p: Parser): tt.Statement {
 
 			const body = parseStatement(p);
 			return tt.forStatement(body, init, update, test);
+		}
+		case Token.OpenBrace: {
+			nextToken(p.lexer);
+			const statements = parseStatementsUpTo(p, Token.CloseBrace);
+			nextToken(p.lexer);
+			return tt.blockStatement(statements);
 		}
 		default:
 			// Parse either an async function, an async expression, or a normal expression

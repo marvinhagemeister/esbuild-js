@@ -183,6 +183,9 @@ function serializeAst(
 		case "BlockStatement": {
 			out += "{";
 			if (node.body.length === 0) {
+				if (!parent || parent.type === "IfStatement") {
+					return out + options.newLineChar + "}";
+				}
 				return out + "}" + options.newLineChar;
 			}
 
@@ -201,6 +204,33 @@ function serializeAst(
 			if (options.newLineChar) {
 				out += options.newLineChar;
 			}
+			return out;
+		}
+		case "IfStatement": {
+			if (node.test !== null) {
+				out +=
+					"if (" + serializeAst(node.test, node, level, true, options) + ") ";
+			}
+
+			if (node.body.type === "ExpressionStatement") {
+				out += serializeAst(node.body, node, level, true, options);
+			} else {
+				const singleLine =
+					node.body.type === "BlockStatement" && node.body.body.length < 2;
+				out += serializeAst(node.body, node, level, singleLine, options);
+			}
+
+			if (node.alternate) {
+				out += " else ";
+				out += serializeAst(node.alternate, node, level, true, options);
+
+				if (node.alternate.type !== "IfStatement") {
+					out += options.newLineChar;
+				}
+			} else {
+				out += options.newLineChar;
+			}
+
 			return out;
 		}
 		case "FunctionDeclaration": {
@@ -274,6 +304,7 @@ function serializeAst(
 				parent.type !== "ForStatement" &&
 				parent.type !== "ForInStatement" &&
 				parent.type !== "ForOfStatement" &&
+				parent.type !== "IfStatement" &&
 				node.expression.type !== "ClassDeclaration"
 			) {
 				out += ";\n";

@@ -236,8 +236,30 @@ export type Statement =
 	| FunctionDeclaration
 	| EmptyStatement
 	| ExpressionStatement
+	| IfStatement
 	| BlockStatement;
 export type ModuleDeclaration = t.ImportDeclaration;
+
+export interface IfStatement extends BaseNode {
+	type: "IfStatement";
+	body: Statement;
+	test: Expression | null;
+	alternate: Statement | null;
+}
+export function ifStatement(
+	test: Expression | null,
+	body: Statement,
+	alternate: Statement | null
+): IfStatement {
+	return {
+		type: "IfStatement",
+		body,
+		test,
+		alternate,
+		start: 0,
+		len: 0,
+	};
+}
 
 export interface BlockStatement extends BaseNode {
 	type: "BlockStatement";
