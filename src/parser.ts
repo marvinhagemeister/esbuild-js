@@ -546,6 +546,15 @@ function parseSuffix(
 				left = tt.binaryExpression("&&", left, right);
 				break;
 			}
+			case Token.Equals: {
+				if (level >= tt.Precedence.Assign) {
+					return left;
+				}
+
+				nextToken(p.lexer);
+				const value = parseExpression(p, tt.Precedence.Assign - 1);
+				left = tt.assignmentExpression(left, value);
+			}
 			default:
 				return left;
 		}

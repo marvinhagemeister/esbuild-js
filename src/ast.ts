@@ -8,7 +8,7 @@ export const enum Precedence {
 	/** yield */
 	Yield,
 	/** = */
-	Assignment,
+	Assign,
 	/** ternary: ... ? ... : ... */
 	Conditional,
 	/** ?? */
@@ -64,6 +64,7 @@ export type Expression =
 	| UnaryExpression
 	| ClassDeclaration
 	| ObjectExpression
+	| AssignmentExpression
 	| EmptyExpression;
 
 export interface EmptyExpression extends BaseNode {
@@ -304,6 +305,26 @@ export function unaryExpression(
 		argument,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface AssignmentExpression extends BaseNode {
+	type: "AssignmentExpression";
+	operator: "=";
+	left: Expression;
+	right: Expression;
+}
+export function assignmentExpression(
+	left: Expression,
+	right: Expression
+): AssignmentExpression {
+	return {
+		type: "AssignmentExpression",
+		left,
+		len: 0,
+		operator: "=",
+		right,
+		start: 0,
 	};
 }
 

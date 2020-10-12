@@ -32,7 +32,7 @@ describe("ES5", () => {
 			it("should parse if-statments", () => {
 				expectPrinted("if (true) {}", "if (true) {\n}\n");
 				expectPrinted("if (x == 2) {}", "if (x == 2) {\n}\n");
-				// expectPrinted("if (x == 2) { x = 3; }", "if (x == 2) {x = 3;}");
+				expectPrinted("if (x == 2) { x = 3; }", "if (x == 2) {\n  x = 3;\n}\n");
 			});
 
 			it("should parse if-else statement", () => {

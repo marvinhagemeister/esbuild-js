@@ -11,7 +11,7 @@ export function serialize(node: AstNode, options: SerializeOptions = {}) {
 		"newLineChar" in options ? options.newLineChar || "" : "\n";
 
 	// TODO: Hoist this?
-	const indentCache: string[] = [];
+	const indentCache: string[] = [""];
 	const indent = (n: number) => {
 		if (n >= indentCache.length) {
 			indentCache[n] = indentChar.repeat(n);
@@ -190,18 +190,11 @@ function serializeAst(
 			}
 
 			out += options.newLineChar;
-
 			for (let i = 0; i < node.body.length; i++) {
-				out += serializeAst(
-					node.body[i],
-					node.body[i],
-					level + 1,
-					skipIndent,
-					options
-				);
+				out += serializeAst(node.body[i], node, level + 1, skipIndent, options);
 			}
 			out += options.indent(level) + "}";
-			if (options.newLineChar) {
+			if (!skipIndent && options.newLineChar) {
 				out += options.newLineChar;
 			}
 			return out;
@@ -227,7 +220,7 @@ function serializeAst(
 				if (node.alternate.type !== "IfStatement") {
 					out += options.newLineChar;
 				}
-			} else {
+			} else if (node.body.type === "BlockStatement") {
 				out += options.newLineChar;
 			}
 
@@ -361,6 +354,13 @@ function serializeAst(
 				" " +
 				serializeAst(node.right, node, 0, skipIndent, options)
 			);
+		}
+		case "AssignmentExpression": {
+			out += options.indent(level);
+			out += serializeAst(node.left, node, level, true, options);
+			out += " = ";
+			out += serializeAst(node.right, node, level, true, options);
+			return out;
 		}
 		case "EmptyStatement": {
 			out += ";";
