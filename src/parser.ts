@@ -7,8 +7,10 @@ import {
 	newLexer,
 	next,
 } from "./lexer";
+import { strictModeReservedWords } from "./lexer_helpers";
 import { Token } from "./tokens";
 import * as tt from "./ast";
+import { Property } from "estree";
 
 // TODO: Sourcemap
 // TODO: Sourcelocation
@@ -356,6 +358,20 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 		case Token.Function: {
 			return parseFunctionExpression(p, false);
 		}
+		case Token.Class: {
+			next(p.lexer);
+
+			let name = null;
+			if (
+				(p.lexer.token as number) === Token.Identifier &&
+				!strictModeReservedWords.has(p.lexer.identifier)
+			) {
+				name = p.lexer.identifier;
+				next(p.lexer);
+			}
+
+			return parseClass(p, name);
+		}
 		case Token.OpenBracket: {
 			next(p.lexer);
 
@@ -388,7 +404,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			const properties = [];
 			while ((p.lexer.token as number) !== Token.CloseBrace) {
 				// TODO: Spread
-				const property = parseProperty(p, tt.PropertyKind.Normal);
+				const property = parseProperty(p, tt.PropertyKind.Normal, false);
 				if (property) {
 					properties.push(property);
 				}
@@ -444,7 +460,35 @@ function parseSuffix(
 	}
 }
 
-function parseProperty(p: Parser, kind: tt.PropertyKind) {
+function parseClass(p: Parser, name: string | null) {
+	let extend = null;
+	if (p.lexer.token === Token.Extends) {
+		next(p.lexer);
+		extend = parseExpression(p, tt.Precedence.New);
+	}
+
+	expectToken(p.lexer, Token.OpenBrace);
+
+	const properties: tt.Property[] = [];
+	while (p.lexer.token !== Token.CloseBrace) {
+		if (p.lexer.token === Token.SemiColon) {
+			next(p.lexer);
+			continue;
+		}
+
+		const property = parseProperty(p, tt.PropertyKind.Normal, true);
+		properties.push(property);
+	}
+
+	expectToken(p.lexer, Token.CloseBrace);
+	return tt.classDeclaration(
+		name === null ? null : tt.identifier(name),
+		extend,
+		properties
+	);
+}
+
+function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
 	let key = null;
 	let isComputed = false;
 	switch (p.lexer.token) {
@@ -476,17 +520,42 @@ function parseProperty(p: Parser, kind: tt.PropertyKind) {
 
 			// Check shorthand property
 			if (
+				!isClass &&
 				kind === tt.PropertyKind.Normal &&
 				p.lexer.token !== Token.Colon &&
 				p.lexer.token !== Token.OpenParen
 			) {
-				return tt.property(key, key, false);
+				return tt.property(key, key, false, false);
 			}
+	}
+
+	// Parse a class field with optional initial value
+	if (
+		isClass &&
+		kind === tt.PropertyKind.Normal &&
+		p.lexer.token !== Token.OpenParen
+	) {
+		expectOrInsertSemicolon(p.lexer);
+		let value = tt.emptyExpression();
+		return tt.property(key, value, isComputed, false);
+	}
+
+	// Parse method
+	if (p.lexer.token === Token.OpenParen || isClass) {
+		// TODO: Disallow name "constructor" and "prototypes" here
+		// TODO: Async
+		// TODO: Generators
+		// TODO: super()
+		const value = parseFunctionExpression(p, false);
+
+		// TODO: Getter + Setter
+		// TODO: Private identifiers
+		return tt.property(key, value, false, true);
 	}
 
 	expectToken(p.lexer, Token.Colon);
 	const value = parseExpression(p, tt.Precedence.Comma);
-	return tt.property(key, value, isComputed);
+	return tt.property(key, value, isComputed, false);
 }
 
 function parseParenExpression(p: Parser) {
@@ -538,8 +607,8 @@ function parseFunctionExpression(p: Parser, isAsync: boolean) {
 	if (p.lexer.token === Token.Identifier) {
 		name = p.lexer.identifier;
 		// TODO: Don't declare name "arguments"
+		next(p.lexer);
 	}
-	next(p.lexer);
 
 	// Function body
 	expectToken(p.lexer, Token.OpenParen);
@@ -597,7 +666,7 @@ function parseBinding(p: Parser): tt.Identifier | tt.ObjectPattern {
 					throw new Error("Invalid token");
 				}
 
-				const property = tt.property(binding, binding, false);
+				const property = tt.property(binding, binding, false, false);
 				properties.push(property);
 				next(p.lexer);
 			}

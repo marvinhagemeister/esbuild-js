@@ -62,6 +62,7 @@ export type Expression =
 	| UpdateExpression
 	| BinaryExpression
 	| UnaryExpression
+	| ClassDeclaration
 	| ObjectExpression
 	| EmptyExpression;
 
@@ -462,11 +463,12 @@ export interface Property extends BaseNode {
 export function property(
 	key: Property["key"],
 	value: Property["value"],
-	computed: boolean
+	computed: boolean,
+	method: boolean
 ): Property {
 	return {
 		type: "Property",
-		method: false,
+		method,
 		computed,
 		kind: "init",
 		key,
@@ -502,5 +504,26 @@ export function restElement(argument: RestElement["argument"]): RestElement {
 		argument,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface ClassDeclaration extends BaseNode {
+	type: "ClassDeclaration";
+	name: Identifier | null;
+	extend: Expression | null;
+	properties: Property[];
+}
+export function classDeclaration(
+	id: ClassDeclaration["name"],
+	extend: ClassDeclaration["extend"],
+	properties: ClassDeclaration["properties"]
+): ClassDeclaration {
+	return {
+		type: "ClassDeclaration",
+		name: id,
+		extend,
+		properties,
+		len: 0,
+		start: 0,
 	};
 }

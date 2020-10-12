@@ -125,6 +125,18 @@ export const enum CodePoint {
 	EOF = -1,
 }
 
+export const strictModeReservedWords = new Set<string>([
+	"implements",
+	"interface",
+	"let",
+	"package",
+	"private",
+	"protected",
+	"public",
+	"static",
+	"yield",
+]);
+
 export function isKeyword(text: string) {
 	switch (text) {
 		case "break":

@@ -577,162 +577,153 @@ describe("Parser", () => {
 	it("should parse Functions", () => {
 		expectPrinted(
 			"function f() {} function f() {}",
-			"function f() {\n}\nfunction f() {\n}\n"
+			"function f() {}\nfunction f() {}\n"
 		);
 		expectPrinted(
 			"function f() {} function* f() {}",
-			"function f() {\n}\nfunction* f() {\n}\n"
+			"function f() {}\nfunction* f() {}\n"
 		);
 		expectPrinted(
 			"function* f() {} function* f() {}",
-			"function* f() {\n}\nfunction* f() {\n}\n"
+			"function* f() {}\nfunction* f() {}\n"
 		);
 		expectPrinted(
 			"function f() {} async function f() {}",
-			"function f() {\n}\nasync function f() {\n}\n"
+			"function f() {}\nasync function f() {}\n"
 		);
 		expectPrinted(
 			"async function f() {} async function f() {}",
-			"async function f() {\n}\nasync function f() {\n}\n"
+			"async function f() {}\nasync function f() {}\n"
 		);
-		expectPrinted("function arguments() {}", "function arguments() {\n}\n");
+		expectPrinted("function arguments() {}", "function arguments() {}\n");
 		// expectPrinted(
 		// 	"(function arguments() {})",
 		// 	"(function arguments() {\n});\n"
 		// );
-		expectPrinted(
-			"function foo(arguments) {}",
-			"function foo(arguments) {\n}\n"
-		);
+		expectPrinted("function foo(arguments) {}", "function foo(arguments) {}\n");
 		// expectPrinted(
 		// 	"(function foo(arguments) {})",
 		// 	"(function foo(arguments) {\n});\n"
 		// );
 	});
 
-	// func TestClass(t *testing.T) {
-	// 	expectPrinted(t, "class Foo { foo() {} }", "class Foo {\n  foo() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { *foo() {} }", "class Foo {\n  *foo() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { get foo() {} }", "class Foo {\n  get foo() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { set foo(x) {} }", "class Foo {\n  set foo(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static foo() {} }", "class Foo {\n  static foo() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static *foo() {} }", "class Foo {\n  static *foo() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static get foo() {} }", "class Foo {\n  static get foo() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static set foo(x) {} }", "class Foo {\n  static set foo(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { async foo() {} }", "class Foo {\n  async foo() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async foo() {} }", "class Foo {\n  static async foo() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async *foo() {} }", "class Foo {\n  static async *foo() {\n  }\n}\n")
-	// 	expectParseError(t, "class Foo { async static foo() {} }", "<stdin>: error: Expected \"(\" but found \"foo\"\n")
-
-	// 	expectPrinted(t, "class Foo { if() {} }", "class Foo {\n  if() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { *if() {} }", "class Foo {\n  *if() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { get if() {} }", "class Foo {\n  get if() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { set if(x) {} }", "class Foo {\n  set if(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static if() {} }", "class Foo {\n  static if() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static *if() {} }", "class Foo {\n  static *if() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static get if() {} }", "class Foo {\n  static get if() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static set if(x) {} }", "class Foo {\n  static set if(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { async if() {} }", "class Foo {\n  async if() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async if() {} }", "class Foo {\n  static async if() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async *if() {} }", "class Foo {\n  static async *if() {\n  }\n}\n")
-	// 	expectParseError(t, "class Foo { async static if() {} }", "<stdin>: error: Expected \"(\" but found \"if\"\n")
-
-	// 	expectPrinted(t, "class Foo { a() {} b() {} }", "class Foo {\n  a() {\n  }\n  b() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} get b() {} }", "class Foo {\n  a() {\n  }\n  get b() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} set b(x) {} }", "class Foo {\n  a() {\n  }\n  set b(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} static b() {} }", "class Foo {\n  a() {\n  }\n  static b() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} static *b() {} }", "class Foo {\n  a() {\n  }\n  static *b() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} static get b() {} }", "class Foo {\n  a() {\n  }\n  static get b() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} static set b(x) {} }", "class Foo {\n  a() {\n  }\n  static set b(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} async b() {} }", "class Foo {\n  a() {\n  }\n  async b() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} static async b() {} }", "class Foo {\n  a() {\n  }\n  static async b() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { a() {} static async *b() {} }", "class Foo {\n  a() {\n  }\n  static async *b() {\n  }\n}\n")
-	// 	expectParseError(t, "class Foo { a() {} async static b() {} }", "<stdin>: error: Expected \"(\" but found \"b\"\n")
-
-	// 	expectParseError(t, "class Foo { `a`() {} }", "<stdin>: error: Expected identifier but found \"`a`\"\n")
-
-	// 	// Strict mode reserved words cannot be used as class names
-	// 	expectParseError(t, "class static {}", "<stdin>: error: Unexpected \"static\"\n")
-	// 	expectParseError(t, "class implements {}", "<stdin>: error: Unexpected \"implements\"\n")
-	// 	expectParseError(t, "(class static {})", "<stdin>: error: Expected \"{\" but found \"static\"\n")
-	// 	expectParseError(t, "(class implements {})", "<stdin>: error: Expected \"{\" but found \"implements\"\n")
-
-	// 	// The name "arguments" is forbidden
-	// 	expectParseError(t, "class Foo { arguments = 1 }", "")
-	// 	expectParseError(t, "class Foo { x = function() { arguments } }", "")
-	// 	expectParseError(t, "class Foo { [arguments] }", "<stdin>: error: Cannot access \"arguments\" here\n")
-	// 	expectParseError(t, "class Foo { [arguments = 1] }", "<stdin>: error: Cannot access \"arguments\" here\n")
-	// 	expectParseError(t, "class Foo { x = arguments }", "<stdin>: error: Cannot access \"arguments\" here\n")
-	// 	expectParseError(t, "class Foo { x = () => arguments }", "<stdin>: error: Cannot access \"arguments\" here\n")
-	// 	expectParseError(t, "class Foo { x = typeof arguments }", "<stdin>: error: Cannot access \"arguments\" here\n")
-	// 	expectParseError(t, "class Foo { x = 1 ? 2 : arguments }", "<stdin>: error: Cannot access \"arguments\" here\n")
-
-	// 	// The name "constructor" is sometimes forbidden
-	// 	expectPrinted(t, "class Foo { get ['constructor']() {} }", "class Foo {\n  get [\"constructor\"]() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { set ['constructor'](x) {} }", "class Foo {\n  set [\"constructor\"](x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { *['constructor']() {} }", "class Foo {\n  *[\"constructor\"]() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { async ['constructor']() {} }", "class Foo {\n  async [\"constructor\"]() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { async *['constructor']() {} }", "class Foo {\n  async *[\"constructor\"]() {\n  }\n}\n")
-	// 	expectParseError(t, "class Foo { get constructor() {} }", "<stdin>: error: Class constructor cannot be a getter\n")
-	// 	expectParseError(t, "class Foo { get 'constructor'() {} }", "<stdin>: error: Class constructor cannot be a getter\n")
-	// 	expectParseError(t, "class Foo { set constructor(x) {} }", "<stdin>: error: Class constructor cannot be a setter\n")
-	// 	expectParseError(t, "class Foo { set 'constructor'(x) {} }", "<stdin>: error: Class constructor cannot be a setter\n")
-	// 	expectParseError(t, "class Foo { *constructor() {} }", "<stdin>: error: Class constructor cannot be a generator\n")
-	// 	expectParseError(t, "class Foo { *'constructor'() {} }", "<stdin>: error: Class constructor cannot be a generator\n")
-	// 	expectParseError(t, "class Foo { async constructor() {} }", "<stdin>: error: Class constructor cannot be an async function\n")
-	// 	expectParseError(t, "class Foo { async 'constructor'() {} }", "<stdin>: error: Class constructor cannot be an async function\n")
-	// 	expectParseError(t, "class Foo { async *constructor() {} }", "<stdin>: error: Class constructor cannot be an async function\n")
-	// 	expectParseError(t, "class Foo { async *'constructor'() {} }", "<stdin>: error: Class constructor cannot be an async function\n")
-	// 	expectPrinted(t, "class Foo { static get constructor() {} }", "class Foo {\n  static get constructor() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static get 'constructor'() {} }", "class Foo {\n  static get constructor() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static set constructor(x) {} }", "class Foo {\n  static set constructor(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static set 'constructor'(x) {} }", "class Foo {\n  static set constructor(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static *constructor() {} }", "class Foo {\n  static *constructor() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static *'constructor'() {} }", "class Foo {\n  static *constructor() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async constructor() {} }", "class Foo {\n  static async constructor() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async 'constructor'() {} }", "class Foo {\n  static async constructor() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async *constructor() {} }", "class Foo {\n  static async *constructor() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async *'constructor'() {} }", "class Foo {\n  static async *constructor() {\n  }\n}\n")
-	// 	expectPrinted(t, "({ constructor: 1 })", "({constructor: 1});\n")
-	// 	expectPrinted(t, "({ get constructor() {} })", "({get constructor() {\n}});\n")
-	// 	expectPrinted(t, "({ set constructor(x) {} })", "({set constructor(x) {\n}});\n")
-	// 	expectPrinted(t, "({ *constructor() {} })", "({*constructor() {\n}});\n")
-	// 	expectPrinted(t, "({ async constructor() {} })", "({async constructor() {\n}});\n")
-	// 	expectPrinted(t, "({ async* constructor() {} })", "({async *constructor() {\n}});\n")
-
-	// 	// The name "prototype" is sometimes forbidden
-	// 	expectPrinted(t, "class Foo { get prototype() {} }", "class Foo {\n  get prototype() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { get 'prototype'() {} }", "class Foo {\n  get prototype() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { set prototype(x) {} }", "class Foo {\n  set prototype(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { set 'prototype'(x) {} }", "class Foo {\n  set prototype(x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { *prototype() {} }", "class Foo {\n  *prototype() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { *'prototype'() {} }", "class Foo {\n  *prototype() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { async prototype() {} }", "class Foo {\n  async prototype() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { async 'prototype'() {} }", "class Foo {\n  async prototype() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { async *prototype() {} }", "class Foo {\n  async *prototype() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { async *'prototype'() {} }", "class Foo {\n  async *prototype() {\n  }\n}\n")
-	// 	expectParseError(t, "class Foo { static get prototype() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static get 'prototype'() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static set prototype(x) {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static set 'prototype'(x) {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static *prototype() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static *'prototype'() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static async prototype() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static async 'prototype'() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static async *prototype() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectParseError(t, "class Foo { static async *'prototype'() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
-	// 	expectPrinted(t, "class Foo { static get ['prototype']() {} }", "class Foo {\n  static get [\"prototype\"]() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static set ['prototype'](x) {} }", "class Foo {\n  static set [\"prototype\"](x) {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static *['prototype']() {} }", "class Foo {\n  static *[\"prototype\"]() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async ['prototype']() {} }", "class Foo {\n  static async [\"prototype\"]() {\n  }\n}\n")
-	// 	expectPrinted(t, "class Foo { static async *['prototype']() {} }", "class Foo {\n  static async *[\"prototype\"]() {\n  }\n}\n")
-	// 	expectPrinted(t, "({ prototype: 1 })", "({prototype: 1});\n")
-	// 	expectPrinted(t, "({ get prototype() {} })", "({get prototype() {\n}});\n")
-	// 	expectPrinted(t, "({ set prototype(x) {} })", "({set prototype(x) {\n}});\n")
-	// 	expectPrinted(t, "({ *prototype() {} })", "({*prototype() {\n}});\n")
-	// 	expectPrinted(t, "({ async prototype() {} })", "({async prototype() {\n}});\n")
-	// 	expectPrinted(t, "({ async* prototype() {} })", "({async *prototype() {\n}});\n")
-	// }
+	it("should parse classes", () => {
+		expectPrinted("class Foo { foo() {} }", "class Foo {\n  foo() {}\n}\n");
+		// 	expectPrinted(t, "class Foo { *foo() {} }", "class Foo {\n  *foo() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { get foo() {} }", "class Foo {\n  get foo() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { set foo(x) {} }", "class Foo {\n  set foo(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static foo() {} }", "class Foo {\n  static foo() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static *foo() {} }", "class Foo {\n  static *foo() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static get foo() {} }", "class Foo {\n  static get foo() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static set foo(x) {} }", "class Foo {\n  static set foo(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { async foo() {} }", "class Foo {\n  async foo() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async foo() {} }", "class Foo {\n  static async foo() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async *foo() {} }", "class Foo {\n  static async *foo() {\n  }\n}\n")
+		// 	expectParseError(t, "class Foo { async static foo() {} }", "<stdin>: error: Expected \"(\" but found \"foo\"\n")
+		// 	expectPrinted(t, "class Foo { if() {} }", "class Foo {\n  if() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { *if() {} }", "class Foo {\n  *if() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { get if() {} }", "class Foo {\n  get if() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { set if(x) {} }", "class Foo {\n  set if(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static if() {} }", "class Foo {\n  static if() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static *if() {} }", "class Foo {\n  static *if() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static get if() {} }", "class Foo {\n  static get if() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static set if(x) {} }", "class Foo {\n  static set if(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { async if() {} }", "class Foo {\n  async if() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async if() {} }", "class Foo {\n  static async if() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async *if() {} }", "class Foo {\n  static async *if() {\n  }\n}\n")
+		// 	expectParseError(t, "class Foo { async static if() {} }", "<stdin>: error: Expected \"(\" but found \"if\"\n")
+		// 	expectPrinted(t, "class Foo { a() {} b() {} }", "class Foo {\n  a() {\n  }\n  b() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} get b() {} }", "class Foo {\n  a() {\n  }\n  get b() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} set b(x) {} }", "class Foo {\n  a() {\n  }\n  set b(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} static b() {} }", "class Foo {\n  a() {\n  }\n  static b() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} static *b() {} }", "class Foo {\n  a() {\n  }\n  static *b() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} static get b() {} }", "class Foo {\n  a() {\n  }\n  static get b() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} static set b(x) {} }", "class Foo {\n  a() {\n  }\n  static set b(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} async b() {} }", "class Foo {\n  a() {\n  }\n  async b() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} static async b() {} }", "class Foo {\n  a() {\n  }\n  static async b() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { a() {} static async *b() {} }", "class Foo {\n  a() {\n  }\n  static async *b() {\n  }\n}\n")
+		// 	expectParseError(t, "class Foo { a() {} async static b() {} }", "<stdin>: error: Expected \"(\" but found \"b\"\n")
+		// 	expectParseError(t, "class Foo { `a`() {} }", "<stdin>: error: Expected identifier but found \"`a`\"\n")
+		// 	// Strict mode reserved words cannot be used as class names
+		// 	expectParseError(t, "class static {}", "<stdin>: error: Unexpected \"static\"\n")
+		// 	expectParseError(t, "class implements {}", "<stdin>: error: Unexpected \"implements\"\n")
+		// 	expectParseError(t, "(class static {})", "<stdin>: error: Expected \"{\" but found \"static\"\n")
+		// 	expectParseError(t, "(class implements {})", "<stdin>: error: Expected \"{\" but found \"implements\"\n")
+		// 	// The name "arguments" is forbidden
+		// 	expectParseError(t, "class Foo { arguments = 1 }", "")
+		// 	expectParseError(t, "class Foo { x = function() { arguments } }", "")
+		// 	expectParseError(t, "class Foo { [arguments] }", "<stdin>: error: Cannot access \"arguments\" here\n")
+		// 	expectParseError(t, "class Foo { [arguments = 1] }", "<stdin>: error: Cannot access \"arguments\" here\n")
+		// 	expectParseError(t, "class Foo { x = arguments }", "<stdin>: error: Cannot access \"arguments\" here\n")
+		// 	expectParseError(t, "class Foo { x = () => arguments }", "<stdin>: error: Cannot access \"arguments\" here\n")
+		// 	expectParseError(t, "class Foo { x = typeof arguments }", "<stdin>: error: Cannot access \"arguments\" here\n")
+		// 	expectParseError(t, "class Foo { x = 1 ? 2 : arguments }", "<stdin>: error: Cannot access \"arguments\" here\n")
+		// 	// The name "constructor" is sometimes forbidden
+		// 	expectPrinted(t, "class Foo { get ['constructor']() {} }", "class Foo {\n  get [\"constructor\"]() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { set ['constructor'](x) {} }", "class Foo {\n  set [\"constructor\"](x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { *['constructor']() {} }", "class Foo {\n  *[\"constructor\"]() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { async ['constructor']() {} }", "class Foo {\n  async [\"constructor\"]() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { async *['constructor']() {} }", "class Foo {\n  async *[\"constructor\"]() {\n  }\n}\n")
+		// 	expectParseError(t, "class Foo { get constructor() {} }", "<stdin>: error: Class constructor cannot be a getter\n")
+		// 	expectParseError(t, "class Foo { get 'constructor'() {} }", "<stdin>: error: Class constructor cannot be a getter\n")
+		// 	expectParseError(t, "class Foo { set constructor(x) {} }", "<stdin>: error: Class constructor cannot be a setter\n")
+		// 	expectParseError(t, "class Foo { set 'constructor'(x) {} }", "<stdin>: error: Class constructor cannot be a setter\n")
+		// 	expectParseError(t, "class Foo { *constructor() {} }", "<stdin>: error: Class constructor cannot be a generator\n")
+		// 	expectParseError(t, "class Foo { *'constructor'() {} }", "<stdin>: error: Class constructor cannot be a generator\n")
+		// 	expectParseError(t, "class Foo { async constructor() {} }", "<stdin>: error: Class constructor cannot be an async function\n")
+		// 	expectParseError(t, "class Foo { async 'constructor'() {} }", "<stdin>: error: Class constructor cannot be an async function\n")
+		// 	expectParseError(t, "class Foo { async *constructor() {} }", "<stdin>: error: Class constructor cannot be an async function\n")
+		// 	expectParseError(t, "class Foo { async *'constructor'() {} }", "<stdin>: error: Class constructor cannot be an async function\n")
+		// 	expectPrinted(t, "class Foo { static get constructor() {} }", "class Foo {\n  static get constructor() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static get 'constructor'() {} }", "class Foo {\n  static get constructor() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static set constructor(x) {} }", "class Foo {\n  static set constructor(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static set 'constructor'(x) {} }", "class Foo {\n  static set constructor(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static *constructor() {} }", "class Foo {\n  static *constructor() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static *'constructor'() {} }", "class Foo {\n  static *constructor() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async constructor() {} }", "class Foo {\n  static async constructor() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async 'constructor'() {} }", "class Foo {\n  static async constructor() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async *constructor() {} }", "class Foo {\n  static async *constructor() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async *'constructor'() {} }", "class Foo {\n  static async *constructor() {\n  }\n}\n")
+		// 	expectPrinted(t, "({ constructor: 1 })", "({constructor: 1});\n")
+		// 	expectPrinted(t, "({ get constructor() {} })", "({get constructor() {\n}});\n")
+		// 	expectPrinted(t, "({ set constructor(x) {} })", "({set constructor(x) {\n}});\n")
+		// 	expectPrinted(t, "({ *constructor() {} })", "({*constructor() {\n}});\n")
+		// 	expectPrinted(t, "({ async constructor() {} })", "({async constructor() {\n}});\n")
+		// 	expectPrinted(t, "({ async* constructor() {} })", "({async *constructor() {\n}});\n")
+		// 	// The name "prototype" is sometimes forbidden
+		// 	expectPrinted(t, "class Foo { get prototype() {} }", "class Foo {\n  get prototype() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { get 'prototype'() {} }", "class Foo {\n  get prototype() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { set prototype(x) {} }", "class Foo {\n  set prototype(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { set 'prototype'(x) {} }", "class Foo {\n  set prototype(x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { *prototype() {} }", "class Foo {\n  *prototype() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { *'prototype'() {} }", "class Foo {\n  *prototype() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { async prototype() {} }", "class Foo {\n  async prototype() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { async 'prototype'() {} }", "class Foo {\n  async prototype() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { async *prototype() {} }", "class Foo {\n  async *prototype() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { async *'prototype'() {} }", "class Foo {\n  async *prototype() {\n  }\n}\n")
+		// 	expectParseError(t, "class Foo { static get prototype() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static get 'prototype'() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static set prototype(x) {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static set 'prototype'(x) {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static *prototype() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static *'prototype'() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static async prototype() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static async 'prototype'() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static async *prototype() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectParseError(t, "class Foo { static async *'prototype'() {} }", "<stdin>: error: Invalid static method name \"prototype\"\n")
+		// 	expectPrinted(t, "class Foo { static get ['prototype']() {} }", "class Foo {\n  static get [\"prototype\"]() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static set ['prototype'](x) {} }", "class Foo {\n  static set [\"prototype\"](x) {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static *['prototype']() {} }", "class Foo {\n  static *[\"prototype\"]() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async ['prototype']() {} }", "class Foo {\n  static async [\"prototype\"]() {\n  }\n}\n")
+		// 	expectPrinted(t, "class Foo { static async *['prototype']() {} }", "class Foo {\n  static async *[\"prototype\"]() {\n  }\n}\n")
+		// 	expectPrinted(t, "({ prototype: 1 })", "({prototype: 1});\n")
+		// 	expectPrinted(t, "({ get prototype() {} })", "({get prototype() {\n}});\n")
+		// 	expectPrinted(t, "({ set prototype(x) {} })", "({set prototype(x) {\n}});\n")
+		// 	expectPrinted(t, "({ *prototype() {} })", "({*prototype() {\n}});\n")
+		// 	expectPrinted(t, "({ async prototype() {} })", "({async prototype() {\n}});\n")
+		// 	expectPrinted(t, "({ async* prototype() {} })", "({async *prototype() {\n}});\n")
+		// }
+	});
 
 	// func TestSuperCall(t *testing.T) {
 	// 	expectParseError(t, "super()", "<stdin>: error: Unexpected \"(\"\n")

@@ -6,16 +6,36 @@ export interface SerializeOptions {
 }
 
 export function serialize(node: AstNode, options: SerializeOptions = {}) {
-	return serializeAst(node, null, {
-		indentChar: options.indentChar || "  ",
-		newLineChar: options.newLineChar || "\n",
+	const indentChar = "indentChar" in options ? options.indentChar || "" : "  ";
+	const newLineChar =
+		"newLineChar" in options ? options.newLineChar || "" : "\n";
+
+	// TODO: Hoist this?
+	const indentCache: string[] = [];
+	const indent = (n: number) => {
+		if (n >= indentCache.length) {
+			indentCache[n] = indentChar.repeat(n);
+		}
+		return indentCache[n];
+	};
+
+	return serializeAst(node, null, 0, false, {
+		indentChar,
+		indent,
+		newLineChar,
 	});
+}
+
+export interface InternalSerialize extends Required<SerializeOptions> {
+	indent: (level: number) => string;
 }
 
 function serializeAst(
 	node: AstNode,
 	parent: AstNode | null,
-	options: Required<SerializeOptions>
+	level: number,
+	skipIndent: boolean,
+	options: InternalSerialize
 ): string {
 	const { indentChar, newLineChar } = options;
 	let out = "";
@@ -30,7 +50,13 @@ function serializeAst(
 		case "ObjectPattern": {
 			out += "{";
 			for (let i = 0; i < node.properties.length; i++) {
-				out += serializeAst(node.properties[i], node, options);
+				out += serializeAst(
+					node.properties[i],
+					node,
+					level,
+					skipIndent,
+					options
+				);
 				if (i + 1 < node.properties.length) {
 					out += ", ";
 				}
@@ -45,7 +71,13 @@ function serializeAst(
 			}
 
 			for (let i = 0; i < node.properties.length; i++) {
-				out += serializeAst(node.properties[i], node, options);
+				out += serializeAst(
+					node.properties[i],
+					node,
+					level + 1,
+					skipIndent,
+					options
+				);
 				if (i + 1 < node.properties.length) {
 					out += "," + options.newLineChar;
 				}
@@ -55,23 +87,57 @@ function serializeAst(
 		}
 		case "Property": {
 			if (node.key === node.value) {
-				return serializeAst(node.key, node, options);
+				return serializeAst(node.key, node, level + 1, skipIndent, options);
 			}
 
 			if (node.computed) {
 				out += "[";
+			} else if (!skipIndent) {
+				out += options.indent(level);
 			}
-			out += serializeAst(node.key, node, options);
+			out += serializeAst(node.key, node, level, skipIndent, options);
 			if (node.computed) {
 				out += "]";
 			}
-			out += ": " + serializeAst(node.value, node, options);
+			if (!node.method) {
+				out += ": ";
+			}
+			out += serializeAst(node.value, node, level, skipIndent, options);
 			return out;
 		}
+		case "ClassDeclaration":
+			{
+				out += "class ";
+				if (node.name) {
+					out += node.name.name + " ";
+				}
+				if (node.extend) {
+					out +=
+						serializeAst(node.extend, node, level, skipIndent, options) + " ";
+				}
+			}
+			out += "{" + options.newLineChar;
+			for (let i = 0; i < node.properties.length; i++) {
+				out += serializeAst(
+					node.properties[i],
+					node,
+					level + 1,
+					skipIndent,
+					options
+				);
+			}
+			out += "}" + options.newLineChar;
+			return out;
 		case "VariableDeclaration": {
 			out += node.kind + " ";
 			for (let i = 0; i < node.declarations.length; i++) {
-				out += serializeAst(node.declarations[i], node, options);
+				out += serializeAst(
+					node.declarations[i],
+					node,
+					level,
+					skipIndent,
+					options
+				);
 				if (i + 1 < node.declarations.length) {
 					out += ", ";
 				}
@@ -90,16 +156,17 @@ function serializeAst(
 			break;
 		}
 		case "VariableDeclarator": {
-			out += serializeAst(node.id, node, options);
+			out += serializeAst(node.id, node, level, skipIndent, options);
 			if (node.init) {
-				out += " = " + serializeAst(node.init, node, options);
+				out +=
+					" = " + serializeAst(node.init, node, level, skipIndent, options);
 			}
 			break;
 		}
 		case "ArrayExpression": {
 			out += "[";
 			for (let i = 0; i < node.elements.length; i++) {
-				out += serializeAst(node.elements[i], node, options);
+				out += serializeAst(node.elements[i], node, level, skipIndent, options);
 				if (
 					i + 1 < node.elements.length ||
 					node.elements[i].type === "EmptyExpression"
@@ -115,14 +182,22 @@ function serializeAst(
 		}
 		case "BlockStatement": {
 			out += "{";
-			if (options.newLineChar) {
-				out += options.newLineChar;
+			if (node.body.length === 0) {
+				return out + "}" + options.newLineChar;
 			}
 
+			out += options.newLineChar;
+
 			for (let i = 0; i < node.body.length; i++) {
-				out += serializeAst(node.body[i], node.body[i], options);
+				out += serializeAst(
+					node.body[i],
+					node.body[i],
+					level + 1,
+					skipIndent,
+					options
+				);
 			}
-			out += "}";
+			out += options.indent(level) + "}";
 			if (options.newLineChar) {
 				out += options.newLineChar;
 			}
@@ -132,7 +207,9 @@ function serializeAst(
 			if (node.async) {
 				out += "async ";
 			}
-			out += "function";
+			if (!parent || parent.type !== "Property" || !parent.method) {
+				out += "function";
+			}
 			if (node.generator) {
 				out += "* ";
 			}
@@ -145,58 +222,63 @@ function serializeAst(
 			}
 			out += "(";
 			for (let i = 0; i < node.params.length; i++) {
-				out += serializeAst(node.params[i], node, options);
+				out += serializeAst(node.params[i], node, level, skipIndent, options);
 				if (i + 1 < node.params.length) {
 					out += ",";
 				}
 			}
 
-			out += ")";
-			if (options.indentChar) {
-				out += " ";
-			}
-			out += serializeAst(node.body, node, options);
+			out += ") ";
+			out += serializeAst(node.body, node, level, skipIndent, options);
 			return out;
 		}
 		case "ForStatement": {
 			out += "for (";
-			if (node.init) out += serializeAst(node.init, node, options);
+			if (node.init)
+				out += serializeAst(node.init, node, level, skipIndent, options);
 			out += ";";
-			if (node.test) out += serializeAst(node.test, node, options);
+			if (node.test)
+				out += serializeAst(node.test, node, level, skipIndent, options);
 			out += ";";
-			if (node.update) out += serializeAst(node.update, node, options);
+			if (node.update)
+				out += serializeAst(node.update, node, level, skipIndent, options);
 			out += ")";
-			out += serializeAst(node.body, node, options);
+			out += serializeAst(node.body, node, level, skipIndent, options);
 			return out;
 		}
 		case "ForInStatement": {
 			return (
 				"for (" +
-				serializeAst(node.left, node, options) +
+				serializeAst(node.left, node, 0, skipIndent, options) +
 				" in " +
-				serializeAst(node.right, node, options) +
+				serializeAst(node.right, node, 0, skipIndent, options) +
 				")" +
-				serializeAst(node.body, node, options)
+				serializeAst(node.body, node, level + 1, skipIndent, options)
 			);
 		}
 		case "ForOfStatement": {
 			return (
 				"for (" +
-				serializeAst(node.left, node, options) +
+				serializeAst(node.left, node, 0, skipIndent, options) +
 				" of " +
-				serializeAst(node.right, node, options) +
+				serializeAst(node.right, node, 0, skipIndent, options) +
 				")" +
-				serializeAst(node.body, node, options)
+				serializeAst(node.body, node, level + 1, skipIndent, options)
 			);
 		}
 		case "ExpressionStatement": {
-			return serializeAst(node.expression, node, options) + ";\n";
+			out += serializeAst(node.expression, node, level, skipIndent, options);
+
+			if (node.expression.type !== "ClassDeclaration") {
+				out += ";\n";
+			}
+			return out;
 		}
 		case "UpdateExpression":
 			if (node.prefix) {
 				out += node.operator;
 			}
-			out += serializeAst(node.argument, node, options);
+			out += serializeAst(node.argument, node, 0, skipIndent, options);
 			if (!node.prefix) {
 				out += node.operator;
 			}
@@ -210,13 +292,13 @@ function serializeAst(
 					expr.operator === "+" &&
 					expr.argument.type === "Literal"
 				) {
-					return serializeAst(expr, node, options);
+					return serializeAst(expr, node, 0, true, options);
 				}
 			}
 
 			out += "(";
 			for (let i = 0; i < len; i++) {
-				out += serializeAst(node.expressions[i], node, options);
+				out += serializeAst(node.expressions[i], node, 0, true, options);
 				if (i + 1 < len) {
 					out += ", ";
 				}
@@ -231,16 +313,16 @@ function serializeAst(
 					out += " ";
 				}
 			}
-			out += serializeAst(node.argument, node, options);
+			out += serializeAst(node.argument, node, 0, skipIndent, options);
 			return out;
 		}
 		case "BinaryExpression": {
 			return (
-				serializeAst(node.left, node, options) +
+				serializeAst(node.left, node, 0, skipIndent, options) +
 				" " +
 				node.operator +
 				" " +
-				serializeAst(node.right, node, options)
+				serializeAst(node.right, node, 0, skipIndent, options)
 			);
 		}
 		case "EmptyStatement": {
@@ -258,7 +340,7 @@ function serializeAst(
 				out += node.hashbang + "\n";
 			}
 			for (let i = 0; i < node.body.length; i++) {
-				out += serializeAst(node.body[i], node, options);
+				out += serializeAst(node.body[i], node, 0, skipIndent, options);
 			}
 
 			return out;
