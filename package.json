@@ -2,9 +2,13 @@
 	"name": "esbuild-js",
 	"version": "0.0.1",
 	"description": "",
-	"main": "index.js",
+	"main": "dist/cjs/index.js",
+	"module": "dist/module/index.js",
+	"types": "dist/types/index.d.ts",
 	"scripts": {
 		"bench": "ts-node benchmark/bench.ts",
+		"build": "rimraf dist/ && tsc -p tsconfig.cjs.json && tsc -p tsconfig.module.json",
+		"format": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
 		"test": "mocha -r ts-node/register --extensions ts,tsx --watch-files src/ src/**/*.test.ts"
 	},
 	"author": "Marvin Hagemeister <hello@marvinh.dev>",
@@ -23,14 +27,25 @@
 		"lint-staged": "^10.2.11",
 		"mocha": "^8.1.3",
 		"prettier": "^2.0.5",
+		"rimraf": "^3.0.2",
 		"ts-node": "^8.10.2",
 		"typescript": "^3.9.7"
+	},
+	"dependencies": {
+		"@types/estree": "^0.0.45"
 	},
 	"prettier": {
 		"useTabs": true,
 		"arrowParens": "avoid"
 	},
-	"dependencies": {
-		"@types/estree": "^0.0.45"
+	"lint-staged": {
+		"**/*.{js,jsx,ts,tsx,json}": [
+			"prettier --write"
+		]
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
 	}
 }
