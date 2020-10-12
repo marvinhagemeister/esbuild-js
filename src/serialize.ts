@@ -355,6 +355,12 @@ function serializeAst(
 				serializeAst(node.right, node, 0, skipIndent, options)
 			);
 		}
+		case "MemberExpression": {
+			out += serializeAst(node.left, node, level, skipIndent, options);
+			out += ".";
+			out += serializeAst(node.right, node, level, skipIndent, options);
+			return out;
+		}
 		case "AssignmentExpression": {
 			out += options.indent(level);
 			out += serializeAst(node.left, node, level, true, options);

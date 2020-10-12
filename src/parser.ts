@@ -3,6 +3,7 @@ import {
 	expectToken,
 	getRaw,
 	isContextualKeyword,
+	isIdentifierOrKeyword,
 	Lexer,
 	newLexer,
 	nextToken,
@@ -42,7 +43,7 @@ export function parse(source: string): tt.Program {
 		nextToken(lexer);
 	}
 
-	const statements = parseStatementsUpTo(parser, Token.EOF);
+	const statements = parseStatementsUpTo(parser, Token.EndOfFile);
 	const program = tt.program("module", statements as any);
 	program.hashbang = hashbang;
 	return program;
@@ -248,7 +249,7 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 	const declarations: tt.VariableDeclarator[] = [];
 
 	while (true) {
-		if (p.lexer.token === Token.EOF) {
+		if (p.lexer.token === Token.EndOfFile) {
 			break;
 		}
 		// TODO: Forbid "let let" and "const let" but not "var let"
@@ -467,6 +468,18 @@ function parseSuffix(
 ): tt.Expression {
 	while (true) {
 		switch (p.lexer.token) {
+			case Token.Dot: {
+				nextToken(p.lexer);
+				// a.b
+				if (!isIdentifierOrKeyword(p.lexer)) {
+					expectToken(p.lexer, Token.Identifier);
+				}
+
+				const name = p.lexer.identifier;
+				nextToken(p.lexer);
+				left = tt.memberExpression(left, tt.identifier(name));
+				break;
+			}
 			case Token["--"]: {
 				if (level >= tt.Precedence.Postfix) {
 					return left;

@@ -25,6 +25,11 @@ describe("ES5", () => {
 			expectPrinted("true || x > 1", "true || x > 1;\n");
 			expectPrinted("true || (x > 1 && x < 0)", "true || (x > 1 && x < 0);\n");
 		});
+
+		it("should parse member expressions", () => {
+			expectPrinted("a.b", "a.b;\n");
+			expectPrinted("a.b.c", "a.b.c;\n");
+		});
 	});
 
 	describe("RegExp", () => {

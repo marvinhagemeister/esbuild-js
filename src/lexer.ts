@@ -119,7 +119,7 @@ export function expectOrInsertSemicolon(lexer: Lexer) {
 		lexer.token === Token.SemiColon ||
 		(!lexer.hasNewLineBefore &&
 			lexer.token !== Token.CloseParen &&
-			lexer.token !== Token.EOF)
+			lexer.token !== Token.EndOfFile)
 	) {
 		expectToken(lexer, Token.SemiColon);
 	}
@@ -715,6 +715,10 @@ export function decodeEscapeSequences(
 	return decoded;
 }
 
+export function isIdentifierOrKeyword(lexer: Lexer) {
+	return lexer.token >= Token.Identifier;
+}
+
 // TODO: Validate regex syntax
 export function scanRegExp(lexer: Lexer) {
 	while (true) {
@@ -762,7 +766,7 @@ export function nextToken(lexer: Lexer) {
 
 		switch (lexer.codePoint) {
 			case CodePoint.EndOfFile:
-				lexer.token = Token.EOF;
+				lexer.token = Token.EndOfFile;
 				break;
 			case CodePoint["#"]:
 				// Hashbang

@@ -57,6 +57,7 @@ export type Expression =
 	| Literal
 	| RegExpLiteral
 	| Identifier
+	| MemberExpression
 	| ArrayExpression
 	| FunctionDeclaration
 	| SequenceExpression
@@ -314,6 +315,24 @@ export function expressionStatement(
 		expression,
 		len: 0,
 		start: 0,
+	};
+}
+
+export interface MemberExpression extends BaseNode {
+	type: "MemberExpression";
+	left: Expression;
+	right: Expression;
+}
+export function memberExpression(
+	left: Expression,
+	right: Expression
+): MemberExpression {
+	return {
+		type: "MemberExpression",
+		left,
+		right,
+		start: 0,
+		len: 0,
 	};
 }
 

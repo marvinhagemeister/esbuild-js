@@ -1,25 +1,39 @@
+// Note: Order is used for comparison
 export const enum Token {
-	OpenParen,
-	CloseParen,
-	OpenBracket,
-	CloseBracket,
-	OpenBrace,
-	CloseBrace,
-	Comma,
-	Colon,
-	SemiColon,
-	At,
-	Tilde,
+	EndOfFile,
 	SyntaxError,
-	Identifier,
-	EscapedKeyword,
+
+	/** #!/usr/bin/env node */
+	Hashbang,
+
+	// Literals
+	NoSubstitutionTemplateLiteral,
+	NumericLiteral,
+	StringLiteral,
+	BigIntLiteral,
+
+	// Pseudo literals
+	TemplateMiddle,
+	TemplateHead,
+	TemplateTail,
+
+	// Punctuation
+	At,
+	CloseBrace,
+	CloseBracket,
+	CloseParen,
+	OpenBrace,
+	OpenBracket,
+	OpenParen,
+	Colon,
+	Comma,
+	SemiColon,
+	Tilde,
 	"!==",
 	"!=",
 	"!",
 	DotDotDot,
 	Dot,
-	NumericLiteral,
-	BigIntLiteral,
 	"/",
 	"/=",
 	"+=",
@@ -33,12 +47,6 @@ export const enum Token {
 	"===",
 	"==",
 	Equals,
-	EOF,
-	StringLiteral,
-	TemplateMiddle,
-	TemplateHead,
-	TemplateTail,
-	NoSubstitutionTemplateLiteral,
 	"<",
 	"<=",
 	"<<=",
@@ -68,6 +76,10 @@ export const enum Token {
 	"??",
 	Question,
 	QuestionDot,
+
+	// Assignment
+	Identifier,
+	EscapedKeyword,
 
 	// Keywords
 	Break,
@@ -114,8 +126,6 @@ export const enum Token {
 	Public,
 	Static,
 	Yield,
-
-	Hashbang,
 }
 
 export const keywords = {
