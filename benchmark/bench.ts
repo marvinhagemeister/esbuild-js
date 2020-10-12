@@ -72,4 +72,6 @@ async function run() {
 	esbuildService.stop();
 }
 
-run();
+run()
+	.then(() => process.exit(0))
+	.catch(() => process.exit(1));
