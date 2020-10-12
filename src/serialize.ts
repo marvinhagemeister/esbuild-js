@@ -269,7 +269,13 @@ function serializeAst(
 		case "ExpressionStatement": {
 			out += serializeAst(node.expression, node, level, skipIndent, options);
 
-			if (node.expression.type !== "ClassDeclaration") {
+			if (
+				parent &&
+				parent.type !== "ForStatement" &&
+				parent.type !== "ForInStatement" &&
+				parent.type !== "ForOfStatement" &&
+				node.expression.type !== "ClassDeclaration"
+			) {
 				out += ";\n";
 			}
 			return out;

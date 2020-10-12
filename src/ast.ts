@@ -126,10 +126,11 @@ export function arrayExpression(
 export interface BinaryExpression extends BaseNode {
 	type: "BinaryExpression";
 	left: Expression;
-	operator: "**";
+	operator: "**" | "<" | "<=" | ">" | ">=" | "==" | "!=" | "===" | "!==";
 	right: Expression;
 }
 export function binaryExpression(
+	operator: BinaryExpression["operator"],
 	left: Expression,
 	right: Expression
 ): BinaryExpression {
@@ -137,7 +138,7 @@ export function binaryExpression(
 		type: "BinaryExpression",
 		left,
 		right,
-		operator: "**",
+		operator,
 		start: 0,
 		len: 0,
 	};

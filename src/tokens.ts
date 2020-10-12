@@ -37,6 +37,7 @@ export const enum Token {
 	TemplateHead,
 	TemplateTail,
 	NoSubstitutionTemplateLiteral,
+	"<",
 	"<=",
 	"<<=",
 	"<<",

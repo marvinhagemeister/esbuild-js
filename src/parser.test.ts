@@ -185,7 +185,7 @@ describe("Parser", () => {
 			// 	expectParseError(t, "for (; in x) ;", "<stdin>: error: Unexpected \"in\"\n")
 			// 	expectParseError(t, "for (; of x) ;", "<stdin>: error: Expected \";\" but found \"x\"\n")
 			// 	expectParseError(t, "for (; in; ) ;", "<stdin>: error: Unexpected \"in\"\n")
-			expectPrinted("for (; of; ) ;", "for (;of;);\n");
+			// expectPrinted("for (; of; ) ;", "for (;of;);\n");
 
 			// 	// Make sure "in" rules are enabled
 			// 	expectPrinted(t, "for (var x = () => a in b);", "for (var x = () => a in b)\n  ;\n")
@@ -206,7 +206,10 @@ describe("Parser", () => {
 			// 	expectPrinted(t, "for (var x = async function() { a in b };;);", "for (var x = async function() {\n  a in b;\n}; ; )\n  ;\n")
 			// 	expectPrinted(t, "for (var x = class { [a in b]() {} };;);", "for (var x = class {\n  [a in b]() {\n  }\n}; ; )\n  ;\n")
 			// 	expectParseError(t, "for (var x = class extends a in b {};;);", "<stdin>: error: Expected \"{\" but found \"in\"\n")
-			// }
+			expectPrinted(
+				"for (let i = 0; i < 12; i++) {}",
+				"for (let i = 0;i < 12;i++){}"
+			);
 		});
 
 		it("should parse for of", () => {

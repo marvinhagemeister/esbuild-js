@@ -451,9 +451,18 @@ function parseSuffix(
 				}
 				nextToken(p.lexer);
 				const right = parseExpression(p, tt.Precedence.Exponentiation - 1);
-				left = tt.binaryExpression(left, right);
+				left = tt.binaryExpression("**", left, right);
 				break;
 			}
+			case Token["<"]:
+				if (level >= tt.Precedence.Compare) {
+					return left;
+				}
+
+				nextToken(p.lexer);
+				const right = parseExpression(p, tt.Precedence.Compare);
+				left = tt.binaryExpression("<", left, right);
+				break;
 			default:
 				return left;
 		}

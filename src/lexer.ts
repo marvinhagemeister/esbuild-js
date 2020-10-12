@@ -1050,6 +1050,9 @@ export function nextToken(lexer: Lexer) {
 						} else {
 							lexer.token = Token["<<"];
 						}
+						break;
+					default:
+						lexer.token = Token["<"];
 				}
 				break;
 
