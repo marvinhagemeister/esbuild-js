@@ -1,14 +1,14 @@
 {
-	"name": "js-parser",
-	"version": "1.0.0",
+	"name": "esbuild-js",
+	"version": "0.0.1",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
 		"bench": "ts-node benchmark/bench.ts",
 		"test": "mocha -r ts-node/register --extensions ts,tsx --watch-files src/ src/**/*.test.ts"
 	},
-	"author": "",
-	"license": "ISC",
+	"author": "Marvin Hagemeister <hello@marvinh.dev>",
+	"license": "MIT",
 	"devDependencies": {
 		"@babel/generator": "^7.11.6",
 		"@babel/parser": "^7.11.5",
