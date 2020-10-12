@@ -255,6 +255,13 @@ function serializeAst(
 			out += serializeAst(node.body, node, level, skipIndent, options);
 			return out;
 		}
+		case "WhileStatement": {
+			out += "while (";
+			out += serializeAst(node.test, node, level, true, options);
+			out += ") ";
+			out += serializeAst(node.body, node, level, skipIndent, options);
+			return out;
+		}
 		case "ForStatement": {
 			out += "for (";
 			if (node.init)

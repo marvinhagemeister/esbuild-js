@@ -265,6 +265,7 @@ export type Statement =
 	| EmptyStatement
 	| ExpressionStatement
 	| ReturnStatement
+	| WhileStatement
 	| IfStatement
 	| Comment
 	| BlockStatement;
@@ -288,6 +289,24 @@ export function ifStatement(
 		alternate,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface WhileStatement extends BaseNode {
+	type: "WhileStatement";
+	test: Expression;
+	body: Statement;
+}
+export function whileStatement(
+	test: Expression,
+	body: Statement
+): WhileStatement {
+	return {
+		type: "WhileStatement",
+		test,
+		body,
+		len: 0,
+		start: 0,
 	};
 }
 

@@ -110,6 +110,14 @@ function parseStatement(p: Parser): tt.Statement {
 
 			return tt.ifStatement(test, body, alternate);
 		}
+		case Token.While: {
+			nextToken(p.lexer);
+			expectToken(p.lexer, Token.OpenParen);
+			const test = parseExpression(p, tt.Precedence.Lowest);
+			expectToken(p.lexer, Token.CloseParen);
+			const body = parseStatement(p);
+			return tt.whileStatement(test, body);
+		}
 		case Token.SemiColon:
 			nextToken(p.lexer);
 			return tt.emptyStatement("");

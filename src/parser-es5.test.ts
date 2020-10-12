@@ -32,6 +32,16 @@ describe("ES5", () => {
 		});
 	});
 
+	describe("while", () => {
+		it("should parse while-loop", () => {
+			expectPrinted("while (true) {}", "while (true) {}\n");
+			expectPrinted(
+				"while (item = foo) { x = 3; }",
+				"while (item = foo) {\n  x = 3;\n}\n"
+			);
+		});
+	});
+
 	describe("Functions", () => {
 		it("should parse return keyword", () => {
 			expectPrinted(
