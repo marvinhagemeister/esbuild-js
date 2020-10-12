@@ -4,6 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
+		"bench": "ts-node benchmark/bench.ts",
 		"test": "mocha -r ts-node/register --extensions ts,tsx --watch-files src/ src/**/*.test.ts"
 	},
 	"author": "",
@@ -12,6 +13,9 @@
 		"@types/mocha": "^8.0.3",
 		"@types/node": "^14.0.27",
 		"@unicode/unicode-13.0.0": "^1.0.0",
+		"acorn": "^6.4.2",
+		"astring": "^1.4.3",
+		"benchmarkjs-pretty": "^2.0.1",
 		"expect": "^26.5.2",
 		"husky": "^4.2.5",
 		"lint-staged": "^10.2.11",
