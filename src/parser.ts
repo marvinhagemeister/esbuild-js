@@ -457,19 +457,108 @@ function parseSuffix(
 				left = tt.binaryExpression("**", left, right);
 				break;
 			}
-			case Token["<"]:
-				if (level >= tt.Precedence.Compare) {
+			case Token["=="]: {
+				const res = parseEqualSuffix(p, "==", left, level);
+				if (res === null) return left;
+				left = res;
+				break;
+			}
+			case Token["!="]: {
+				const res = parseEqualSuffix(p, "!=", left, level);
+				if (res === null) return left;
+				left = res;
+				break;
+			}
+			case Token["==="]: {
+				const res = parseEqualSuffix(p, "===", left, level);
+				if (res === null) return left;
+				left = res;
+				break;
+			}
+			case Token["!=="]: {
+				const res = parseEqualSuffix(p, "!==", left, level);
+				if (res === null) return left;
+				left = res;
+				break;
+			}
+			case Token["<"]: {
+				const res = parseCompareSuffix(p, "<", left, level);
+				if (res === null) return left;
+				left = res;
+				break;
+			}
+			case Token["<="]: {
+				const res = parseCompareSuffix(p, "<=", left, level);
+				if (res === null) return left;
+				left = res;
+				break;
+			}
+			case Token[">"]: {
+				const res = parseCompareSuffix(p, ">", left, level);
+				if (res === null) return left;
+				left = res;
+				break;
+			}
+			case Token[">="]: {
+				const res = parseCompareSuffix(p, ">=", left, level);
+				if (res === null) return left;
+				left = res;
+				break;
+			}
+			case Token["||"]: {
+				if (level >= tt.Precedence.OR) {
 					return left;
 				}
 
 				nextToken(p.lexer);
-				const right = parseExpression(p, tt.Precedence.Compare);
-				left = tt.binaryExpression("<", left, right);
+				const right = parseExpression(p, tt.Precedence.Equals);
+				left = tt.binaryExpression("||", left, right);
 				break;
+			}
+			case Token["&&"]: {
+				if (level >= tt.Precedence.OR) {
+					return left;
+				}
+
+				nextToken(p.lexer);
+				const right = parseExpression(p, tt.Precedence.Equals);
+				left = tt.binaryExpression("&&", left, right);
+				break;
+			}
 			default:
 				return left;
 		}
 	}
+}
+
+function parseEqualSuffix(
+	p: Parser,
+	operator: tt.BinaryExpression["operator"],
+	left: tt.Expression,
+	level: number
+) {
+	if (level >= tt.Precedence.Equals) {
+		return null;
+	}
+
+	nextToken(p.lexer);
+	const right = parseExpression(p, tt.Precedence.Equals);
+	return tt.binaryExpression(operator, left, right);
+}
+
+function parseCompareSuffix(
+	p: Parser,
+	operator: tt.BinaryExpression["operator"],
+	left: tt.Expression,
+	level: number
+): null | tt.Expression {
+	if (level >= tt.Precedence.Compare) {
+		return null;
+	}
+
+	nextToken(p.lexer);
+	const right = parseExpression(p, tt.Precedence.Compare);
+	return tt.binaryExpression(operator, left, right);
 }
 
 function parseClass(p: Parser, name: string | null) {

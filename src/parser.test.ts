@@ -1,12 +1,4 @@
-import expect from "expect";
-import { parse } from "./parser";
-import { serialize } from "./serialize";
-
-function expectPrinted(source: string, expected: string) {
-	const ast = parse(source);
-	const out = serialize(ast, { newLineChar: "\n", indentChar: "  " });
-	expect(out).toBe(expected);
-}
+import { expectPrinted } from "./test-helpers";
 
 describe("Parser", () => {
 	// func TestComments(t *testing.T) {
