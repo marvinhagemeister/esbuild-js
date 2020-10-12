@@ -7,6 +7,7 @@ import * as astring from "astring";
 // @ts-ignore
 import babelGen from "@babel/generator";
 import * as babelParse from "@babel/parser";
+import * as esbuild from "esbuild";
 
 function testCustom(source: string) {
 	const ast = parse(source);
@@ -23,9 +24,22 @@ function testBabel(source: string) {
 	return babelGen(ast);
 }
 
+// Esbuild runs very poor without a service for some reason. Not sure why.
+let esbuildService: esbuild.Service;
+async function testESBuild(source: string) {
+	const { js } = await esbuildService.transform(source, {
+		minify: false,
+		sourcemap: false,
+		strict: true,
+		target: "es2020",
+	});
+	return js;
+}
+
 function runBenchmark(name: string, code: string) {
 	return new Suite(name)
 		.add("custom", () => testCustom(code))
+		.add("esbuild", () => testESBuild(code))
 		.add("acorn", () => testAcorn(code))
 		.add("babel", () => testBabel(code))
 		.run();
@@ -50,8 +64,12 @@ function bench2() {
 }
 
 async function run() {
+	esbuildService = await esbuild.startService();
+
 	await bench1();
 	await bench2();
+
+	esbuildService.stop();
 }
 
 run();
