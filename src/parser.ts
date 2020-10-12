@@ -21,6 +21,9 @@ export interface Parser {
 }
 
 export function newParser(lexer: Lexer): Parser {
+	// TODO: This may seem redundant but we'll need this to be an object
+	// to hold scope information, the current ECMA version and other
+	// things later.
 	return {
 		lexer,
 	};
@@ -503,7 +506,8 @@ function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
 	switch (p.lexer.token) {
 		case Token.NumericLiteral: {
 			const raw = getRaw(p.lexer);
-			// FIXME: Number literals
+			// FIXME: Add proper Number literals, so that we can print
+			// numbers in their original form in the input code
 			key = tt.literal(Number(raw));
 			nextToken(p.lexer);
 			break;
