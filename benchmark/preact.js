@@ -1595,19 +1595,19 @@ function createContext(defaultValue, contextId) {
 	return (context.Provider.__ = context.Consumer.contextType = context);
 }
 
-export {
-	render,
-	hydrate,
-	createElement,
-	createElement as h,
-	Fragment,
-	createRef,
-	isValidElement,
-	Component,
-	cloneElement,
-	createContext,
-	toChildArray,
-	unmount as __u,
-	options,
-};
+// export {
+// 	render,
+// 	hydrate,
+// 	createElement,
+// 	createElement as h,
+// 	Fragment,
+// 	createRef,
+// 	isValidElement,
+// 	Component,
+// 	cloneElement,
+// 	createContext,
+// 	toChildArray,
+// 	unmount as __u,
+// 	options,
+// };
 //# sourceMappingURL=preact.module.js.map
