@@ -641,6 +641,50 @@ function parseSuffix(
 				left = tt.updateExpression("++", left, false);
 				break;
 			}
+			case Token.Plus: {
+				if (level >= tt.Precedence.Add) {
+					return left;
+				}
+				nextToken(p.lexer);
+				return tt.binaryExpression(
+					"+",
+					left,
+					parseExpression(p, tt.Precedence.Add)
+				);
+			}
+			case Token.Minus: {
+				if (level >= tt.Precedence.Add) {
+					return left;
+				}
+				nextToken(p.lexer);
+				return tt.binaryExpression(
+					"-",
+					left,
+					parseExpression(p, tt.Precedence.Add)
+				);
+			}
+			case Token["/"]: {
+				if (level >= tt.Precedence.Multiply) {
+					return left;
+				}
+				nextToken(p.lexer);
+				return tt.binaryExpression(
+					"/",
+					left,
+					parseExpression(p, tt.Precedence.Multiply)
+				);
+			}
+			case Token["*"]: {
+				if (level >= tt.Precedence.Multiply) {
+					return left;
+				}
+				nextToken(p.lexer);
+				return tt.binaryExpression(
+					"*",
+					left,
+					parseExpression(p, tt.Precedence.Multiply)
+				);
+			}
 			case Token["**"]: {
 				if (level >= tt.Precedence.Exponentiation) {
 					return left;

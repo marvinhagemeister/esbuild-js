@@ -207,6 +207,10 @@ export interface BinaryExpression extends BaseNode {
 	type: "BinaryExpression";
 	left: Expression;
 	operator:
+		| "+"
+		| "-"
+		| "*"
+		| "/"
 		| "**"
 		| "<"
 		| "<="

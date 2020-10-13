@@ -21,6 +21,13 @@ describe("ES5", () => {
 			expectPrinted("1 && 2", "1 && 2;\n");
 		});
 
+		it("should parse quick math!", () => {
+			expectPrinted("1 + 2", "1 + 2;\n");
+			expectPrinted("1 - 2", "1 - 2;\n");
+			expectPrinted("1 / 2", "1 / 2;\n");
+			expectPrinted("1 * 2", "1 * 2;\n");
+		});
+
 		it("should parse mixed examples", () => {
 			expectPrinted("true || x > 1", "true || x > 1;\n");
 			expectPrinted("true || (x > 1 && x < 0)", "true || (x > 1 && x < 0);\n");
