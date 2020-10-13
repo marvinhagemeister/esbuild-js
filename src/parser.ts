@@ -233,6 +233,12 @@ function parseStatement(p: Parser): tt.Statement {
 			const body = parseStatement(p);
 			return tt.forStatement(body, init, update, test);
 		}
+		case Token.Continue: {
+			nextToken(p.lexer);
+			const name = parseLabelName(p);
+			expectOrInsertSemicolon(p.lexer);
+			return tt.continueStatement(name ? tt.identifier(name) : null);
+		}
 		case Token.Return: {
 			nextToken(p.lexer);
 			let value: tt.Expression | null = null;
@@ -311,6 +317,16 @@ function parseExpressionOrLetStatement(p: Parser) {
 	}
 
 	return null;
+}
+
+function parseLabelName(p: Parser) {
+	if (p.lexer.token !== Token.Identifier || p.lexer.hasNewLineBefore) {
+		return null;
+	}
+
+	const name = p.lexer.identifier;
+	nextToken(p.lexer);
+	return name;
 }
 
 function parseDeclarations(p: Parser): tt.VariableDeclarator[] {

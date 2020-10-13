@@ -433,6 +433,14 @@ function serializeAst(
 		case "ThrowStatement": {
 			out += "throw ";
 			out += serializeAst(node.value, node, level, true, options);
+			return out + ";\n";
+		}
+		case "ContinueStatement": {
+			out += options.indent(level) + "continue";
+			if (node.name) {
+				out += " " + serializeAst(node.name, node, level, true, options);
+			}
+			return (out += ";\n");
 		}
 		case "EmptyStatement": {
 			out += ";";

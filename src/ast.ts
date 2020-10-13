@@ -270,6 +270,7 @@ export type Statement =
 	| ExpressionStatement
 	| ReturnStatement
 	| WhileStatement
+	| ContinueStatement
 	| TryStatement
 	| IfStatement
 	| Comment
@@ -349,6 +350,19 @@ export function whileStatement(
 		type: "WhileStatement",
 		test,
 		body,
+		len: 0,
+		start: 0,
+	};
+}
+
+export interface ContinueStatement extends BaseNode {
+	type: "ContinueStatement";
+	name: Identifier | null;
+}
+export function continueStatement(name: Identifier | null): ContinueStatement {
+	return {
+		type: "ContinueStatement",
+		name,
 		len: 0,
 		start: 0,
 	};

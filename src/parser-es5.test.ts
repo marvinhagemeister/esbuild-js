@@ -100,6 +100,15 @@ describe("ES5", () => {
 			expectPrinted("throw 1", "throw 1;\n");
 		});
 
+		it("should parse continue statement", () => {
+			expectPrinted("continue", "continue;\n");
+			expectPrinted("continue foo", "continue foo;\n");
+			expectPrinted(
+				"while (true) { continue; }",
+				"while (true) {\n  continue;\n}\n"
+			);
+		});
+
 		describe("If-Statements", () => {
 			it("should parse if-statments", () => {
 				expectPrinted("if (true) {}", "if (true) {\n}\n");
