@@ -39,6 +39,11 @@ describe("ES5", () => {
 				expectPrinted("arguments$1[i]", "arguments$1[i];\n");
 			});
 		});
+
+		it("should parse this", () => {
+			expectPrinted("this", "this;\n");
+			expectPrinted("this.foo", "this.foo;\n");
+		});
 	});
 
 	describe("while", () => {

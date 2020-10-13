@@ -399,6 +399,9 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 		case Token.Null:
 			nextToken(p.lexer);
 			return tt.literal(null);
+		case Token.This:
+			nextToken(p.lexer);
+			return tt.thisExpression();
 		case Token.StringLiteral: {
 			const value = p.lexer.string;
 			nextToken(p.lexer);

@@ -60,6 +60,7 @@ export type Expression =
 	| MemberExpression
 	| CallExpression
 	| NewExpression
+	| ThisExpression
 	| ArrayExpression
 	| FunctionDeclaration
 	| ObjectPattern
@@ -185,6 +186,17 @@ export function newExpression(
 		type: "NewExpression",
 		callee,
 		arguments: callArguments,
+		len: 0,
+		start: 0,
+	};
+}
+
+export interface ThisExpression extends BaseNode {
+	type: "ThisExpression";
+}
+export function thisExpression(): ThisExpression {
+	return {
+		type: "ThisExpression",
 		len: 0,
 		start: 0,
 	};

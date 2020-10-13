@@ -558,6 +558,9 @@ function serializeAst(
 			out += ")";
 			return out;
 		}
+		case "ThisExpression": {
+			return "this";
+		}
 		case "NewExpression": {
 			out += "new ";
 			out += serializeAst(
