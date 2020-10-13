@@ -70,6 +70,12 @@ describe("ES5", () => {
 				"function foo() {\n  return 1;\n}\n"
 			);
 		});
+
+		it("should parse function calls", () => {
+			expectPrinted("foo()", "foo();\n");
+			expectPrinted("foo(1)", "foo(1);\n");
+			expectPrinted("foo(x, 1)", "foo(x, 1);\n");
+		});
 	});
 
 	describe("Array", () => {

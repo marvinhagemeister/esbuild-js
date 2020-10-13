@@ -58,6 +58,7 @@ export type Expression =
 	| RegExpLiteral
 	| Identifier
 	| MemberExpression
+	| CallExpression
 	| ArrayExpression
 	| FunctionDeclaration
 	| ObjectPattern
@@ -149,6 +150,24 @@ export function arrayExpression(
 		elements,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface CallExpression extends BaseNode {
+	type: "CallExpression";
+	callee: Expression;
+	arguments: Expression[];
+}
+export function callExpression(
+	callee: Expression,
+	callArguments: Expression[]
+): CallExpression {
+	return {
+		type: "CallExpression",
+		callee,
+		arguments: callArguments,
+		len: 0,
+		start: 0,
 	};
 }
 

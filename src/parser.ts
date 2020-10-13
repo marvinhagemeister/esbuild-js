@@ -486,6 +486,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 
 			return tt.unaryExpression("!", value);
 		}
+
 		case Token["--"]: {
 			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
@@ -586,6 +587,14 @@ function parseSuffix(
 				expectToken(p.lexer, Token.CloseBracket);
 				left = tt.memberExpression(left, index, true);
 				break;
+			}
+			case Token.OpenParen: {
+				if (level >= tt.Precedence.Call) {
+					return left;
+				}
+
+				const args = parseCallArgs(p);
+				return tt.callExpression(left, args);
 			}
 			case Token["--"]: {
 				if (level >= tt.Precedence.Postfix) {
@@ -695,6 +704,25 @@ function parseSuffix(
 				return left;
 		}
 	}
+}
+
+function parseCallArgs(p: Parser): tt.Expression[] {
+	expectToken(p.lexer, Token.OpenParen);
+
+	const args: tt.Expression[] = [];
+	while (p.lexer.token !== Token.CloseParen) {
+		// TODO: Spread
+		const arg = parseExpression(p, tt.Precedence.Comma);
+		args.push(arg);
+
+		if (p.lexer.token !== Token.Comma) {
+			break;
+		}
+		nextToken(p.lexer);
+	}
+
+	expectToken(p.lexer, Token.CloseParen);
+	return args;
 }
 
 function parseEqualSuffix(
