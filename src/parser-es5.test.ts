@@ -96,6 +96,10 @@ describe("ES5", () => {
 			expectPrinted("debugger", "debugger;\n");
 		});
 
+		it("should parse throw statement", () => {
+			expectPrinted("throw 1", "throw 1;\n");
+		});
+
 		describe("If-Statements", () => {
 			it("should parse if-statments", () => {
 				expectPrinted("if (true) {}", "if (true) {\n}\n");

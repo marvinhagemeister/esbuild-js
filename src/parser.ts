@@ -249,6 +249,11 @@ function parseStatement(p: Parser): tt.Statement {
 			expectOrInsertSemicolon(p.lexer);
 			return tt.returnStatement(value);
 		}
+		case Token.Throw: {
+			nextToken(p.lexer);
+			const value = parseExpression(p, tt.Precedence.Lowest);
+			return tt.throwStatement(value);
+		}
 		case Token.Debugger: {
 			nextToken(p.lexer);
 			expectOrInsertSemicolon(p.lexer);

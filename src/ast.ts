@@ -266,6 +266,7 @@ export type Statement =
 	| CatchClause
 	| EmptyStatement
 	| DebuggerStatement
+	| ThrowStatement
 	| ExpressionStatement
 	| ReturnStatement
 	| WhileStatement
@@ -387,6 +388,19 @@ export function debuggerStatement(): DebuggerStatement {
 		type: "DebuggerStatement",
 		len: 0,
 		start: 0,
+	};
+}
+
+export interface ThrowStatement extends BaseNode {
+	type: "ThrowStatement";
+	value: Expression;
+}
+export function throwStatement(value: Expression): ThrowStatement {
+	return {
+		type: "ThrowStatement",
+		len: 0,
+		start: 0,
+		value,
 	};
 }
 

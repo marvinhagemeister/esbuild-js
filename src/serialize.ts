@@ -430,6 +430,10 @@ function serializeAst(
 		case "RegExpLiteral": {
 			return node.value;
 		}
+		case "ThrowStatement": {
+			out += "throw ";
+			out += serializeAst(node.value, node, level, true, options);
+		}
 		case "EmptyStatement": {
 			out += ";";
 			if (options.newLineChar) {
