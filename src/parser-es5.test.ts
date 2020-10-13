@@ -30,6 +30,7 @@ describe("ES5", () => {
 			it("should parse property member expressions", () => {
 				expectPrinted("a.b", "a.b;\n");
 				expectPrinted("a.b.c", "a.b.c;\n");
+				expectPrinted("component.constructor;", "component.constructor;\n");
 			});
 
 			it("should parse index member expressions", () => {

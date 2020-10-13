@@ -1363,7 +1363,11 @@ export function nextToken(lexer: Lexer) {
 				} else {
 					const content = getRaw(lexer);
 					lexer.identifier = content;
-					lexer.token = (keywords as any)[content] || Token.Identifier;
+
+					lexer.token =
+						content !== "constructor" && content in keywords
+							? (keywords as any)[content]
+							: Token.Identifier;
 				}
 				break;
 
