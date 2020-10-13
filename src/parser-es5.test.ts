@@ -36,6 +36,7 @@ describe("ES5", () => {
 			it("should parse index member expressions", () => {
 				expectPrinted("a[i]", "a[i];\n");
 				expectPrinted("a[x || 4]", "a[x || 4];\n");
+				expectPrinted("arguments$1[i]", "arguments$1[i];\n");
 			});
 		});
 	});

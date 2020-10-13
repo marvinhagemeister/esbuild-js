@@ -338,6 +338,19 @@ export function isIdentifierStart(codePoint: number) {
 
 export function isIdentifierContinue(codePoint: number) {
 	if (isIdentifierChar(codePoint)) return true;
+	switch (codePoint) {
+		case CodePoint.n0:
+		case CodePoint.n1:
+		case CodePoint.n2:
+		case CodePoint.n3:
+		case CodePoint.n4:
+		case CodePoint.n5:
+		case CodePoint.n6:
+		case CodePoint.n7:
+		case CodePoint.n8:
+		case CodePoint.n9:
+			return true;
+	}
 
 	// All ASCII identifier start code points are listed above
 	if (codePoint < 0x7f) {
