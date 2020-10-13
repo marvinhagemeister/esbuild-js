@@ -498,6 +498,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			return tt.updateExpression("++", value, true);
 		}
 		case Token.Function: {
+			nextToken(p.lexer);
 			return parseFunctionExpression(p, false);
 		}
 		case Token.Class: {

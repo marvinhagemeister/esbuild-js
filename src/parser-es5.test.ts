@@ -88,6 +88,10 @@ describe("ES5", () => {
 			expectPrinted("new foo(1)", "new foo(1);\n");
 			expectPrinted("new foo(x, 1)", "new foo(x, 1);\n");
 		});
+
+		it("should parse function expressions", () => {
+			expectPrinted("var a = function() {}", "var a = function() {};\n");
+		});
 	});
 
 	describe("Array", () => {
