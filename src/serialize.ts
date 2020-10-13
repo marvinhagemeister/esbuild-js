@@ -558,6 +558,23 @@ function serializeAst(
 			out += ")";
 			return out;
 		}
+		case "ConditionalExpression": {
+			out += serializeAst(node.test, node, level, false, false, options);
+			out += options.newLineChar;
+			out += options.indent(level + 1) + "? ";
+			out += serializeAst(node.body, node, level, false, false, options);
+			out += options.newLineChar;
+			out += options.indent(level + 1) + ": ";
+			out += serializeAst(
+				node.alternate,
+				node,
+				level + 1,
+				false,
+				false,
+				options
+			);
+			return out;
+		}
 		case "ThisExpression": {
 			return "this";
 		}

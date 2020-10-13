@@ -44,6 +44,10 @@ describe("ES5", () => {
 			expectPrinted("this", "this;\n");
 			expectPrinted("this.foo", "this.foo;\n");
 		});
+
+		it("should parse ternary expressions (conditional)", () => {
+			expectPrinted("a ? b : c", "a\n  ? b\n  : c;\n");
+		});
 	});
 
 	describe("while", () => {

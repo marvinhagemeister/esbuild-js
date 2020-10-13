@@ -61,6 +61,7 @@ export type Expression =
 	| CallExpression
 	| NewExpression
 	| ThisExpression
+	| ConditionalExpression
 	| ArrayExpression
 	| FunctionDeclaration
 	| ObjectPattern
@@ -328,6 +329,27 @@ export type Statement =
 	| Comment
 	| BlockStatement;
 export type ModuleDeclaration = t.ImportDeclaration;
+
+export interface ConditionalExpression extends BaseNode {
+	type: "ConditionalExpression";
+	body: Expression;
+	test: Expression;
+	alternate: Expression;
+}
+export function conditionalExpression(
+	test: Expression,
+	body: Expression,
+	alternate: Expression
+): ConditionalExpression {
+	return {
+		type: "ConditionalExpression",
+		test,
+		body,
+		alternate,
+		len: 0,
+		start: 0,
+	};
+}
 
 export interface IfStatement extends BaseNode {
 	type: "IfStatement";

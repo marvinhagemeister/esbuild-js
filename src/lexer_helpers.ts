@@ -1,3 +1,5 @@
+import { Lexer } from "./lexer";
+
 export const enum IdenitfierKind {
 	NormalIdentifier,
 	PrivateIdentifier,
@@ -211,6 +213,17 @@ export function isWhitespace(codePoint: number) {
 		default:
 			return false;
 	}
+}
+
+export function formatLexerPosition(lexer: Lexer) {
+	// TODO: This is an approximation, whitespace is not respected
+	const text = lexer.source
+		.slice(
+			Math.max(0, lexer.start - 10),
+			Math.min(lexer.source.length, lexer.end + 10)
+		)
+		.replace(/\n/, "↵");
+	return "\n" + text + "\n" + " ".repeat(10) + "^";
 }
 
 export function isHexChar(codePoint: number) {

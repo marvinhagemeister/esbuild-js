@@ -9,7 +9,7 @@ import {
 	nextToken,
 	scanRegExp,
 } from "./lexer";
-import { strictModeReservedWords } from "./lexer_helpers";
+import { formatLexerPosition, strictModeReservedWords } from "./lexer_helpers";
 import { Token } from "./tokens";
 import * as tt from "./ast";
 
@@ -573,6 +573,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 		}
 		default: {
 			console.log(p.lexer);
+			console.log(formatLexerPosition(p.lexer));
 			throw new Error("fail #ac");
 		}
 	}
@@ -611,6 +612,16 @@ function parseSuffix(
 
 				const args = parseCallArgs(p);
 				return tt.callExpression(left, args);
+			}
+			case Token.Question: {
+				if (level >= tt.Precedence.Conditional) {
+					return left;
+				}
+				nextToken(p.lexer);
+				const body = parseExpression(p, tt.Precedence.Comma);
+				expectToken(p.lexer, Token.Colon);
+				const alternate = parseExpression(p, tt.Precedence.Comma);
+				return tt.conditionalExpression(left, body, alternate);
 			}
 			case Token["--"]: {
 				if (level >= tt.Precedence.Postfix) {

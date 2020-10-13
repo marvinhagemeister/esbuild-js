@@ -9,6 +9,7 @@ import {
 	isHexChar,
 	isIdentifier,
 	isKeyword,
+	formatLexerPosition,
 } from "./lexer_helpers";
 
 export interface Lexer {
@@ -108,11 +109,7 @@ function filterOutUnderscores(lexer: Lexer, underscoreCount: number) {
 
 export function expectToken(lexer: Lexer, token: Token) {
 	if (lexer.token !== token) {
-		const text = lexer.source.slice(
-			Math.max(0, lexer.start - 10),
-			Math.min(lexer.source.length, lexer.end + 10)
-		);
-		console.log("\n" + text + "\n" + " ".repeat(10) + "^");
+		console.log(formatLexerPosition(lexer));
 		throw new Error(`Expected token ${token}, but got ${lexer.token}`);
 	}
 
