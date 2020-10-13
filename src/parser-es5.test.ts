@@ -64,6 +64,12 @@ describe("ES5", () => {
 		});
 	});
 
+	it("'in'-operator", () => {
+		expectPrinted("!(a in b)", "!(a in b);\n");
+		expectPrinted("for (a in b) {}", "for (a in b){}\n");
+		expectPrinted("a && !(i in newProps)", "a && !(i in newProps);\n");
+	});
+
 	describe("while", () => {
 		it("should parse while-loop", () => {
 			expectPrinted("while (true) {}", "while (true) {}\n");

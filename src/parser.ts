@@ -19,6 +19,7 @@ import * as tt from "./ast";
 
 export interface Parser {
 	lexer: Lexer;
+	allowIn: boolean;
 }
 
 export function newParser(lexer: Lexer): Parser {
@@ -27,6 +28,7 @@ export function newParser(lexer: Lexer): Parser {
 	// things later.
 	return {
 		lexer,
+		allowIn: true,
 	};
 }
 
@@ -163,7 +165,9 @@ function parseStatement(p: Parser): tt.Statement {
 			// TODO: "for await (let x of y) {}"
 			expectToken(p.lexer, Token.OpenParen);
 
-			// TODO: Disallow in expressions
+			// "in" expressions aren't allowed here
+			p.allowIn = false;
+
 			let init: tt.Expression | tt.VariableDeclaration | null = null;
 			let test: tt.Expression | null = null;
 			let update: tt.Expression | null = null;
@@ -186,6 +190,9 @@ function parseStatement(p: Parser): tt.Statement {
 				default:
 					init = parseExpressionOrLetStatement(p);
 			}
+
+			// "in" expressions are allowed again
+			p.allowIn = true;
 
 			if (isContextualKeyword(p.lexer, "of")) {
 				// TODO: This is whacky
@@ -332,7 +339,7 @@ function parseExpressionOrLetStatement(p: Parser) {
 		}
 	}
 
-	return null;
+	return null as any;
 }
 
 function parseLabelName(p: Parser) {
@@ -824,6 +831,17 @@ function parseSuffix(
 				nextToken(p.lexer);
 				const value = parseExpression(p, tt.Precedence.Assign - 1);
 				left = tt.assignmentExpression(left, value);
+				break;
+			}
+			case Token.In: {
+				if (level >= tt.Precedence.Compare || !p.allowIn) {
+					return left;
+				}
+
+				nextToken(p.lexer);
+				const right = parseExpression(p, tt.Precedence.Compare);
+				left = tt.binaryExpression("in", left, right);
+				break;
 			}
 			default:
 				return left;
@@ -832,6 +850,8 @@ function parseSuffix(
 }
 
 function parseCallArgs(p: Parser): tt.Expression[] {
+	const oldAllowIn = p.allowIn;
+	p.allowIn = true;
 	expectToken(p.lexer, Token.OpenParen);
 
 	const args: tt.Expression[] = [];
@@ -847,6 +867,7 @@ function parseCallArgs(p: Parser): tt.Expression[] {
 	}
 
 	expectToken(p.lexer, Token.CloseParen);
+	p.allowIn = oldAllowIn;
 	return args;
 }
 
@@ -980,6 +1001,9 @@ function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
 }
 
 function parseParenExpression(p: Parser) {
+	const oldAllowIn = p.allowIn;
+	p.allowIn = true;
+
 	const items: tt.Expression[] = [];
 	while (p.lexer.token !== Token.CloseParen) {
 		// TODO: Spread
@@ -995,6 +1019,7 @@ function parseParenExpression(p: Parser) {
 
 	expectToken(p.lexer, Token.CloseParen);
 
+	p.allowIn = oldAllowIn;
 	// TODO: Async args
 
 	// Is this a chain of expressions and comma operators?

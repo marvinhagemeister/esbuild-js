@@ -225,7 +225,8 @@ export interface BinaryExpression extends BaseNode {
 		| "+="
 		| "-="
 		| "*="
-		| "/=";
+		| "/="
+		| "in";
 	right: Expression;
 }
 export function binaryExpression(
