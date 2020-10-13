@@ -6,16 +6,7 @@ On that day and the day after I ported most of the lexer to JS. But I lost inter
 
 The current goal is to finish translating the missing bits of the parser for the JS-Grammar. I'm currently skipping everything related to TS and any scope-tracking.
 
-Goals:
-
-- Prove that JS-Parsers can be fast
-- Ouput code should be readable by humans (hoping that we don't need source maps as often)
-
-Very very longterm roadmap:
-
-- TS Parsing
-- Mangling
-- Source Maps
+Note, that this repo is an experiment for now.
 
 ## Name
 
