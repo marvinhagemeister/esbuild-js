@@ -1,4 +1,6 @@
 import Suite from "benchmarkjs-pretty";
+import fs from "fs/promises";
+import path from "path";
 import { parse } from "../src/parser";
 import { serialize } from "../src/serialize";
 import * as acorn from "acorn";
@@ -63,15 +65,24 @@ function bench2() {
 	return runBenchmark("Simple for-loop", code);
 }
 
+async function benchPreact() {
+	const code = await fs.readFile(path.join(__dirname, "preact.js"), "utf-8");
+	return runBenchmark("Preact", code);
+}
+
 async function run() {
 	esbuildService = await esbuild.startService();
 
 	await bench1();
 	await bench2();
+	await benchPreact();
 
 	esbuildService.stop();
 }
 
 run()
 	.then(() => process.exit(0))
-	.catch(() => process.exit(1));
+	.catch(err => {
+		console.log(err);
+		process.exit(1);
+	});

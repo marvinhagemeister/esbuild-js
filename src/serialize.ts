@@ -19,7 +19,7 @@ export function serialize(node: AstNode, options: SerializeOptions = {}) {
 		return indentCache[n];
 	};
 
-	return serializeAst(node, null, 0, false, {
+	return serializeAst(node, null, 0, false, false, {
 		indentChar,
 		indent,
 		newLineChar,
@@ -35,6 +35,7 @@ function serializeAst(
 	parent: AstNode | null,
 	level: number,
 	skipIndent: boolean,
+	isExpression: boolean,
 	options: InternalSerialize
 ): string {
 	const { indentChar, newLineChar } = options;
@@ -55,6 +56,7 @@ function serializeAst(
 					node,
 					level,
 					skipIndent,
+					isExpression,
 					options
 				);
 				if (i + 1 < node.properties.length) {
@@ -76,6 +78,7 @@ function serializeAst(
 					node,
 					level + 1,
 					skipIndent,
+					isExpression,
 					options
 				);
 				if (i + 1 < node.properties.length) {
@@ -87,7 +90,14 @@ function serializeAst(
 		}
 		case "Property": {
 			if (node.key === node.value) {
-				return serializeAst(node.key, node, level + 1, skipIndent, options);
+				return serializeAst(
+					node.key,
+					node,
+					level + 1,
+					skipIndent,
+					isExpression,
+					options
+				);
 			}
 
 			if (node.computed) {
@@ -95,14 +105,21 @@ function serializeAst(
 			} else if (!skipIndent) {
 				out += options.indent(level);
 			}
-			out += serializeAst(node.key, node, level, skipIndent, options);
+			out += serializeAst(node.key, node, level, skipIndent, true, options);
 			if (node.computed) {
 				out += "]";
 			}
 			if (!node.method) {
 				out += ": ";
 			}
-			out += serializeAst(node.value, node, level, skipIndent, options);
+			out += serializeAst(
+				node.value,
+				node,
+				level,
+				skipIndent,
+				isExpression,
+				options
+			);
 			return out;
 		}
 		case "ClassDeclaration":
@@ -113,7 +130,14 @@ function serializeAst(
 				}
 				if (node.extend) {
 					out +=
-						serializeAst(node.extend, node, level, skipIndent, options) + " ";
+						serializeAst(
+							node.extend,
+							node,
+							level,
+							skipIndent,
+							isExpression,
+							options
+						) + " ";
 				}
 			}
 			out += "{" + options.newLineChar;
@@ -123,6 +147,7 @@ function serializeAst(
 					node,
 					level + 1,
 					skipIndent,
+					isExpression,
 					options
 				);
 			}
@@ -136,6 +161,7 @@ function serializeAst(
 					node,
 					level,
 					skipIndent,
+					isExpression,
 					options
 				);
 				if (i + 1 < node.declarations.length) {
@@ -156,17 +182,39 @@ function serializeAst(
 			break;
 		}
 		case "VariableDeclarator": {
-			out += serializeAst(node.id, node, level, skipIndent, options);
+			out += serializeAst(
+				node.id,
+				node,
+				level,
+				skipIndent,
+				isExpression,
+				options
+			);
 			if (node.init) {
 				out +=
-					" = " + serializeAst(node.init, node, level, skipIndent, options);
+					" = " +
+					serializeAst(
+						node.init,
+						node,
+						level,
+						skipIndent,
+						isExpression,
+						options
+					);
 			}
 			break;
 		}
 		case "ArrayExpression": {
 			out += "[";
 			for (let i = 0; i < node.elements.length; i++) {
-				out += serializeAst(node.elements[i], node, level, skipIndent, options);
+				out += serializeAst(
+					node.elements[i],
+					node,
+					level,
+					skipIndent,
+					isExpression,
+					options
+				);
 				if (
 					i + 1 < node.elements.length ||
 					node.elements[i].type === "EmptyExpression"
@@ -190,12 +238,24 @@ function serializeAst(
 				) {
 					return out + options.newLineChar + "}";
 				}
-				return out + "}" + options.newLineChar;
+				out += "}";
+
+				if (!isExpression) {
+					out += options.newLineChar;
+				}
+				return out;
 			}
 
 			out += options.newLineChar;
 			for (let i = 0; i < node.body.length; i++) {
-				out += serializeAst(node.body[i], node, level + 1, skipIndent, options);
+				out += serializeAst(
+					node.body[i],
+					node,
+					level + 1,
+					skipIndent,
+					isExpression,
+					options
+				);
 			}
 			out += options.indent(level) + "}";
 			if (!skipIndent && options.newLineChar) {
@@ -206,20 +266,43 @@ function serializeAst(
 		case "IfStatement": {
 			if (node.test !== null) {
 				out +=
-					"if (" + serializeAst(node.test, node, level, true, options) + ") ";
+					"if (" +
+					serializeAst(node.test, node, level, true, isExpression, options) +
+					") ";
 			}
 
 			if (node.body.type === "ExpressionStatement") {
-				out += serializeAst(node.body, node, level, true, options);
+				out += serializeAst(
+					node.body,
+					node,
+					level,
+					true,
+					isExpression,
+					options
+				);
 			} else {
 				const singleLine =
 					node.body.type === "BlockStatement" && node.body.body.length < 2;
-				out += serializeAst(node.body, node, level, singleLine, options);
+				out += serializeAst(
+					node.body,
+					node,
+					level,
+					singleLine,
+					isExpression,
+					options
+				);
 			}
 
 			if (node.alternate) {
 				out += " else ";
-				out += serializeAst(node.alternate, node, level, true, options);
+				out += serializeAst(
+					node.alternate,
+					node,
+					level,
+					true,
+					isExpression,
+					options
+				);
 
 				if (node.alternate.type !== "IfStatement") {
 					out += options.newLineChar;
@@ -249,19 +332,40 @@ function serializeAst(
 			}
 			out += "(";
 			for (let i = 0; i < node.params.length; i++) {
-				out += serializeAst(node.params[i], node, level, skipIndent, options);
+				out += serializeAst(
+					node.params[i],
+					node,
+					level,
+					skipIndent,
+					isExpression,
+					options
+				);
 				if (i + 1 < node.params.length) {
 					out += ",";
 				}
 			}
 
 			out += ") ";
-			out += serializeAst(node.body, node, level, skipIndent, options);
+			out += serializeAst(
+				node.body,
+				node,
+				level,
+				skipIndent,
+				parent !== null && parent.type === "VariableDeclarator",
+				options
+			);
 			return out;
 		}
 		case "TryStatement": {
 			out += "try ";
-			out += serializeAst(node.body, node, level + 1, false, options);
+			out += serializeAst(
+				node.body,
+				node,
+				level + 1,
+				false,
+				isExpression,
+				options
+			);
 			if (node.handler) {
 				out += " catch";
 				if (node.handler.param) {
@@ -271,12 +375,20 @@ function serializeAst(
 						node.handler,
 						level + 1,
 						false,
+						isExpression,
 						options
 					);
 					out += ") ";
 				}
 
-				out += serializeAst(node.handler.body, node, level + 1, false, options);
+				out += serializeAst(
+					node.handler.body,
+					node,
+					level + 1,
+					false,
+					isExpression,
+					options
+				);
 				if (!node.finallyHandler) {
 					out += "\n";
 				}
@@ -289,6 +401,7 @@ function serializeAst(
 					node,
 					level + 1,
 					false,
+					isExpression,
 					options
 				);
 				out += "\n";
@@ -298,47 +411,103 @@ function serializeAst(
 		}
 		case "WhileStatement": {
 			out += "while (";
-			out += serializeAst(node.test, node, level, true, options);
+			out += serializeAst(node.test, node, level, true, isExpression, options);
 			out += ") ";
-			out += serializeAst(node.body, node, level, skipIndent, options);
+			out += serializeAst(
+				node.body,
+				node,
+				level,
+				skipIndent,
+				isExpression,
+				options
+			);
 			return out;
 		}
 		case "ForStatement": {
 			out += "for (";
 			if (node.init)
-				out += serializeAst(node.init, node, level, skipIndent, options);
+				out += serializeAst(
+					node.init,
+					node,
+					level,
+					skipIndent,
+					isExpression,
+					options
+				);
 			out += ";";
 			if (node.test)
-				out += serializeAst(node.test, node, level, skipIndent, options);
+				out += serializeAst(
+					node.test,
+					node,
+					level,
+					skipIndent,
+					isExpression,
+					options
+				);
 			out += ";";
 			if (node.update)
-				out += serializeAst(node.update, node, level, skipIndent, options);
+				out += serializeAst(
+					node.update,
+					node,
+					level,
+					skipIndent,
+					isExpression,
+					options
+				);
 			out += ")";
-			out += serializeAst(node.body, node, level, skipIndent, options);
+			out += serializeAst(
+				node.body,
+				node,
+				level,
+				skipIndent,
+				isExpression,
+				options
+			);
 			return out;
 		}
 		case "ForInStatement": {
 			return (
 				"for (" +
-				serializeAst(node.left, node, 0, skipIndent, options) +
+				serializeAst(node.left, node, 0, skipIndent, isExpression, options) +
 				" in " +
-				serializeAst(node.right, node, 0, skipIndent, options) +
+				serializeAst(node.right, node, 0, skipIndent, isExpression, options) +
 				")" +
-				serializeAst(node.body, node, level + 1, skipIndent, options)
+				serializeAst(
+					node.body,
+					node,
+					level + 1,
+					skipIndent,
+					isExpression,
+					options
+				)
 			);
 		}
 		case "ForOfStatement": {
 			return (
 				"for (" +
-				serializeAst(node.left, node, 0, skipIndent, options) +
+				serializeAst(node.left, node, 0, skipIndent, isExpression, options) +
 				" of " +
-				serializeAst(node.right, node, 0, skipIndent, options) +
+				serializeAst(node.right, node, 0, skipIndent, isExpression, options) +
 				")" +
-				serializeAst(node.body, node, level + 1, skipIndent, options)
+				serializeAst(
+					node.body,
+					node,
+					level + 1,
+					skipIndent,
+					isExpression,
+					options
+				)
 			);
 		}
 		case "ExpressionStatement": {
-			out += serializeAst(node.expression, node, level, skipIndent, options);
+			out += serializeAst(
+				node.expression,
+				node,
+				level,
+				skipIndent,
+				isExpression,
+				options
+			);
 
 			if (
 				parent &&
@@ -355,17 +524,33 @@ function serializeAst(
 		case "ReturnStatement": {
 			out += options.indent(level) + "return";
 			if (node.value) {
-				out += " " + serializeAst(node.value, node, level, skipIndent, options);
+				out +=
+					" " +
+					serializeAst(
+						node.value,
+						node,
+						level,
+						skipIndent,
+						isExpression,
+						options
+					);
 			}
 			out += ";\n";
 			return out;
 		}
 		case "CallExpression": {
-			out += serializeAst(node.callee, node, level, true, options);
+			out += serializeAst(
+				node.callee,
+				node,
+				level,
+				true,
+				isExpression,
+				options
+			);
 			out += "(";
 			const args = node.arguments;
 			for (let i = 0; i < args.length; i++) {
-				out += serializeAst(args[i], node, level, true, options);
+				out += serializeAst(args[i], node, level, true, isExpression, options);
 				if (i + 1 < args.length) {
 					out += ", ";
 				}
@@ -373,13 +558,40 @@ function serializeAst(
 			out += ")";
 			return out;
 		}
+		case "ConditionalExpression": {
+			out += serializeAst(node.test, node, level, false, false, options);
+			out += options.newLineChar;
+			out += options.indent(level + 1) + "? ";
+			out += serializeAst(node.body, node, level, false, false, options);
+			out += options.newLineChar;
+			out += options.indent(level + 1) + ": ";
+			out += serializeAst(
+				node.alternate,
+				node,
+				level + 1,
+				false,
+				false,
+				options
+			);
+			return out;
+		}
+		case "ThisExpression": {
+			return "this";
+		}
 		case "NewExpression": {
 			out += "new ";
-			out += serializeAst(node.callee, node, level, true, options);
+			out += serializeAst(
+				node.callee,
+				node,
+				level,
+				true,
+				isExpression,
+				options
+			);
 			out += "(";
 			const args = node.arguments;
 			for (let i = 0; i < args.length; i++) {
-				out += serializeAst(args[i], node, level, true, options);
+				out += serializeAst(args[i], node, level, true, isExpression, options);
 				if (i + 1 < args.length) {
 					out += ", ";
 				}
@@ -391,7 +603,14 @@ function serializeAst(
 			if (node.prefix) {
 				out += node.operator;
 			}
-			out += serializeAst(node.argument, node, 0, skipIndent, options);
+			out += serializeAst(
+				node.argument,
+				node,
+				0,
+				skipIndent,
+				isExpression,
+				options
+			);
 			if (!node.prefix) {
 				out += node.operator;
 			}
@@ -405,13 +624,20 @@ function serializeAst(
 					expr.operator === "+" &&
 					expr.argument.type === "Literal"
 				) {
-					return serializeAst(expr, node, 0, true, options);
+					return serializeAst(expr, node, 0, true, isExpression, options);
 				}
 			}
 
 			out += "(";
 			for (let i = 0; i < len; i++) {
-				out += serializeAst(node.expressions[i], node, 0, true, options);
+				out += serializeAst(
+					node.expressions[i],
+					node,
+					0,
+					true,
+					isExpression,
+					options
+				);
 				if (i + 1 < len) {
 					out += ", ";
 				}
@@ -426,22 +652,43 @@ function serializeAst(
 					out += " ";
 				}
 			}
-			out += serializeAst(node.argument, node, 0, skipIndent, options);
+			out += serializeAst(
+				node.argument,
+				node,
+				0,
+				skipIndent,
+				isExpression,
+				options
+			);
 			return out;
 		}
 		case "BinaryExpression": {
 			return (
-				serializeAst(node.left, node, 0, skipIndent, options) +
+				serializeAst(node.left, node, 0, skipIndent, isExpression, options) +
 				" " +
 				node.operator +
 				" " +
-				serializeAst(node.right, node, 0, skipIndent, options)
+				serializeAst(node.right, node, 0, skipIndent, isExpression, options)
 			);
 		}
 		case "MemberExpression": {
-			out += serializeAst(node.left, node, level, skipIndent, options);
+			out += serializeAst(
+				node.left,
+				node,
+				level,
+				skipIndent,
+				isExpression,
+				options
+			);
 			out += node.computed ? "[" : ".";
-			out += serializeAst(node.right, node, level, skipIndent, options);
+			out += serializeAst(
+				node.right,
+				node,
+				level,
+				skipIndent,
+				isExpression,
+				options
+			);
 			if (node.computed) {
 				out += "]";
 			}
@@ -449,9 +696,9 @@ function serializeAst(
 		}
 		case "AssignmentExpression": {
 			out += options.indent(level);
-			out += serializeAst(node.left, node, level, true, options);
+			out += serializeAst(node.left, node, level, true, isExpression, options);
 			out += " = ";
-			out += serializeAst(node.right, node, level, true, options);
+			out += serializeAst(node.right, node, level, true, isExpression, options);
 			return out;
 		}
 		case "RegExpLiteral": {
@@ -459,30 +706,34 @@ function serializeAst(
 		}
 		case "ThrowStatement": {
 			out += "throw ";
-			out += serializeAst(node.value, node, level, true, options);
+			out += serializeAst(node.value, node, level, true, isExpression, options);
 			return out + ";\n";
 		}
 		case "BreakStatement": {
 			out += options.indent(level) + "break";
 			if (node.name) {
-				out += " " + serializeAst(node.name, node, level, true, options);
+				out +=
+					" " +
+					serializeAst(node.name, node, level, true, isExpression, options);
 			}
 			return (out += ";\n");
 		}
 		case "ContinueStatement": {
 			out += options.indent(level) + "continue";
 			if (node.name) {
-				out += " " + serializeAst(node.name, node, level, true, options);
+				out +=
+					" " +
+					serializeAst(node.name, node, level, true, isExpression, options);
 			}
 			return (out += ";\n");
 		}
 		case "LabeledStatement": {
 			out += options.indent(level);
-			out += serializeAst(node.name, node, level, true, options);
+			out += serializeAst(node.name, node, level, true, isExpression, options);
 			out += ":\n";
 			out +=
 				options.indent(level + 1) +
-				serializeAst(node.body, node, level + 1, false, options);
+				serializeAst(node.body, node, level + 1, false, isExpression, options);
 			return out;
 		}
 		case "EmptyStatement": {
@@ -504,7 +755,14 @@ function serializeAst(
 				out += node.hashbang + "\n";
 			}
 			for (let i = 0; i < node.body.length; i++) {
-				out += serializeAst(node.body[i], node, 0, skipIndent, options);
+				out += serializeAst(
+					node.body[i],
+					node,
+					0,
+					skipIndent,
+					isExpression,
+					options
+				);
 			}
 
 			return out;

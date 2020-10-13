@@ -9,6 +9,7 @@ import {
 	isHexChar,
 	isIdentifier,
 	isKeyword,
+	formatLexerPosition,
 } from "./lexer_helpers";
 
 export interface Lexer {
@@ -108,6 +109,7 @@ function filterOutUnderscores(lexer: Lexer, underscoreCount: number) {
 
 export function expectToken(lexer: Lexer, token: Token) {
 	if (lexer.token !== token) {
+		console.log(formatLexerPosition(lexer));
 		throw new Error(`Expected token ${token}, but got ${lexer.token}`);
 	}
 
@@ -1363,7 +1365,11 @@ export function nextToken(lexer: Lexer) {
 				} else {
 					const content = getRaw(lexer);
 					lexer.identifier = content;
-					lexer.token = (keywords as any)[content] || Token.Identifier;
+
+					lexer.token =
+						content !== "constructor" && content in keywords
+							? (keywords as any)[content]
+							: Token.Identifier;
 				}
 				break;
 

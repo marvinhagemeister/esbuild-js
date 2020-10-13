@@ -60,6 +60,8 @@ export type Expression =
 	| MemberExpression
 	| CallExpression
 	| NewExpression
+	| ThisExpression
+	| ConditionalExpression
 	| ArrayExpression
 	| FunctionDeclaration
 	| ObjectPattern
@@ -190,10 +192,25 @@ export function newExpression(
 	};
 }
 
+export interface ThisExpression extends BaseNode {
+	type: "ThisExpression";
+}
+export function thisExpression(): ThisExpression {
+	return {
+		type: "ThisExpression",
+		len: 0,
+		start: 0,
+	};
+}
+
 export interface BinaryExpression extends BaseNode {
 	type: "BinaryExpression";
 	left: Expression;
 	operator:
+		| "+"
+		| "-"
+		| "*"
+		| "/"
 		| "**"
 		| "<"
 		| "<="
@@ -316,6 +333,27 @@ export type Statement =
 	| Comment
 	| BlockStatement;
 export type ModuleDeclaration = t.ImportDeclaration;
+
+export interface ConditionalExpression extends BaseNode {
+	type: "ConditionalExpression";
+	body: Expression;
+	test: Expression;
+	alternate: Expression;
+}
+export function conditionalExpression(
+	test: Expression,
+	body: Expression,
+	alternate: Expression
+): ConditionalExpression {
+	return {
+		type: "ConditionalExpression",
+		test,
+		body,
+		alternate,
+		len: 0,
+		start: 0,
+	};
+}
 
 export interface IfStatement extends BaseNode {
 	type: "IfStatement";

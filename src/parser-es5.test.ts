@@ -21,6 +21,13 @@ describe("ES5", () => {
 			expectPrinted("1 && 2", "1 && 2;\n");
 		});
 
+		it("should parse quick math!", () => {
+			expectPrinted("1 + 2", "1 + 2;\n");
+			expectPrinted("1 - 2", "1 - 2;\n");
+			expectPrinted("1 / 2", "1 / 2;\n");
+			expectPrinted("1 * 2", "1 * 2;\n");
+		});
+
 		it("should parse mixed examples", () => {
 			expectPrinted("true || x > 1", "true || x > 1;\n");
 			expectPrinted("true || (x > 1 && x < 0)", "true || (x > 1 && x < 0);\n");
@@ -30,12 +37,23 @@ describe("ES5", () => {
 			it("should parse property member expressions", () => {
 				expectPrinted("a.b", "a.b;\n");
 				expectPrinted("a.b.c", "a.b.c;\n");
+				expectPrinted("component.constructor;", "component.constructor;\n");
 			});
 
 			it("should parse index member expressions", () => {
 				expectPrinted("a[i]", "a[i];\n");
 				expectPrinted("a[x || 4]", "a[x || 4];\n");
+				expectPrinted("arguments$1[i]", "arguments$1[i];\n");
 			});
+		});
+
+		it("should parse this", () => {
+			expectPrinted("this", "this;\n");
+			expectPrinted("this.foo", "this.foo;\n");
+		});
+
+		it("should parse ternary expressions (conditional)", () => {
+			expectPrinted("a ? b : c", "a\n  ? b\n  : c;\n");
 		});
 	});
 
@@ -85,6 +103,10 @@ describe("ES5", () => {
 			expectPrinted("new foo()", "new foo();\n");
 			expectPrinted("new foo(1)", "new foo(1);\n");
 			expectPrinted("new foo(x, 1)", "new foo(x, 1);\n");
+		});
+
+		it("should parse function expressions", () => {
+			expectPrinted("var a = function() {}", "var a = function() {};\n");
 		});
 	});
 
