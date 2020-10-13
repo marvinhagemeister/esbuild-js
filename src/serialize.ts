@@ -442,6 +442,8 @@ function serializeAst(
 		}
 		case "Comment":
 			return node.text + options.newLineChar;
+		case "DebuggerStatement":
+			return "debugger;\n";
 		case "Program": {
 			if (node.hashbang) {
 				out += node.hashbang + "\n";

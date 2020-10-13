@@ -265,6 +265,7 @@ export type Statement =
 	| FunctionDeclaration
 	| CatchClause
 	| EmptyStatement
+	| DebuggerStatement
 	| ExpressionStatement
 	| ReturnStatement
 	| WhileStatement
@@ -375,6 +376,17 @@ export function blockStatement(body: Statement[]): BlockStatement {
 		body,
 		start: 0,
 		len: 0,
+	};
+}
+
+export interface DebuggerStatement extends BaseNode {
+	type: "DebuggerStatement";
+}
+export function debuggerStatement(): DebuggerStatement {
+	return {
+		type: "DebuggerStatement",
+		len: 0,
+		start: 0,
 	};
 }
 

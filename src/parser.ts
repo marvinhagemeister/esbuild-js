@@ -249,6 +249,11 @@ function parseStatement(p: Parser): tt.Statement {
 			expectOrInsertSemicolon(p.lexer);
 			return tt.returnStatement(value);
 		}
+		case Token.Debugger: {
+			nextToken(p.lexer);
+			expectOrInsertSemicolon(p.lexer);
+			return tt.debuggerStatement();
+		}
 		case Token.OpenBrace: {
 			nextToken(p.lexer);
 			const statements = parseStatementsUpTo(p, Token.CloseBrace);
