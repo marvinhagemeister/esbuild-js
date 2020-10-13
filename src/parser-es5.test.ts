@@ -26,9 +26,16 @@ describe("ES5", () => {
 			expectPrinted("true || (x > 1 && x < 0)", "true || (x > 1 && x < 0);\n");
 		});
 
-		it("should parse member expressions", () => {
-			expectPrinted("a.b", "a.b;\n");
-			expectPrinted("a.b.c", "a.b.c;\n");
+		describe("MemberExpressions", () => {
+			it("should parse property member expressions", () => {
+				expectPrinted("a.b", "a.b;\n");
+				expectPrinted("a.b.c", "a.b.c;\n");
+			});
+
+			it("should parse index member expressions", () => {
+				expectPrinted("a[i]", "a[i];\n");
+				expectPrinted("a[x || 4]", "a[x || 4];\n");
+			});
 		});
 	});
 
@@ -62,6 +69,14 @@ describe("ES5", () => {
 				"function foo() { return 1; }",
 				"function foo() {\n  return 1;\n}\n"
 			);
+		});
+	});
+
+	describe("Array", () => {
+		it("should parse Arrays", () => {
+			expectPrinted("[]", "[];\n");
+			expectPrinted("[1]", "[1];\n");
+			expectPrinted("[1,2]", "[1,2];\n");
 		});
 	});
 

@@ -397,13 +397,16 @@ export interface MemberExpression extends BaseNode {
 	type: "MemberExpression";
 	left: Expression;
 	right: Expression;
+	computed: boolean;
 }
 export function memberExpression(
 	left: Expression,
-	right: Expression
+	right: Expression,
+	computed: boolean
 ): MemberExpression {
 	return {
 		type: "MemberExpression",
+		computed,
 		left,
 		right,
 		start: 0,

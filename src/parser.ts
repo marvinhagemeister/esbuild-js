@@ -535,7 +535,14 @@ function parseSuffix(
 
 				const name = p.lexer.identifier;
 				nextToken(p.lexer);
-				left = tt.memberExpression(left, tt.identifier(name));
+				left = tt.memberExpression(left, tt.identifier(name), false);
+				break;
+			}
+			case Token.OpenBracket: {
+				nextToken(p.lexer);
+				const index = parseExpression(p, tt.Precedence.Lowest);
+				expectToken(p.lexer, Token.CloseBracket);
+				left = tt.memberExpression(left, index, true);
 				break;
 			}
 			case Token["--"]: {

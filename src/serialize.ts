@@ -413,8 +413,11 @@ function serializeAst(
 		}
 		case "MemberExpression": {
 			out += serializeAst(node.left, node, level, skipIndent, options);
-			out += ".";
+			out += node.computed ? "[" : ".";
 			out += serializeAst(node.right, node, level, skipIndent, options);
+			if (node.computed) {
+				out += "]";
+			}
 			return out;
 		}
 		case "AssignmentExpression": {
