@@ -233,6 +233,12 @@ function parseStatement(p: Parser): tt.Statement {
 			const body = parseStatement(p);
 			return tt.forStatement(body, init, update, test);
 		}
+		case Token.Break: {
+			nextToken(p.lexer);
+			const name = parseLabelName(p);
+			expectOrInsertSemicolon(p.lexer);
+			return tt.breakStatement(name ? tt.identifier(name) : null);
+		}
 		case Token.Continue: {
 			nextToken(p.lexer);
 			const name = parseLabelName(p);

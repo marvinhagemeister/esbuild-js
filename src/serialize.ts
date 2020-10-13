@@ -435,6 +435,13 @@ function serializeAst(
 			out += serializeAst(node.value, node, level, true, options);
 			return out + ";\n";
 		}
+		case "BreakStatement": {
+			out += options.indent(level) + "break";
+			if (node.name) {
+				out += " " + serializeAst(node.name, node, level, true, options);
+			}
+			return (out += ";\n");
+		}
 		case "ContinueStatement": {
 			out += options.indent(level) + "continue";
 			if (node.name) {

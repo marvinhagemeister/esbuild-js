@@ -270,6 +270,7 @@ export type Statement =
 	| ExpressionStatement
 	| ReturnStatement
 	| WhileStatement
+	| BreakStatement
 	| ContinueStatement
 	| TryStatement
 	| IfStatement
@@ -362,6 +363,19 @@ export interface ContinueStatement extends BaseNode {
 export function continueStatement(name: Identifier | null): ContinueStatement {
 	return {
 		type: "ContinueStatement",
+		name,
+		len: 0,
+		start: 0,
+	};
+}
+
+export interface BreakStatement extends BaseNode {
+	type: "BreakStatement";
+	name: Identifier | null;
+}
+export function breakStatement(name: Identifier | null): BreakStatement {
+	return {
+		type: "BreakStatement",
 		name,
 		len: 0,
 		start: 0,

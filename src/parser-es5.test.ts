@@ -109,6 +109,12 @@ describe("ES5", () => {
 			);
 		});
 
+		it("should parse break statement", () => {
+			expectPrinted("break", "break;\n");
+			expectPrinted("break foo", "break foo;\n");
+			expectPrinted("while (true) { break; }", "while (true) {\n  break;\n}\n");
+		});
+
 		describe("If-Statements", () => {
 			it("should parse if-statments", () => {
 				expectPrinted("if (true) {}", "if (true) {\n}\n");
