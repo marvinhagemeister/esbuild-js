@@ -76,6 +76,12 @@ describe("ES5", () => {
 			expectPrinted("foo(1)", "foo(1);\n");
 			expectPrinted("foo(x, 1)", "foo(x, 1);\n");
 		});
+
+		it("should parse new calls", () => {
+			expectPrinted("new foo()", "new foo();\n");
+			expectPrinted("new foo(1)", "new foo(1);\n");
+			expectPrinted("new foo(x, 1)", "new foo(x, 1);\n");
+		});
 	});
 
 	describe("Array", () => {

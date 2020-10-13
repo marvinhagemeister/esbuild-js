@@ -373,6 +373,20 @@ function serializeAst(
 			out += ")";
 			return out;
 		}
+		case "NewExpression": {
+			out += "new ";
+			out += serializeAst(node.callee, node, level, true, options);
+			out += "(";
+			const args = node.arguments;
+			for (let i = 0; i < args.length; i++) {
+				out += serializeAst(args[i], node, level, true, options);
+				if (i + 1 < args.length) {
+					out += ", ";
+				}
+			}
+			out += ")";
+			return out;
+		}
 		case "UpdateExpression":
 			if (node.prefix) {
 				out += node.operator;

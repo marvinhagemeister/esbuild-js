@@ -514,6 +514,18 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 
 			return parseClass(p, name);
 		}
+		case Token.New: {
+			nextToken(p.lexer);
+
+			const callee = parseExpression(p, tt.Precedence.Member);
+
+			let args: tt.Expression[] = [];
+			if ((p.lexer.token as number) === Token.OpenParen) {
+				args = parseCallArgs(p);
+			}
+
+			return tt.newExpression(callee, args);
+		}
 		case Token.OpenBracket: {
 			nextToken(p.lexer);
 
