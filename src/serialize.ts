@@ -449,6 +449,15 @@ function serializeAst(
 			}
 			return (out += ";\n");
 		}
+		case "LabeledStatement": {
+			out += options.indent(level);
+			out += serializeAst(node.name, node, level, true, options);
+			out += ":\n";
+			out +=
+				options.indent(level + 1) +
+				serializeAst(node.body, node, level + 1, false, options);
+			return out;
+		}
 		case "EmptyStatement": {
 			out += ";";
 			if (options.newLineChar) {

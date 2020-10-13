@@ -272,6 +272,7 @@ export type Statement =
 	| WhileStatement
 	| BreakStatement
 	| ContinueStatement
+	| LabeledStatement
 	| TryStatement
 	| IfStatement
 	| Comment
@@ -377,6 +378,24 @@ export function breakStatement(name: Identifier | null): BreakStatement {
 	return {
 		type: "BreakStatement",
 		name,
+		len: 0,
+		start: 0,
+	};
+}
+
+export interface LabeledStatement extends BaseNode {
+	type: "LabeledStatement";
+	name: Identifier;
+	body: Statement;
+}
+export function labeledStatement(
+	name: Identifier,
+	body: Statement
+): LabeledStatement {
+	return {
+		type: "LabeledStatement",
+		name,
+		body,
 		len: 0,
 		start: 0,
 	};

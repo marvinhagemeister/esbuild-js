@@ -278,8 +278,11 @@ function parseStatement(p: Parser): tt.Statement {
 			return tt.blockStatement(statements);
 		}
 		default:
+			const isIdentifier = p.lexer.token === Token.Identifier;
+			const name = p.lexer.identifier;
+
 			// Parse either an async function, an async expression, or a normal expression
-			if (p.lexer.token === Token.Identifier && getRaw(p.lexer) === "async") {
+			if (isIdentifier && getRaw(p.lexer) === "async") {
 				nextToken(p.lexer);
 				if ((p.lexer.token as number) === Token.Function) {
 					nextToken(p.lexer);
@@ -288,14 +291,21 @@ function parseStatement(p: Parser): tt.Statement {
 			}
 
 			const out = parseExpressionOrLetStatement(p);
-			if (out !== null) {
+			if (out && out.type === "VariableDeclaration") {
 				expectOrInsertSemicolon(p.lexer);
-				if (out.type === "VariableDeclaration") {
-					return out;
-				}
+				return out;
+			}
+
+			if (isIdentifier && p.lexer.token === Token.Colon) {
+				nextToken(p.lexer);
+				const body = parseStatement(p);
+				return tt.labeledStatement(tt.identifier(name), body);
+			}
+
+			expectOrInsertSemicolon(p.lexer);
+			if (out) {
 				return tt.expressionStatement(out);
 			}
-			expectOrInsertSemicolon(p.lexer);
 	}
 
 	console.log(p.lexer);
