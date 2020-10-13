@@ -611,7 +611,8 @@ function parseSuffix(
 				}
 
 				const args = parseCallArgs(p);
-				return tt.callExpression(left, args);
+				left = tt.callExpression(left, args);
+				break;
 			}
 			case Token.Question: {
 				if (level >= tt.Precedence.Conditional) {
@@ -621,7 +622,8 @@ function parseSuffix(
 				const body = parseExpression(p, tt.Precedence.Comma);
 				expectToken(p.lexer, Token.Colon);
 				const alternate = parseExpression(p, tt.Precedence.Comma);
-				return tt.conditionalExpression(left, body, alternate);
+				left = tt.conditionalExpression(left, body, alternate);
+				break;
 			}
 			case Token["--"]: {
 				if (level >= tt.Precedence.Postfix) {
@@ -646,44 +648,96 @@ function parseSuffix(
 					return left;
 				}
 				nextToken(p.lexer);
-				return tt.binaryExpression(
+				left = tt.binaryExpression(
 					"+",
 					left,
 					parseExpression(p, tt.Precedence.Add)
 				);
+				break;
+			}
+			case Token["+="]: {
+				if (level >= tt.Precedence.Assign) {
+					return left;
+				}
+				nextToken(p.lexer);
+				left = tt.binaryExpression(
+					"+=",
+					left,
+					parseExpression(p, tt.Precedence.Assign - 1)
+				);
+				break;
 			}
 			case Token.Minus: {
 				if (level >= tt.Precedence.Add) {
 					return left;
 				}
 				nextToken(p.lexer);
-				return tt.binaryExpression(
+				left = tt.binaryExpression(
 					"-",
 					left,
 					parseExpression(p, tt.Precedence.Add)
 				);
+				break;
+			}
+			case Token["-="]: {
+				if (level >= tt.Precedence.Assign) {
+					return left;
+				}
+				nextToken(p.lexer);
+				left = tt.binaryExpression(
+					"-=",
+					left,
+					parseExpression(p, tt.Precedence.Assign - 1)
+				);
+				break;
 			}
 			case Token["/"]: {
 				if (level >= tt.Precedence.Multiply) {
 					return left;
 				}
 				nextToken(p.lexer);
-				return tt.binaryExpression(
+				left = tt.binaryExpression(
 					"/",
 					left,
 					parseExpression(p, tt.Precedence.Multiply)
 				);
+				break;
+			}
+			case Token["/="]: {
+				if (level >= tt.Precedence.Assign) {
+					return left;
+				}
+				nextToken(p.lexer);
+				left = tt.binaryExpression(
+					"/=",
+					left,
+					parseExpression(p, tt.Precedence.Assign - 1)
+				);
+				break;
 			}
 			case Token["*"]: {
 				if (level >= tt.Precedence.Multiply) {
 					return left;
 				}
 				nextToken(p.lexer);
-				return tt.binaryExpression(
+				left = tt.binaryExpression(
 					"*",
 					left,
 					parseExpression(p, tt.Precedence.Multiply)
 				);
+				break;
+			}
+			case Token["*="]: {
+				if (level >= tt.Precedence.Assign) {
+					return left;
+				}
+				nextToken(p.lexer);
+				left = tt.binaryExpression(
+					"*=",
+					left,
+					parseExpression(p, tt.Precedence.Assign - 1)
+				);
+				break;
 			}
 			case Token["**"]: {
 				if (level >= tt.Precedence.Exponentiation) {

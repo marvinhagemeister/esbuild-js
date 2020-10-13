@@ -1036,6 +1036,7 @@ export function nextToken(lexer: Lexer) {
 					case CodePoint.Equal:
 						step(lexer);
 						lexer.token = Token["*="];
+						break;
 
 					case CodePoint.Asteriks:
 						step(lexer);

@@ -21,6 +21,13 @@ describe("ES5", () => {
 			expectPrinted("1 && 2", "1 && 2;\n");
 		});
 
+		it("should parse assignment", () => {
+			expectPrinted("1 += 2", "1 += 2;\n");
+			expectPrinted("1 -= 2", "1 -= 2;\n");
+			expectPrinted("1 /= 2", "1 /= 2;\n");
+			expectPrinted("1 *= 2", "1 *= 2;\n");
+		});
+
 		it("should parse quick math!", () => {
 			expectPrinted("1 + 2", "1 + 2;\n");
 			expectPrinted("1 - 2", "1 - 2;\n");
@@ -97,6 +104,7 @@ describe("ES5", () => {
 			expectPrinted("foo()", "foo();\n");
 			expectPrinted("foo(1)", "foo(1);\n");
 			expectPrinted("foo(x, 1)", "foo(x, 1);\n");
+			expectPrinted("foo(bar() + 1)", "foo(bar() + 1);\n");
 		});
 
 		it("should parse new calls", () => {

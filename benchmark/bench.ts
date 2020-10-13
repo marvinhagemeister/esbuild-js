@@ -73,8 +73,8 @@ async function benchPreact() {
 async function run() {
 	esbuildService = await esbuild.startService();
 
-	await bench1();
-	await bench2();
+	// await bench1();
+	// await bench2();
 	await benchPreact();
 
 	esbuildService.stop();
