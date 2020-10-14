@@ -574,6 +574,16 @@ escape-string-regexp@^2.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-2.0.0.tgz#a30304e99daa32e23b2fd20f51babd07cffca344"
   integrity sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==
 
+escaya-codegen@^0.0.15:
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/escaya-codegen/-/escaya-codegen-0.0.15.tgz#2631f15e95f7145202cdedda0c601f32e0b1bac4"
+  integrity sha512-f3+RrcmnPjLV7bBxHxr/J5Z8h1XNLoYIqCPAhuz6lztda7yhUSqvlQGznLEVVUkhylZihOOQs6KHDCdpq/MoCg==
+
+escaya@^0.0.61:
+  version "0.0.61"
+  resolved "https://registry.yarnpkg.com/escaya/-/escaya-0.0.61.tgz#f87a89dd43d877c86b06b55b78b7a465cd2c5c3a"
+  integrity sha512-WLLmvdG72Z0pCq8XUBd03GEJlAiMceXFanjdQeEzeSiuV1ZgrJqbkU7ZEe/hu0OsBlg5wLlySEeOvfzcGoO8mg==
+
 esprima@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"

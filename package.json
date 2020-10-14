@@ -24,6 +24,8 @@
 		"astring": "^1.4.3",
 		"benchmarkjs-pretty": "^2.0.1",
 		"esbuild": "^0.7.14",
+		"escaya": "^0.0.61",
+		"escaya-codegen": "^0.0.15",
 		"expect": "^26.5.2",
 		"husky": "^4.2.5",
 		"lint-staged": "^10.2.11",

@@ -11,6 +11,7 @@ import babelGen from "@babel/generator";
 import * as babelParse from "@babel/parser";
 import * as esbuild from "esbuild";
 import * as escaya from "escaya";
+import * as escayaCodegen from "escaya-codegen";
 
 function testCustom(source: string) {
 	const ast = parse(source);
@@ -29,6 +30,11 @@ function testBabel(source: string) {
 
 function testEscaya(source: string) {
 	const ast = escaya.parseModule(source);
+	return escayaCodegen.generate(ast, {
+		minify: false,
+		tabs: false,
+		bracketSpacing: false,
+	});
 }
 
 // Esbuild runs very poor without a service for some reason. Not sure why.
@@ -48,6 +54,7 @@ function runBenchmark(name: string, code: string) {
 		.add("custom", () => testCustom(code))
 		.add("esbuild", () => testESBuild(code))
 		.add("acorn", () => testAcorn(code))
+		.add("escaya", () => testEscaya(code))
 		.add("babel", () => testBabel(code))
 		.run();
 }
@@ -83,7 +90,11 @@ async function runPhaseBenchmark(name: string, code: string) {
 			return babelGen(babelAst);
 		})
 		.add("escaya serialize", () => {
-			return escayaAst;
+			return escayaCodegen.generate(escayaAst, {
+				minify: false,
+				bracketSpacing: false,
+				tabs: false,
+			});
 		})
 		.run();
 }
