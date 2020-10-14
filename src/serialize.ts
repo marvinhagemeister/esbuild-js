@@ -13,7 +13,7 @@ export function serialize(node: AstNode, options: SerializeOptions = {}) {
 	// TODO: Hoist this?
 	const indentCache: string[] = [""];
 	const indent = (n: number) => {
-		if (n >= indentCache.length) {
+		if (n >= indentCache.length || indentCache[n] === undefined) {
 			indentCache[n] = indentChar.repeat(n);
 		}
 		return indentCache[n];
@@ -43,11 +43,9 @@ function serializeAst(
 
 	switch (node.type) {
 		case "Identifier":
-			out += node.name;
-			break;
+			return node.name;
 		case "Literal":
-			out += node.raw;
-			break;
+			return node.raw;
 		case "ObjectPattern": {
 			out += "{";
 			for (let i = 0; i < node.properties.length; i++) {
@@ -64,7 +62,7 @@ function serializeAst(
 				}
 			}
 			out += "}";
-			break;
+			return out;
 		}
 		case "ObjectExpression": {
 			out += "{";
@@ -179,7 +177,7 @@ function serializeAst(
 					}
 				}
 			}
-			break;
+			return out;
 		}
 		case "VariableDeclarator": {
 			out += serializeAst(
@@ -202,7 +200,7 @@ function serializeAst(
 						options
 					);
 			}
-			break;
+			return out;
 		}
 		case "ArrayExpression": {
 			out += "[";
@@ -672,6 +670,7 @@ function serializeAst(
 			);
 		}
 		case "MemberExpression": {
+			out += options.indent(level);
 			out += serializeAst(
 				node.left,
 				node,
@@ -772,6 +771,4 @@ function serializeAst(
 			console.log(node);
 			throw new Error(`No serializer found`);
 	}
-
-	return out;
 }
