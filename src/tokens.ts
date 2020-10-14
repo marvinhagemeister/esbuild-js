@@ -1,5 +1,6 @@
 // Note: Order is used for comparison
 export const enum Token {
+	Unknown,
 	EndOfFile,
 	SyntaxError,
 

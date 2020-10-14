@@ -11,6 +11,8 @@ const hex = new Set([
 
 const hexStart = new Set(["B", "b"]);
 
+const regExp = new Set(["g", "i", "m", "s", "u", "y"]);
+
 const whiteSpace = new Set([
 	Char.Tab,
 	Char.LineTab,
@@ -59,6 +61,7 @@ export const enum CharFlags {
 	StringLiteralLineTerminator = 1 << 6,
 	Hex = 1 << 7,
 	OctHexBin = 1 << 8,
+	RegExp = 1 << 9,
 }
 
 // DO NOT EDIT
@@ -98,6 +101,10 @@ for (let i = 0; i < 127; i++) {
 		if (Numbers.has(ch)) {
 			flags.push("CharFlags.IdPart");
 		}
+	}
+
+	if (regExp.has(ch)) {
+		flags.push("CharFlags.RegExp");
 	}
 
 	if (whiteSpace.has(i)) {

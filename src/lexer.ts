@@ -725,30 +725,20 @@ export function isIdentifierOrKeyword(lexer: Lexer) {
 // TODO: Validate regex syntax
 export function scanRegExp(lexer: Lexer) {
 	while (true) {
-		switch (lexer.char) {
-			case Char.Slash: {
-				step(lexer);
+		if (lexer.char === Char.Slash) {
+			step(lexer);
 
-				while (isIdentifierContinue(lexer.char)) {
-					switch (lexer.char as number) {
-						case Char.g:
-						case Char.i:
-						case Char.m:
-						case Char.s:
-						case Char.u:
-						case Char.y: {
-							step(lexer);
-							break;
-						}
-						default:
-							throw new SyntaxError("Unexpected token in RegExp");
-					}
+			while (isIdentifierContinue(lexer.char)) {
+				if ((char2Flag[lexer.char] & CharFlags.RegExp) === CharFlags.RegExp) {
+					step(lexer);
+				} else {
+					throw new SyntaxError("Unexpected token in RegExp");
 				}
-				return;
 			}
-			default:
-				step(lexer);
+			return;
 		}
+
+		step(lexer);
 	}
 }
 
@@ -765,7 +755,7 @@ export function nextToken(lexer: Lexer) {
 
 	while (true) {
 		lexer.start = lexer.end;
-		lexer.token = 0;
+		lexer.token = Token.Unknown;
 
 		switch (lexer.char) {
 			case Char.EndOfFile:
