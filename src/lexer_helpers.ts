@@ -173,9 +173,9 @@ export const char2Token: number[] = [
 
 	// Interesting codes start here
 	/*  33 - !    */ Token.Unknown,
-	/*  34 - "    */ Token.Unknown,
-	/*  35 - #    */ Token.Unknown,
-	/*  36 - $    */ Token.Unknown,
+	/*  34 - "    */ Token.StringLiteral,
+	/*  35 - #    */ Token.Hashbang,
+	/*  36 - $    */ Token.Identifier,
 	/*  37 - %    */ Token.Percent,
 	/*  38 - &    */ Token.Ampersand, // TODO: Merge with Bitwise ops
 	/*  39 - '    */ Token.StringLiteral,
@@ -326,9 +326,8 @@ export function isKeyword(text: string) {
 	}
 }
 
-export function isWhitespace(codePoint: number) {
-	console.log("isWhitespace", codePoint);
-	switch (codePoint) {
+export function isWhitespace(ch: number) {
+	switch (ch) {
 		case Char.Tab:
 		case Char.LineTab:
 		case Char.FormFeed:
@@ -399,8 +398,8 @@ export function isHexChar(codePoint: number) {
 	}
 }
 
-export function isIdentifierChar(codePoint: number) {
-	switch (codePoint) {
+export function isIdentifierChar(char: number) {
+	switch (char) {
 		case Char._:
 		case Char.$:
 		case Char.a:

@@ -1,8 +1,50 @@
-import { expectPrinted } from "./test-helpers";
+import { expectNumber, expectPrinted } from "./test-helpers";
 
 describe("ES5", () => {
+	describe("Numbers", () => {
+		it("should parse numbers", () => {
+			expectNumber("0", 0);
+			expectNumber("000", 0);
+
+			expectNumber("123", 123);
+			expectNumber("987", 987);
+			expectNumber("0000", 0);
+
+			expectNumber("999999999", 999999999);
+			expectNumber("9999999999", 9999999999);
+			expectNumber("99999999999", 99999999999);
+			expectNumber("123456789123456789", 123456789123456780);
+			expectNumber(
+				"123456789123456789" + "0".repeat(128),
+				1.2345678912345679e145
+			);
+		});
+
+		it.skip("should parse numbers starting with a dot .5", () => {
+			// TODO
+		});
+
+		it.skip("should parse octal numbers", () => {
+			// expectNumber("010", 8);
+			// expectNumber("0123", 83);
+			// expectNumber("0123.4567", 83);
+			// expectNumber("0987", 987);
+			// expectNumber("0987.6543", 987.6543);
+			// expectNumber("01289", 1289);
+			// expectNumber("01289.345", 1289);
+		});
+
+		it.skip("should parse binary numbers", () => {
+			// TODO
+		});
+
+		it.skip("should parse Hex numbers", () => {
+			// TODO
+		});
+	});
+
 	describe("Expressions", () => {
-		it("should parse equality", () => {
+		it.only("should parse equality", () => {
 			expectPrinted("1 == 2", "1 == 2;\n");
 			expectPrinted("1 != 2", "1 != 2;\n");
 			expectPrinted("1 === 2", "1 === 2;\n");

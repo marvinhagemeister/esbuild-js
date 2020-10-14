@@ -9,7 +9,11 @@ import {
 	nextToken,
 	scanRegExp,
 } from "./lexer";
-import { formatLexerPosition, strictModeReservedWords } from "./lexer_helpers";
+import {
+	Char,
+	formatLexerPosition,
+	strictModeReservedWords,
+} from "./lexer_helpers";
 import { Token } from "./tokens";
 import * as tt from "./ast";
 
@@ -387,7 +391,7 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
  */
 function parseExpression(p: Parser, level: number): tt.Expression {
 	const expression = parsePrefix(p, level);
-
+	console.log("exp", expression);
 	return parseSuffix(p, expression, level);
 }
 
@@ -420,7 +424,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			return tt.literal(value);
 		}
 		case Token["/"]: {
-			scanRegExp(p.lexer);
+			scanRegExp(p.lexer, Char.Slash);
 			const raw = getRaw(p.lexer);
 			nextToken(p.lexer);
 			return tt.regexpLiteral(raw);
@@ -591,6 +595,7 @@ function parseSuffix(
 	left: tt.Expression,
 	level: number
 ): tt.Expression {
+	console.log(p.lexer);
 	while (true) {
 		switch (p.lexer.token) {
 			case Token.Dot: {
