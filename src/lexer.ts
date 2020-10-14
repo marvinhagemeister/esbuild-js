@@ -56,9 +56,10 @@ export function newLexer(source: string): Lexer {
 }
 
 function step(lexer: Lexer) {
-	lexer.codePoint =
-		lexer.i < lexer.source.length ? lexer.source.codePointAt(lexer.i)! : -1;
-	lexer.end = lexer.i;
+	const source = lexer.source;
+	const i = lexer.i;
+	lexer.codePoint = i < source.length ? source.charCodeAt(i)! : -1;
+	lexer.end = i;
 	lexer.i++;
 }
 
@@ -77,7 +78,7 @@ function throwSyntaxError(lexer: Lexer) {
 	let message = "Unexpected end of file";
 	if (lexer.end < lexer.source.length) {
 		// let c = utf8.DecodeRuneInString(lexer.source.slice[lexer.end:])
-		let c = lexer.source.codePointAt(lexer.end)!;
+		let c = lexer.source.charCodeAt(lexer.end)!;
 		if (c < 0x20) {
 			message = `Syntax error \"\\x${c}02X\"`;
 		} else if (c >= 0x80) {
@@ -513,10 +514,10 @@ export function decodeEscapeSequences(
 	let decoded = "";
 
 	for (let i = 0; i < text.length; i++) {
-		let c = text.codePointAt(i)!;
+		let c = text.charCodeAt(i)!;
 
 		if (c === CodePoint.BackSlash && i + 1 < text.length) {
-			let c2 = text.codePointAt(i + 1)!;
+			let c2 = text.charCodeAt(i + 1)!;
 			i += 1;
 
 			switch (c2) {
@@ -560,7 +561,7 @@ export function decodeEscapeSequences(
 
 					// 1-3 digit octal
 					let value = c2 - CodePoint.n0;
-					let c3 = text.codePointAt(i + 1)!;
+					let c3 = text.charCodeAt(i + 1)!;
 					switch (c3) {
 						case CodePoint.n0:
 						case CodePoint.n1:
@@ -572,7 +573,7 @@ export function decodeEscapeSequences(
 						case CodePoint.n7:
 							value = value * 8 + c3 - CodePoint.n0;
 							i += 1;
-							let c4 = text.codePointAt(i + 1)!;
+							let c4 = text.charCodeAt(i + 1)!;
 							switch (c4) {
 								case CodePoint.n0:
 								case CodePoint.n1:
@@ -600,7 +601,7 @@ export function decodeEscapeSequences(
 					// 2-digit hexadecimal
 					value = 0;
 					for (let j = 0; j < 2; j++) {
-						let c3 = text.codePointAt(i)!;
+						let c3 = text.charCodeAt(i)!;
 						i += 1;
 						switch (c3) {
 							case CodePoint.n0:
@@ -644,7 +645,7 @@ export function decodeEscapeSequences(
 
 					// Check the first character
 					i += 1;
-					let c3 = text.codePointAt(i)!;
+					let c3 = text.charCodeAt(i)!;
 
 					// Afaik string.slice() does an allocation. We could probably
 					// improve perf by rewriting this section and do the
@@ -653,7 +654,7 @@ export function decodeEscapeSequences(
 					if (c3 === CodePoint["{"]) {
 						i += 1;
 						const start = i;
-						while (text.codePointAt(i) !== CodePoint["}"]) {
+						while (text.charCodeAt(i) !== CodePoint["}"]) {
 							i++;
 						}
 
@@ -883,7 +884,7 @@ export function nextToken(lexer: Lexer) {
 
 						// Lookahead to disambiguate with 'a?.1:b'
 						if (current < contents.length) {
-							let c = contents.codePointAt(current)!;
+							let c = contents.charCodeAt(current)!;
 							if (c < CodePoint.n0 || c > CodePoint.n9) {
 								step(lexer);
 								lexer.token = Token.QuestionDot;

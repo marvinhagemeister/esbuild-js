@@ -323,7 +323,7 @@ export function isIdentifier(text: string): boolean {
 		return false;
 	}
 	for (let i = 0; i < text.length; i++) {
-		const codePoint = text.codePointAt(i)!;
+		const codePoint = text.charCodeAt(i)!;
 		if (i == 0) {
 			if (!isIdentifierStart(codePoint)) {
 				return false;
