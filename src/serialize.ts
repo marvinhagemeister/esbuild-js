@@ -508,14 +508,7 @@ function serializeAst(
 			if (node.value) {
 				out +=
 					" " +
-					serializeAst(
-						node.value,
-						node,
-						level,
-						skipIndent,
-						isExpression,
-						options
-					);
+					serializeAst(node.value, node, level, true, isExpression, options);
 			}
 			out += ";\n";
 			return out;

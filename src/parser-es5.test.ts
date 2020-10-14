@@ -104,6 +104,10 @@ describe("ES5", () => {
 				"function foo() { return 1; }",
 				"function foo() {\n  return 1;\n}\n\n"
 			);
+			expectPrinted(
+				"function foo() { if (true) { return foo.bar; } }",
+				"function foo() {\n  if (true) {\n    return foo.bar;\n  }\n\n}\n\n"
+			);
 		});
 
 		it("should parse function calls", () => {
