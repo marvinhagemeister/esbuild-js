@@ -4,7 +4,7 @@ import {
 	isIdentifierStart,
 	isIdentifierContinue,
 	isWhitespace,
-	CodePoint,
+	Char,
 	IdenitfierKind,
 	isHexChar,
 	isIdentifier,
@@ -83,7 +83,7 @@ function throwSyntaxError(lexer: Lexer) {
 			message = `Syntax error \"\\x${c}02X\"`;
 		} else if (c >= 0x80) {
 			message = `Syntax error \"\\u{${c}x}\"`;
-		} else if (c !== CodePoint.DoubleQuote) {
+		} else if (c !== Char.DoubleQuote) {
 			message = `Syntax error \"${c}c\"`;
 		} else {
 			message = "Syntax error '\"'";
@@ -139,12 +139,12 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 
 	// Dot without a digit after it
 	if (
-		first === CodePoint.Dot &&
-		(lexer.codePoint < CodePoint.n0 || lexer.codePoint > CodePoint.n9)
+		first === Char.Dot &&
+		(lexer.codePoint < Char.n0 || lexer.codePoint > Char.n9)
 	) {
 		// "..."
 		if (
-			lexer.codePoint === CodePoint.Dot &&
+			lexer.codePoint === Char.Dot &&
 			lexer.i < lexer.source.length &&
 			lexer.source[lexer.i] == "."
 		) {
@@ -161,7 +161,7 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 
 	let underscoreCount = 0;
 	let lastUnderscoreEnd = 0;
-	let hasDotOrExponent = first === CodePoint.Dot;
+	let hasDotOrExponent = first === Char.Dot;
 	let isLegacyOctalLiteral = false;
 	let base = 0;
 
@@ -169,31 +169,31 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 	lexer.token = Token.NumericLiteral;
 
 	// Check for binary, octal, or hexadecimal literal
-	if (first === CodePoint.n0) {
+	if (first === Char.n0) {
 		switch (lexer.codePoint) {
-			case CodePoint.b:
-			case CodePoint.B:
+			case Char.b:
+			case Char.B:
 				base = 2;
 				break;
 
-			case CodePoint.o:
-			case CodePoint.O:
+			case Char.o:
+			case Char.O:
 				base = 8;
 				break;
 
-			case CodePoint.x:
-			case CodePoint.X:
+			case Char.x:
+			case Char.X:
 				base = 16;
 				break;
 
-			case CodePoint.n0:
-			case CodePoint.n1:
-			case CodePoint.n2:
-			case CodePoint.n3:
-			case CodePoint.n4:
-			case CodePoint.n5:
-			case CodePoint.n6:
-			case CodePoint.n7:
+			case Char.n0:
+			case Char.n1:
+			case Char.n2:
+			case Char.n3:
+			case Char.n4:
+			case Char.n5:
+			case Char.n6:
+			case Char.n7:
 				base = 8;
 				isLegacyOctalLiteral = true;
 		}
@@ -210,7 +210,7 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 
 		integerLiteral: while (true) {
 			switch (lexer.codePoint) {
-				case CodePoint._:
+				case Char._:
 					// Cannot have multiple underscores in a row
 					if (lastUnderscoreEnd > 0 && lexer.end === lastUnderscoreEnd + 1) {
 						throwSyntaxError(lexer);
@@ -224,54 +224,52 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 					lastUnderscoreEnd = lexer.end;
 					underscoreCount++;
 					break;
-				case CodePoint.n0:
-				case CodePoint.n1:
-					lexer.number = lexer.number * base + (lexer.codePoint - CodePoint.n0);
+				case Char.n0:
+				case Char.n1:
+					lexer.number = lexer.number * base + (lexer.codePoint - Char.n0);
 					break;
-				case CodePoint.n2:
-				case CodePoint.n3:
-				case CodePoint.n4:
-				case CodePoint.n5:
-				case CodePoint.n6:
-				case CodePoint.n7:
+				case Char.n2:
+				case Char.n3:
+				case Char.n4:
+				case Char.n5:
+				case Char.n6:
+				case Char.n7:
 					if (base == 2) {
 						throwSyntaxError(lexer);
 					}
-					lexer.number = lexer.number * base + (lexer.codePoint - CodePoint.n0);
+					lexer.number = lexer.number * base + (lexer.codePoint - Char.n0);
 					break;
-				case CodePoint.n8:
-				case CodePoint.n9:
+				case Char.n8:
+				case Char.n9:
 					if (isLegacyOctalLiteral) {
 						isInvalidLegacyOctalLiteral = true;
 					} else if (base < 10) {
 						throwSyntaxError(lexer);
 					}
-					lexer.number = lexer.number * base + (lexer.codePoint - CodePoint.n0);
+					lexer.number = lexer.number * base + (lexer.codePoint - Char.n0);
 
 					break;
-				case CodePoint.A:
-				case CodePoint.B:
-				case CodePoint.C:
-				case CodePoint.D:
-				case CodePoint.E:
-				case CodePoint.F:
+				case Char.A:
+				case Char.B:
+				case Char.C:
+				case Char.D:
+				case Char.E:
+				case Char.F:
 					if (base !== 16) {
 						throwSyntaxError(lexer);
 					}
-					lexer.number =
-						lexer.number * base + (lexer.codePoint + 10 - CodePoint.A);
+					lexer.number = lexer.number * base + (lexer.codePoint + 10 - Char.A);
 					break;
-				case CodePoint.a:
-				case CodePoint.b:
-				case CodePoint.c:
-				case CodePoint.d:
-				case CodePoint.e:
-				case CodePoint.f:
+				case Char.a:
+				case Char.b:
+				case Char.c:
+				case Char.d:
+				case Char.e:
+				case Char.f:
 					if (base !== 16) {
 						throwSyntaxError(lexer);
 					}
-					lexer.number =
-						lexer.number * base + (lexer.codePoint + 10 - CodePoint.a);
+					lexer.number = lexer.number * base + (lexer.codePoint + 10 - Char.a);
 					break;
 				default:
 					// The first digit must exist
@@ -286,8 +284,7 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 			isFirst = false;
 		}
 
-		let isBigIntegerLiteral =
-			lexer.codePoint === CodePoint.n && !hasDotOrExponent;
+		let isBigIntegerLiteral = lexer.codePoint === Char.n && !hasDotOrExponent;
 
 		// Slow path: do we need to re-scan the input as text?
 		if (isBigIntegerLiteral || isInvalidLegacyOctalLiteral) {
@@ -312,8 +309,8 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 
 		// Initial digits
 		while (true) {
-			if (lexer.codePoint < CodePoint.n0 || lexer.codePoint > CodePoint.n9) {
-				if (lexer.codePoint !== CodePoint._) {
+			if (lexer.codePoint < Char.n0 || lexer.codePoint > Char.n9) {
+				if (lexer.codePoint !== Char._) {
 					break;
 				}
 
@@ -329,7 +326,7 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 		}
 
 		// Fractional digits
-		if (first !== CodePoint.Dot && lexer.codePoint === CodePoint.Dot) {
+		if (first !== Char.Dot && lexer.codePoint === Char.Dot) {
 			// An underscore must not come last
 			if (lastUnderscoreEnd > 0 && lexer.end == lastUnderscoreEnd + 1) {
 				lexer.end--;
@@ -339,8 +336,8 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 			hasDotOrExponent = true;
 			step(lexer);
 			while (true) {
-				if (lexer.codePoint < CodePoint.n0 || lexer.codePoint > CodePoint.n9) {
-					if ((lexer.codePoint as number) !== CodePoint._) {
+				if (lexer.codePoint < Char.n0 || lexer.codePoint > Char.n9) {
+					if ((lexer.codePoint as number) !== Char._) {
 						break;
 					}
 
@@ -357,7 +354,7 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 		}
 
 		// Exponent
-		if (lexer.codePoint === CodePoint.e || lexer.codePoint == CodePoint.E) {
+		if (lexer.codePoint === Char.e || lexer.codePoint == Char.E) {
 			// An underscore must not come last
 			if (lastUnderscoreEnd > 0 && lexer.end == lastUnderscoreEnd + 1) {
 				lexer.end--;
@@ -367,17 +364,17 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 			hasDotOrExponent = true;
 			step(lexer);
 			if (
-				(lexer.codePoint as number) === CodePoint.Plus ||
-				(lexer.codePoint as number) === CodePoint.Minus
+				(lexer.codePoint as number) === Char.Plus ||
+				(lexer.codePoint as number) === Char.Minus
 			) {
 				step(lexer);
 			}
-			if (lexer.codePoint < CodePoint.n0 || lexer.codePoint > CodePoint.n9) {
+			if (lexer.codePoint < Char.n0 || lexer.codePoint > Char.n9) {
 				throwSyntaxError(lexer);
 			}
 			while (true) {
-				if (lexer.codePoint < CodePoint.n0 || lexer.codePoint > CodePoint.n9) {
-					if ((lexer.codePoint as number) !== CodePoint._) {
+				if (lexer.codePoint < Char.n0 || lexer.codePoint > Char.n9) {
+					if ((lexer.codePoint as number) !== Char._) {
 						break;
 					}
 
@@ -396,9 +393,9 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 		// Take a slice of the text to parse
 		let text = filterOutUnderscores(lexer, underscoreCount);
 
-		if (lexer.codePoint === CodePoint.n && !hasDotOrExponent) {
+		if (lexer.codePoint === Char.n && !hasDotOrExponent) {
 			// The only bigint literal that can start with 0 is "0n"
-			if (text.length > 1 && first === CodePoint.n0) {
+			if (text.length > 1 && first === Char.n0) {
 				throwSyntaxError(lexer);
 			}
 
@@ -420,7 +417,7 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 	}
 
 	// Handle bigint literals after the underscore-at-end check above
-	if (lexer.codePoint === CodePoint.n && !hasDotOrExponent) {
+	if (lexer.codePoint === Char.n && !hasDotOrExponent) {
 		lexer.token = Token.BigIntLiteral;
 		step(lexer);
 	}
@@ -435,19 +432,19 @@ function scanIdentifierWithEscapes(lexer: Lexer, kind: IdenitfierKind) {
 	// First pass: scan over the identifier to see how long it is
 	while (true) {
 		// FIXME: Double backslash?
-		if (lexer.codePoint === CodePoint.BackSlash) {
+		if (lexer.codePoint === Char.BackSlash) {
 			step(lexer);
 			// @ts-ignore
-			if (lexer.codePoint !== CodePoint.u) {
+			if (lexer.codePoint !== Char.u) {
 				throwSyntaxError(lexer);
 			}
 
 			step(lexer);
 			// @ts-ignore
-			if (lexer.codePoint === CodePoint["{"]) {
+			if (lexer.codePoint === Char["{"]) {
 				step(lexer);
 				// @ts-ignore
-				while (lexer.codePoint !== CodePoint["}"]) {
+				while (lexer.codePoint !== Char["}"]) {
 					if (isHexChar(lexer.codePoint)) {
 						step(lexer);
 					} else {
@@ -516,28 +513,28 @@ export function decodeEscapeSequences(
 	for (let i = 0; i < text.length; i++) {
 		let c = text.charCodeAt(i)!;
 
-		if (c === CodePoint.BackSlash && i + 1 < text.length) {
+		if (c === Char.BackSlash && i + 1 < text.length) {
 			let c2 = text.charCodeAt(i + 1)!;
 			i += 1;
 
 			switch (c2) {
-				case CodePoint.b:
+				case Char.b:
 					decoded += "\b";
 					continue;
-				case CodePoint.f:
+				case Char.f:
 					decoded += "\f";
 					continue;
-				case CodePoint.n:
+				case Char.n:
 					decoded += "\n";
 					continue;
-				case CodePoint.r:
+				case Char.r:
 					decoded += "\r";
 					continue;
-				case CodePoint.t:
+				case Char.t:
 					decoded += "\t";
 					continue;
 
-				case CodePoint.v:
+				case Char.v:
 					// if lexer.json.parse {
 					// 	lexer.end = start + i - width2
 					// 	lexer.SyntaxError()
@@ -546,44 +543,44 @@ export function decodeEscapeSequences(
 					decoded += "\v";
 					continue;
 
-				case CodePoint.n0:
-				case CodePoint.n1:
-				case CodePoint.n2:
-				case CodePoint.n3:
-				case CodePoint.n4:
-				case CodePoint.n5:
-				case CodePoint.n6:
-				case CodePoint.n7:
+				case Char.n0:
+				case Char.n1:
+				case Char.n2:
+				case Char.n3:
+				case Char.n4:
+				case Char.n5:
+				case Char.n6:
+				case Char.n7:
 					// if lexer.json.parse {
 					// 	lexer.end = start + i - width2
 					// 	lexer.SyntaxError()
 					// }
 
 					// 1-3 digit octal
-					let value = c2 - CodePoint.n0;
+					let value = c2 - Char.n0;
 					let c3 = text.charCodeAt(i + 1)!;
 					switch (c3) {
-						case CodePoint.n0:
-						case CodePoint.n1:
-						case CodePoint.n2:
-						case CodePoint.n3:
-						case CodePoint.n4:
-						case CodePoint.n5:
-						case CodePoint.n6:
-						case CodePoint.n7:
-							value = value * 8 + c3 - CodePoint.n0;
+						case Char.n0:
+						case Char.n1:
+						case Char.n2:
+						case Char.n3:
+						case Char.n4:
+						case Char.n5:
+						case Char.n6:
+						case Char.n7:
+							value = value * 8 + c3 - Char.n0;
 							i += 1;
 							let c4 = text.charCodeAt(i + 1)!;
 							switch (c4) {
-								case CodePoint.n0:
-								case CodePoint.n1:
-								case CodePoint.n2:
-								case CodePoint.n3:
-								case CodePoint.n4:
-								case CodePoint.n5:
-								case CodePoint.n6:
-								case CodePoint.n7:
-									let temp = value * 8 + c4 - CodePoint.n0;
+								case Char.n0:
+								case Char.n1:
+								case Char.n2:
+								case Char.n3:
+								case Char.n4:
+								case Char.n5:
+								case Char.n6:
+								case Char.n7:
+									let temp = value * 8 + c4 - Char.n0;
 									if (temp < 256) {
 										value = temp;
 										i += 1;
@@ -592,7 +589,7 @@ export function decodeEscapeSequences(
 					}
 					c = value;
 					break;
-				case CodePoint.x:
+				case Char.x:
 					// if lexer.json.parse {
 					// 	lexer.end = start + i - width2
 					// 	lexer.SyntaxError()
@@ -604,33 +601,33 @@ export function decodeEscapeSequences(
 						let c3 = text.charCodeAt(i)!;
 						i += 1;
 						switch (c3) {
-							case CodePoint.n0:
-							case CodePoint.n1:
-							case CodePoint.n2:
-							case CodePoint.n3:
-							case CodePoint.n4:
-							case CodePoint.n5:
-							case CodePoint.n6:
-							case CodePoint.n7:
-							case CodePoint.n8:
-							case CodePoint.n9:
-								value = (value * 16) | (c3 - CodePoint.n0);
+							case Char.n0:
+							case Char.n1:
+							case Char.n2:
+							case Char.n3:
+							case Char.n4:
+							case Char.n5:
+							case Char.n6:
+							case Char.n7:
+							case Char.n8:
+							case Char.n9:
+								value = (value * 16) | (c3 - Char.n0);
 								break;
-							case CodePoint.a:
-							case CodePoint.b:
-							case CodePoint.c:
-							case CodePoint.d:
-							case CodePoint.e:
-							case CodePoint.f:
-								value = (value * 16) | (c3 + 10 - CodePoint.a);
+							case Char.a:
+							case Char.b:
+							case Char.c:
+							case Char.d:
+							case Char.e:
+							case Char.f:
+								value = (value * 16) | (c3 + 10 - Char.a);
 								break;
-							case CodePoint.A:
-							case CodePoint.B:
-							case CodePoint.C:
-							case CodePoint.D:
-							case CodePoint.E:
-							case CodePoint.F:
-								value = (value * 16) | (c3 + 10 - CodePoint.A);
+							case Char.A:
+							case Char.B:
+							case Char.C:
+							case Char.D:
+							case Char.E:
+							case Char.F:
+								value = (value * 16) | (c3 + 10 - Char.A);
 								break;
 							default:
 								lexer.end = start + i - 1;
@@ -639,7 +636,7 @@ export function decodeEscapeSequences(
 					}
 					c = value;
 					break;
-				case CodePoint.u: {
+				case Char.u: {
 					// Unicode
 					let value = 0;
 
@@ -651,10 +648,10 @@ export function decodeEscapeSequences(
 					// improve perf by rewriting this section and do the
 					// conversion by hand like esbuild does, but this is easier
 					// to maintain.
-					if (c3 === CodePoint["{"]) {
+					if (c3 === Char["{"]) {
 						i += 1;
 						const start = i;
-						while (text.charCodeAt(i) !== CodePoint["}"]) {
+						while (text.charCodeAt(i) !== Char["}"]) {
 							i++;
 						}
 
@@ -672,7 +669,7 @@ export function decodeEscapeSequences(
 					c = value;
 					break;
 				}
-				case CodePoint["\r"]:
+				case Char["\r"]:
 					// Ignore line continuations. A line continuation is not an escaped newline.
 					if (i < text.length && text[i] == "\n") {
 						// Make sure Windows CRLF counts as a single newline
@@ -680,9 +677,9 @@ export function decodeEscapeSequences(
 					}
 					continue;
 
-				case CodePoint.NewLine:
-				case CodePoint["\u2028"]:
-				case CodePoint["\u2029"]:
+				case Char.NewLine:
+				case Char["\u2028"]:
+				case Char["\u2029"]:
 					// if lexer.json.parse {
 					// 	lexer.end = start + i - width2
 					// 	lexer.SyntaxError()
@@ -726,17 +723,17 @@ export function isIdentifierOrKeyword(lexer: Lexer) {
 export function scanRegExp(lexer: Lexer) {
 	while (true) {
 		switch (lexer.codePoint) {
-			case CodePoint.Slash: {
+			case Char.Slash: {
 				step(lexer);
 
 				while (isIdentifierContinue(lexer.codePoint)) {
 					switch (lexer.codePoint as number) {
-						case CodePoint.g:
-						case CodePoint.i:
-						case CodePoint.m:
-						case CodePoint.s:
-						case CodePoint.u:
-						case CodePoint.y: {
+						case Char.g:
+						case Char.i:
+						case Char.m:
+						case Char.s:
+						case Char.u:
+						case Char.y: {
 							step(lexer);
 							break;
 						}
@@ -768,10 +765,10 @@ export function nextToken(lexer: Lexer) {
 		lexer.token = 0;
 
 		switch (lexer.codePoint) {
-			case CodePoint.EndOfFile:
+			case Char.EndOfFile:
 				lexer.token = Token.EndOfFile;
 				break;
-			case CodePoint["#"]:
+			case Char["#"]:
 				// Hashbang
 				if (lexer.i === 1 && lexer.source.startsWith("#!")) {
 					// "#!/usr/bin/env node"
@@ -779,12 +776,12 @@ export function nextToken(lexer: Lexer) {
 					hashbang: while (true) {
 						step(lexer);
 						switch (lexer.codePoint as number) {
-							case CodePoint["\r"]:
-							case CodePoint.NewLine:
-							case CodePoint["\u2028"]:
-							case CodePoint["\u2029"]:
+							case Char["\r"]:
+							case Char.NewLine:
+							case Char["\u2028"]:
+							case Char["\u2029"]:
 								break hashbang;
-							case CodePoint.EndOfFile:
+							case Char.EndOfFile:
 								break hashbang;
 						}
 					}
@@ -794,82 +791,82 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint["\r"]:
-			case CodePoint.NewLine:
-			case CodePoint["\u2028"]:
-			case CodePoint["\u2029"]:
+			case Char["\r"]:
+			case Char.NewLine:
+			case Char["\u2028"]:
+			case Char["\u2029"]:
 				step(lexer);
 				lexer.hasNewLineBefore = true;
 				continue;
 
-			case CodePoint.Tab:
-			case CodePoint.Space:
+			case Char.Tab:
+			case Char.Space:
 				step(lexer);
 				continue;
 
-			case CodePoint["("]:
+			case Char["("]:
 				step(lexer);
 				lexer.token = Token.OpenParen;
 				break;
 
-			case CodePoint[")"]:
+			case Char[")"]:
 				step(lexer);
 				lexer.token = Token.CloseParen;
 				break;
 
-			case CodePoint["["]:
+			case Char["["]:
 				step(lexer);
 				lexer.token = Token.OpenBracket;
 				break;
 
-			case CodePoint["]"]:
+			case Char["]"]:
 				step(lexer);
 				lexer.token = Token.CloseBracket;
 				break;
 
-			case CodePoint["{"]:
+			case Char["{"]:
 				step(lexer);
 				lexer.token = Token.OpenBrace;
 				break;
 
-			case CodePoint["}"]:
+			case Char["}"]:
 				step(lexer);
 				lexer.token = Token.CloseBrace;
 				break;
 
-			case CodePoint.Comma:
+			case Char.Comma:
 				step(lexer);
 				lexer.token = Token.Comma;
 				break;
 
-			case CodePoint.Colon:
+			case Char.Colon:
 				step(lexer);
 				lexer.token = Token.Colon;
 				break;
 
-			case CodePoint.SemiColon:
+			case Char.SemiColon:
 				step(lexer);
 				lexer.token = Token.SemiColon;
 				break;
 
-			case CodePoint.At:
+			case Char.At:
 				step(lexer);
 				lexer.token = Token.At;
 				break;
 
-			case CodePoint.Tilde:
+			case Char.Tilde:
 				step(lexer);
 				lexer.token = Token.Tilde;
 				break;
 
-			case CodePoint.QuestionMark:
+			case Char.QuestionMark:
 				// '?' or '?.' or '??' or '??='
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.QuestionMark:
+					case Char.QuestionMark:
 						step(lexer);
 						switch (lexer.codePoint as number) {
-							case CodePoint.Equal:
+							case Char.Equal:
 								step(lexer);
 								lexer.token = Token["??="];
 								break;
@@ -877,7 +874,7 @@ export function nextToken(lexer: Lexer) {
 								lexer.token = Token["??"];
 						}
 						break;
-					case CodePoint.Dot:
+					case Char.Dot:
 						lexer.token = Token.Question;
 						let current = lexer.i;
 						let contents = lexer.source;
@@ -885,7 +882,7 @@ export function nextToken(lexer: Lexer) {
 						// Lookahead to disambiguate with 'a?.1:b'
 						if (current < contents.length) {
 							let c = contents.charCodeAt(current)!;
-							if (c < CodePoint.n0 || c > CodePoint.n9) {
+							if (c < Char.n0 || c > Char.n9) {
 								step(lexer);
 								lexer.token = Token.QuestionDot;
 							}
@@ -896,11 +893,11 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.Percent:
+			case Char.Percent:
 				// '%' or '%='
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token.PercentEquals;
 						break;
@@ -909,18 +906,18 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.Ampersand:
+			case Char.Ampersand:
 				// '&' or '&=' or '&&' or '&&='
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token["&="];
 						break;
-					case CodePoint.Ampersand:
+					case Char.Ampersand:
 						step(lexer);
 						switch (lexer.codePoint as number) {
-							case CodePoint.Equal:
+							case Char.Equal:
 								step(lexer);
 								lexer.token = Token["&&="];
 								break;
@@ -933,18 +930,18 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.Pipe:
+			case Char.Pipe:
 				// '|' or '|=' or '||' or '||='
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token["|="];
 						break;
-					case CodePoint.Pipe:
+					case Char.Pipe:
 						step(lexer);
 						switch (lexer.codePoint as number) {
-							case CodePoint.Equal:
+							case Char.Equal:
 								step(lexer);
 								lexer.token = Token["||="];
 								break;
@@ -958,11 +955,11 @@ export function nextToken(lexer: Lexer) {
 
 				break;
 
-			case CodePoint.Circonflex:
+			case Char.Circonflex:
 				// '^' or '^='
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token["^="];
 						break;
@@ -971,15 +968,15 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.Plus:
+			case Char.Plus:
 				// '+' or '+=' or '++'
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token["+="];
 						break;
-					case CodePoint.Plus:
+					case Char.Plus:
 						step(lexer);
 						lexer.token = Token["++"];
 						break;
@@ -988,20 +985,20 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.Minus:
+			case Char.Minus:
 				// '-' or '-=' or '--' or '-->'
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token["-="];
 						break;
-					case CodePoint.Minus:
+					case Char.Minus:
 						step(lexer);
 
 						// Handle legacy HTML-style comments
 						if (
-							(lexer.codePoint as number) === CodePoint.GreaterThan &&
+							(lexer.codePoint as number) === Char.GreaterThan &&
 							lexer.hasNewLineBefore
 						) {
 							step(lexer);
@@ -1009,10 +1006,10 @@ export function nextToken(lexer: Lexer) {
 							// 	"Treating \"-->\" as the start of a legacy HTML single-line comment")
 							singleLineHTMLCloseComment: while (true) {
 								switch (lexer.codePoint as number) {
-									case CodePoint["\r"]:
-									case CodePoint.NewLine:
-									case CodePoint["\u2028"]:
-									case CodePoint["\u2029"]:
+									case Char["\r"]:
+									case Char.NewLine:
+									case Char["\u2028"]:
+									case Char["\u2029"]:
 										break singleLineHTMLCloseComment;
 
 									case -1: // This indicates the end of the file
@@ -1030,18 +1027,18 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.Asteriks:
+			case Char.Asteriks:
 				// '*' or '*=' or '**' or '**='
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token["*="];
 						break;
 
-					case CodePoint.Asteriks:
+					case Char.Asteriks:
 						step(lexer);
-						if ((lexer.codePoint as number) === CodePoint.Equal) {
+						if ((lexer.codePoint as number) === Char.Equal) {
 							step(lexer);
 							lexer.token = Token["**="];
 						} else {
@@ -1054,52 +1051,52 @@ export function nextToken(lexer: Lexer) {
 
 				break;
 
-			case CodePoint.Slash:
+			case Char.Slash:
 				// '/' or '/=' or '//' or '/* ... */'
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal: {
+					case Char.Equal: {
 						step(lexer);
 						lexer.token = Token["/="];
 						break;
 					}
-					case CodePoint.Slash: {
+					case Char.Slash: {
 						singleLineComment: while (true) {
 							step(lexer);
 							switch (lexer.codePoint as number) {
-								case CodePoint["\r"]:
-								case CodePoint.NewLine:
-								case CodePoint["\u2028"]:
-								case CodePoint["\u2029"]:
-								case CodePoint.EndOfFile:
+								case Char["\r"]:
+								case Char.NewLine:
+								case Char["\u2028"]:
+								case Char["\u2029"]:
+								case Char.EndOfFile:
 									break singleLineComment;
 							}
 						}
 						scanCommentText(lexer);
 						continue;
 					}
-					case CodePoint.Asteriks: {
+					case Char.Asteriks: {
 						step(lexer);
 						multiLineComment: while (true) {
 							switch (lexer.codePoint as number) {
-								case CodePoint.Asteriks: {
+								case Char.Asteriks: {
 									step(lexer);
-									if (lexer.codePoint === CodePoint.Slash) {
+									if (lexer.codePoint === Char.Slash) {
 										step(lexer);
 										break multiLineComment;
 									}
 									break;
 								}
-								case CodePoint["\r"]:
-								case CodePoint.NewLine:
-								case CodePoint["\u2028"]:
-								case CodePoint["\u2029"]:
-								case CodePoint.EndOfFile: {
+								case Char["\r"]:
+								case Char.NewLine:
+								case Char["\u2028"]:
+								case Char["\u2029"]:
+								case Char.EndOfFile: {
 									step(lexer);
 									lexer.hasNewLineBefore = true;
 									break;
 								}
-								case CodePoint.EndOfFile: {
+								case Char.EndOfFile: {
 									lexer.start = lexer.end;
 									throw new Error("Unterminated multiline comment");
 								}
@@ -1115,17 +1112,17 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.Equal:
+			case Char.Equal:
 				// '=' or '=>' or '==' or '==='
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.GreaterThan:
+					case Char.GreaterThan:
 						step(lexer);
 						lexer.token = Token["=>"];
 						break;
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
-						if (lexer.codePoint === CodePoint.Equal) {
+						if (lexer.codePoint === Char.Equal) {
 							step(lexer);
 							lexer.token = Token["==="];
 						} else {
@@ -1138,17 +1135,17 @@ export function nextToken(lexer: Lexer) {
 
 				break;
 
-			case CodePoint.LessThan:
+			case Char.LessThan:
 				// '<' or '<<' or '<=' or '<<=' or '<!--'
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token["<="];
 						break;
-					case CodePoint.LessThan:
+					case Char.LessThan:
 						step(lexer);
-						if ((lexer.codePoint as number) === CodePoint.Equal) {
+						if ((lexer.codePoint as number) === Char.Equal) {
 							step(lexer);
 							lexer.token = Token["<<="];
 						} else {
@@ -1160,14 +1157,14 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.Bang:
+			case Char.Bang:
 				// '!' or '!=' or '!=='
 				step(lexer);
 
 				// != or !==
-				if ((lexer.codePoint as number) === CodePoint.Equal) {
+				if ((lexer.codePoint as number) === Char.Equal) {
 					step(lexer);
-					if ((lexer.codePoint as number) === CodePoint.Equal) {
+					if ((lexer.codePoint as number) === Char.Equal) {
 						step(lexer);
 						lexer.token = Token["!=="];
 					} else {
@@ -1178,22 +1175,22 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.GreaterThan:
+			case Char.GreaterThan:
 				// '>' or '>>' or '>>>' or '>=' or '>>=' or '>>>='
 				step(lexer);
 				switch (lexer.codePoint as number) {
-					case CodePoint.Equal:
+					case Char.Equal:
 						step(lexer);
 						lexer.token = Token[">="];
 						break;
-					case CodePoint.GreaterThan:
+					case Char.GreaterThan:
 						step(lexer);
 						switch (lexer.codePoint as number) {
-							case CodePoint.Equal:
+							case Char.Equal:
 								step(lexer);
 								lexer.token = Token[">>="];
 								break;
-							case CodePoint.GreaterThan:
+							case Char.GreaterThan:
 								step(lexer);
 								lexer.token = Token[">>>"];
 								break;
@@ -1207,15 +1204,15 @@ export function nextToken(lexer: Lexer) {
 
 				break;
 
-			case CodePoint.Quote:
-			case CodePoint.DoubleQuote:
-			case CodePoint.Backtick: {
+			case Char.Quote:
+			case Char.DoubleQuote:
+			case Char.Backtick: {
 				const quote = lexer.codePoint;
 				let hasEscape = false;
 				let suffixLen = 1;
 				let isASCII = true;
 
-				if (quote !== CodePoint.Backtick) {
+				if (quote !== Char.Backtick) {
 					lexer.token = Token.StringLiteral;
 				} else if (lexer.rescanCloseBraceAsTemplateToken) {
 					lexer.token = Token.TemplateTail;
@@ -1226,15 +1223,15 @@ export function nextToken(lexer: Lexer) {
 
 				stringLiteral: while (true) {
 					switch (lexer.codePoint as number) {
-						case CodePoint.Backtick:
+						case Char.Backtick:
 							hasEscape = true;
 							step(lexer);
 
 							// Handle Windows CRLF
 							// if ((lexer.codePoint as number) === CodePoint['\r'] && !lexer.json.parse) {
-							if ((lexer.codePoint as number) === CodePoint["\r"]) {
+							if ((lexer.codePoint as number) === Char["\r"]) {
 								step(lexer);
-								if ((lexer.codePoint as number) == CodePoint.NewLine) {
+								if ((lexer.codePoint as number) == Char.NewLine) {
 									step(lexer);
 								}
 								continue;
@@ -1243,17 +1240,17 @@ export function nextToken(lexer: Lexer) {
 						case -1: // This indicates the end of the file
 							throwSyntaxError(lexer);
 
-						case CodePoint["\r"]:
-						case CodePoint.NewLine:
-							if (quote !== CodePoint.Backtick) {
+						case Char["\r"]:
+						case Char.NewLine:
+							if (quote !== Char.Backtick) {
 								addError(lexer, lexer.end, "Unterminated string literal");
 								throw new Error("PANIC");
 							}
 
-						case CodePoint.$:
-							if (quote === CodePoint.Backtick) {
+						case Char.$:
+							if (quote === Char.Backtick) {
 								step(lexer);
-								if ((lexer.codePoint as number) === CodePoint["{"]) {
+								if ((lexer.codePoint as number) === Char["{"]) {
 									suffixLen = 2;
 									step(lexer);
 									if (lexer.rescanCloseBraceAsTemplateToken) {
@@ -1296,60 +1293,60 @@ export function nextToken(lexer: Lexer) {
 
 				break;
 			}
-			case CodePoint._:
-			case CodePoint.$:
-			case CodePoint.a:
-			case CodePoint.b:
-			case CodePoint.c:
-			case CodePoint.d:
-			case CodePoint.e:
-			case CodePoint.f:
-			case CodePoint.g:
-			case CodePoint.h:
-			case CodePoint.i:
-			case CodePoint.j:
-			case CodePoint.k:
-			case CodePoint.l:
-			case CodePoint.m:
-			case CodePoint.n:
-			case CodePoint.o:
-			case CodePoint.p:
-			case CodePoint.q:
-			case CodePoint.r:
-			case CodePoint.s:
-			case CodePoint.t:
-			case CodePoint.u:
-			case CodePoint.v:
-			case CodePoint.w:
-			case CodePoint.x:
-			case CodePoint.y:
-			case CodePoint.z:
-			case CodePoint.A:
-			case CodePoint.B:
-			case CodePoint.C:
-			case CodePoint.D:
-			case CodePoint.E:
-			case CodePoint.F:
-			case CodePoint.G:
-			case CodePoint.H:
-			case CodePoint.I:
-			case CodePoint.J:
-			case CodePoint.K:
-			case CodePoint.L:
-			case CodePoint.M:
-			case CodePoint.N:
-			case CodePoint.O:
-			case CodePoint.P:
-			case CodePoint.Q:
-			case CodePoint.R:
-			case CodePoint.S:
-			case CodePoint.T:
-			case CodePoint.U:
-			case CodePoint.V:
-			case CodePoint.W:
-			case CodePoint.X:
-			case CodePoint.Y:
-			case CodePoint.Z:
+			case Char._:
+			case Char.$:
+			case Char.a:
+			case Char.b:
+			case Char.c:
+			case Char.d:
+			case Char.e:
+			case Char.f:
+			case Char.g:
+			case Char.h:
+			case Char.i:
+			case Char.j:
+			case Char.k:
+			case Char.l:
+			case Char.m:
+			case Char.n:
+			case Char.o:
+			case Char.p:
+			case Char.q:
+			case Char.r:
+			case Char.s:
+			case Char.t:
+			case Char.u:
+			case Char.v:
+			case Char.w:
+			case Char.x:
+			case Char.y:
+			case Char.z:
+			case Char.A:
+			case Char.B:
+			case Char.C:
+			case Char.D:
+			case Char.E:
+			case Char.F:
+			case Char.G:
+			case Char.H:
+			case Char.I:
+			case Char.J:
+			case Char.K:
+			case Char.L:
+			case Char.M:
+			case Char.N:
+			case Char.O:
+			case Char.P:
+			case Char.Q:
+			case Char.R:
+			case Char.S:
+			case Char.T:
+			case Char.U:
+			case Char.V:
+			case Char.W:
+			case Char.X:
+			case Char.Y:
+			case Char.Z:
 				step(lexer);
 
 				while (isIdentifierContinue(lexer.codePoint)) {
@@ -1359,7 +1356,7 @@ export function nextToken(lexer: Lexer) {
 				// TODO: Escape chars
 				// TODO: Double backslash?
 				// @ts-ignore
-				if (lexer.codePoint === CodePoint.BackSlash) {
+				if (lexer.codePoint === Char.BackSlash) {
 					lexer.token = scanIdentifierWithEscapes(
 						lexer,
 						IdenitfierKind.NormalIdentifier
@@ -1375,22 +1372,22 @@ export function nextToken(lexer: Lexer) {
 				}
 				break;
 
-			case CodePoint.DoubleBackSlash:
+			case Char.DoubleBackSlash:
 				// lexer.Identifier,
 				// 	(lexer.Token = lexer.scanIdentifierWithEscapes(normalIdentifier));
 				throw new Error("Escaped Identifiers are not supported yet");
 
-			case CodePoint.Dot:
-			case CodePoint.n0:
-			case CodePoint.n1:
-			case CodePoint.n2:
-			case CodePoint.n3:
-			case CodePoint.n4:
-			case CodePoint.n5:
-			case CodePoint.n6:
-			case CodePoint.n7:
-			case CodePoint.n8:
-			case CodePoint.n9:
+			case Char.Dot:
+			case Char.n0:
+			case Char.n1:
+			case Char.n2:
+			case Char.n3:
+			case Char.n4:
+			case Char.n5:
+			case Char.n6:
+			case Char.n7:
+			case Char.n8:
+			case Char.n9:
 				parseNumericLiteralOrDot(lexer);
 				break;
 

@@ -5,7 +5,7 @@ export const enum IdenitfierKind {
 	PrivateIdentifier,
 }
 
-export const enum CodePoint {
+export const enum Char {
 	"#" = 35,
 	"\r" = 13,
 	NewLine = 10,
@@ -186,18 +186,18 @@ export function isKeyword(text: string) {
 export function isWhitespace(codePoint: number) {
 	console.log("isWhitespace", codePoint);
 	switch (codePoint) {
-		case CodePoint.Tab:
-		case CodePoint.LineTab:
-		case CodePoint.FormFeed:
-		case CodePoint.Space:
-		case CodePoint.NoBreakSpace:
+		case Char.Tab:
+		case Char.LineTab:
+		case Char.FormFeed:
+		case Char.Space:
+		case Char.NoBreakSpace:
 
 		// Unicode "Space_Separator" code points
-		case CodePoint.OghamSpaceMark:
-		case CodePoint.EnQuad:
-		case CodePoint.EmQuad:
-		case CodePoint.EnSpace:
-		case CodePoint.EmSpace:
+		case Char.OghamSpaceMark:
+		case Char.EnQuad:
+		case Char.EmQuad:
+		case Char.EnSpace:
+		case Char.EmSpace:
 			// "\u2004", // three-per-em space
 			// "\u2005", // four-per-em space
 			// "\u2006", // six-per-em space
@@ -228,28 +228,28 @@ export function formatLexerPosition(lexer: Lexer) {
 
 export function isHexChar(codePoint: number) {
 	switch (codePoint) {
-		case CodePoint.n0:
-		case CodePoint.n1:
-		case CodePoint.n2:
-		case CodePoint.n3:
-		case CodePoint.n4:
-		case CodePoint.n5:
-		case CodePoint.n6:
-		case CodePoint.n7:
-		case CodePoint.n8:
-		case CodePoint.n9:
-		case CodePoint.a:
-		case CodePoint.b:
-		case CodePoint.c:
-		case CodePoint.d:
-		case CodePoint.e:
-		case CodePoint.f:
-		case CodePoint.A:
-		case CodePoint.B:
-		case CodePoint.C:
-		case CodePoint.D:
-		case CodePoint.E:
-		case CodePoint.F:
+		case Char.n0:
+		case Char.n1:
+		case Char.n2:
+		case Char.n3:
+		case Char.n4:
+		case Char.n5:
+		case Char.n6:
+		case Char.n7:
+		case Char.n8:
+		case Char.n9:
+		case Char.a:
+		case Char.b:
+		case Char.c:
+		case Char.d:
+		case Char.e:
+		case Char.f:
+		case Char.A:
+		case Char.B:
+		case Char.C:
+		case Char.D:
+		case Char.E:
+		case Char.F:
 			return true;
 		default:
 			return false;
@@ -258,60 +258,60 @@ export function isHexChar(codePoint: number) {
 
 export function isIdentifierChar(codePoint: number) {
 	switch (codePoint) {
-		case CodePoint._:
-		case CodePoint.$:
-		case CodePoint.a:
-		case CodePoint.b:
-		case CodePoint.c:
-		case CodePoint.d:
-		case CodePoint.e:
-		case CodePoint.f:
-		case CodePoint.g:
-		case CodePoint.h:
-		case CodePoint.i:
-		case CodePoint.j:
-		case CodePoint.k:
-		case CodePoint.l:
-		case CodePoint.m:
-		case CodePoint.n:
-		case CodePoint.o:
-		case CodePoint.p:
-		case CodePoint.q:
-		case CodePoint.r:
-		case CodePoint.s:
-		case CodePoint.t:
-		case CodePoint.u:
-		case CodePoint.v:
-		case CodePoint.w:
-		case CodePoint.x:
-		case CodePoint.y:
-		case CodePoint.z:
-		case CodePoint.A:
-		case CodePoint.B:
-		case CodePoint.C:
-		case CodePoint.D:
-		case CodePoint.E:
-		case CodePoint.F:
-		case CodePoint.G:
-		case CodePoint.H:
-		case CodePoint.I:
-		case CodePoint.J:
-		case CodePoint.K:
-		case CodePoint.L:
-		case CodePoint.M:
-		case CodePoint.N:
-		case CodePoint.O:
-		case CodePoint.P:
-		case CodePoint.Q:
-		case CodePoint.R:
-		case CodePoint.S:
-		case CodePoint.T:
-		case CodePoint.U:
-		case CodePoint.V:
-		case CodePoint.W:
-		case CodePoint.X:
-		case CodePoint.Y:
-		case CodePoint.Z:
+		case Char._:
+		case Char.$:
+		case Char.a:
+		case Char.b:
+		case Char.c:
+		case Char.d:
+		case Char.e:
+		case Char.f:
+		case Char.g:
+		case Char.h:
+		case Char.i:
+		case Char.j:
+		case Char.k:
+		case Char.l:
+		case Char.m:
+		case Char.n:
+		case Char.o:
+		case Char.p:
+		case Char.q:
+		case Char.r:
+		case Char.s:
+		case Char.t:
+		case Char.u:
+		case Char.v:
+		case Char.w:
+		case Char.x:
+		case Char.y:
+		case Char.z:
+		case Char.A:
+		case Char.B:
+		case Char.C:
+		case Char.D:
+		case Char.E:
+		case Char.F:
+		case Char.G:
+		case Char.H:
+		case Char.I:
+		case Char.J:
+		case Char.K:
+		case Char.L:
+		case Char.M:
+		case Char.N:
+		case Char.O:
+		case Char.P:
+		case Char.Q:
+		case Char.R:
+		case Char.S:
+		case Char.T:
+		case Char.U:
+		case Char.V:
+		case Char.W:
+		case Char.X:
+		case Char.Y:
+		case Char.Z:
 			return true;
 		default:
 			return false;
@@ -352,16 +352,16 @@ export function isIdentifierStart(codePoint: number) {
 export function isIdentifierContinue(codePoint: number) {
 	if (isIdentifierChar(codePoint)) return true;
 	switch (codePoint) {
-		case CodePoint.n0:
-		case CodePoint.n1:
-		case CodePoint.n2:
-		case CodePoint.n3:
-		case CodePoint.n4:
-		case CodePoint.n5:
-		case CodePoint.n6:
-		case CodePoint.n7:
-		case CodePoint.n8:
-		case CodePoint.n9:
+		case Char.n0:
+		case Char.n1:
+		case Char.n2:
+		case Char.n3:
+		case Char.n4:
+		case Char.n5:
+		case Char.n6:
+		case Char.n7:
+		case Char.n8:
+		case Char.n9:
 			return true;
 	}
 
@@ -375,7 +375,7 @@ export function isIdentifierContinue(codePoint: number) {
 		return true;
 	}
 
-	if (codePoint === CodePoint.EndOfFile) return false;
+	if (codePoint === Char.EndOfFile) return false;
 	// FIXME
 	// return unicode.Is(idContinue, codePoint);
 	return true;
