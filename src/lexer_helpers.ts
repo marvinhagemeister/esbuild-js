@@ -1,4 +1,5 @@
 import { Lexer } from "./lexer";
+import { char2Flag, CharFlags } from "./lexer-ascii";
 
 export const enum IdenitfierKind {
 	NormalIdentifier,
@@ -37,7 +38,7 @@ export const enum Char {
 	LessThan = 60,
 	GreaterThan = 62,
 	Bang = 33,
-	NoBreakSpace = 106,
+	NoBreakSpace = 20,
 	FormFeed = 12,
 	LineTab = 11,
 	BackSlash = 92,
@@ -184,13 +185,13 @@ export function isKeyword(text: string) {
 }
 
 export function isWhitespace(char: number) {
+	if (
+		char < 127 &&
+		(char2Flag[char] & CharFlags.WhiteSpace) === CharFlags.WhiteSpace
+	) {
+		return true;
+	}
 	switch (char) {
-		case Char.Tab:
-		case Char.LineTab:
-		case Char.FormFeed:
-		case Char.Space:
-		case Char.NoBreakSpace:
-
 		// Unicode "Space_Separator" code points
 		case Char.OghamSpaceMark:
 		case Char.EnQuad:
@@ -225,98 +226,6 @@ export function formatLexerPosition(lexer: Lexer) {
 	return "\n" + text + "\n" + " ".repeat(10) + "^";
 }
 
-export function isHexChar(char: number) {
-	switch (char) {
-		case Char.n0:
-		case Char.n1:
-		case Char.n2:
-		case Char.n3:
-		case Char.n4:
-		case Char.n5:
-		case Char.n6:
-		case Char.n7:
-		case Char.n8:
-		case Char.n9:
-		case Char.a:
-		case Char.b:
-		case Char.c:
-		case Char.d:
-		case Char.e:
-		case Char.f:
-		case Char.A:
-		case Char.B:
-		case Char.C:
-		case Char.D:
-		case Char.E:
-		case Char.F:
-			return true;
-		default:
-			return false;
-	}
-}
-
-export function isIdentifierChar(char: number) {
-	switch (char) {
-		case Char._:
-		case Char.$:
-		case Char.a:
-		case Char.b:
-		case Char.c:
-		case Char.d:
-		case Char.e:
-		case Char.f:
-		case Char.g:
-		case Char.h:
-		case Char.i:
-		case Char.j:
-		case Char.k:
-		case Char.l:
-		case Char.m:
-		case Char.n:
-		case Char.o:
-		case Char.p:
-		case Char.q:
-		case Char.r:
-		case Char.s:
-		case Char.t:
-		case Char.u:
-		case Char.v:
-		case Char.w:
-		case Char.x:
-		case Char.y:
-		case Char.z:
-		case Char.A:
-		case Char.B:
-		case Char.C:
-		case Char.D:
-		case Char.E:
-		case Char.F:
-		case Char.G:
-		case Char.H:
-		case Char.I:
-		case Char.J:
-		case Char.K:
-		case Char.L:
-		case Char.M:
-		case Char.N:
-		case Char.O:
-		case Char.P:
-		case Char.Q:
-		case Char.R:
-		case Char.S:
-		case Char.T:
-		case Char.U:
-		case Char.V:
-		case Char.W:
-		case Char.X:
-		case Char.Y:
-		case Char.Z:
-			return true;
-		default:
-			return false;
-	}
-}
-
 export function isIdentifier(text: string): boolean {
 	if (text.length === 0) {
 		return false;
@@ -337,7 +246,12 @@ export function isIdentifier(text: string): boolean {
 }
 
 export function isIdentifierStart(char: number) {
-	if (isIdentifierChar(char)) return true;
+	if (
+		char < 127 &&
+		(char2Flag[char] & CharFlags.IdStart) === CharFlags.IdStart
+	) {
+		return true;
+	}
 
 	// All ASCII identifier start code points are listed above
 	if (char < 0x7f) {
@@ -349,19 +263,8 @@ export function isIdentifierStart(char: number) {
 }
 
 export function isIdentifierContinue(char: number) {
-	if (isIdentifierChar(char)) return true;
-	switch (char) {
-		case Char.n0:
-		case Char.n1:
-		case Char.n2:
-		case Char.n3:
-		case Char.n4:
-		case Char.n5:
-		case Char.n6:
-		case Char.n7:
-		case Char.n8:
-		case Char.n9:
-			return true;
+	if (char < 127 && (char2Flag[char] & CharFlags.IdPart) === CharFlags.IdPart) {
+		return true;
 	}
 
 	// All ASCII identifier start code points are listed above

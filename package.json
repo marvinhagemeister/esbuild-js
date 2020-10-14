@@ -9,6 +9,7 @@
 	"scripts": {
 		"bench": "ts-node benchmark/bench.ts",
 		"gzip": "microbundle build --raw",
+		"gen": "ts-node tools/gen-ascii-map.ts",
 		"bench-write": "DEBUG=true ts-node benchmark/custom-test.js",
 		"build": "rimraf dist/ && tsc -p tsconfig.cjs.json && tsc -p tsconfig.module.json",
 		"format": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",

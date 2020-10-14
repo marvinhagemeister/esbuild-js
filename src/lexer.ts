@@ -6,11 +6,11 @@ import {
 	isWhitespace,
 	Char,
 	IdenitfierKind,
-	isHexChar,
 	isIdentifier,
 	isKeyword,
 	formatLexerPosition,
 } from "./lexer_helpers";
+import { char2Flag, CharFlags } from "./lexer-ascii";
 
 export interface Lexer {
 	i: number;
@@ -442,7 +442,10 @@ function scanIdentifierWithEscapes(lexer: Lexer, kind: IdenitfierKind) {
 				step(lexer);
 				// @ts-ignore
 				while (lexer.char !== Char["}"]) {
-					if (isHexChar(lexer.char)) {
+					if (
+						lexer.char < 127 &&
+						(char2Flag[lexer.char] & CharFlags.Hex) === CharFlags.Hex
+					) {
 						step(lexer);
 					} else {
 						throwSyntaxError(lexer);
@@ -452,7 +455,10 @@ function scanIdentifierWithEscapes(lexer: Lexer, kind: IdenitfierKind) {
 				step(lexer);
 			} else {
 				for (let i = 0; i < 4; i++) {
-					if (isHexChar(lexer.char)) {
+					if (
+						lexer.char < 127 &&
+						(char2Flag[lexer.char] & CharFlags.Hex) === CharFlags.Hex
+					) {
 						step(lexer);
 					} else {
 						throwSyntaxError(lexer);
