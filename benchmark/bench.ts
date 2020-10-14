@@ -47,6 +47,35 @@ function runBenchmark(name: string, code: string) {
 		.run();
 }
 
+async function runPhaseBenchmark(name: string, code: string) {
+	let customAst: any = null;
+	let acornAst: any = null;
+	let babelAst: any = null;
+	await new Suite(name + " parsing")
+		.add("custom parse", () => {
+			customAst = parse(code);
+		})
+		.add("acorn parse", () => {
+			acornAst = acorn.parse(code);
+		})
+		.add("babel parse", () => {
+			babelAst = babelParse.parse(code);
+		})
+		.run();
+
+	await new Suite(name + " serializing")
+		.add("custom serialize", () => {
+			return serialize(customAst);
+		})
+		.add("acorn serialize", () => {
+			return astring.generate(acornAst);
+		})
+		.add("babel serialize", () => {
+			return babelGen(babelAst);
+		})
+		.run();
+}
+
 function bench1() {
 	const code = `
   class Foo {
@@ -67,7 +96,8 @@ function bench2() {
 
 async function benchPreact() {
 	const code = await fs.readFile(path.join(__dirname, "preact.js"), "utf-8");
-	return runBenchmark("Preact", code);
+	await runBenchmark("Preact", code);
+	await runPhaseBenchmark("Preact", code);
 }
 
 async function run() {
