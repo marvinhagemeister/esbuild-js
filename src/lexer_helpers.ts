@@ -184,7 +184,6 @@ export function isKeyword(text: string) {
 }
 
 export function isWhitespace(char: number) {
-	console.log("isWhitespace", char);
 	switch (char) {
 		case Char.Tab:
 		case Char.LineTab:
