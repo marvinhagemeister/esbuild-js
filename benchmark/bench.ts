@@ -108,7 +108,7 @@ function bench2() {
 
 async function benchPreact() {
 	const code = await fs.readFile(path.join(__dirname, "preact.js"), "utf-8");
-	// await runBenchmark("Preact", code);
+	await runBenchmark("Preact", code);
 	await runPhaseBenchmark("Preact", code);
 }
 
