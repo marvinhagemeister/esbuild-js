@@ -787,6 +787,7 @@ export const enum PropertyKind {
 export interface Property extends BaseNode {
 	type: "Property";
 	method: boolean;
+	shorthand: boolean;
 	computed: boolean;
 	kind: "init" | "get" | "set";
 	key: Expression;
@@ -803,6 +804,7 @@ export function property(
 		type: "Property",
 		method,
 		computed,
+		shorthand: key === value,
 		kind: "init",
 		key,
 		value,
