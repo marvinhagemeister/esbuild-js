@@ -10,6 +10,7 @@ import * as astring from "astring";
 import babelGen from "@babel/generator";
 import * as babelParse from "@babel/parser";
 import * as esbuild from "esbuild";
+import * as escaya from "escaya";
 
 function testCustom(source: string) {
 	const ast = parse(source);
@@ -24,6 +25,10 @@ function testAcorn(source: string) {
 function testBabel(source: string) {
 	const ast = babelParse.parse(source);
 	return babelGen(ast);
+}
+
+function testEscaya(source: string) {
+	const ast = escaya.parseModule(source);
 }
 
 // Esbuild runs very poor without a service for some reason. Not sure why.
@@ -51,6 +56,7 @@ async function runPhaseBenchmark(name: string, code: string) {
 	let customAst: any = null;
 	let acornAst: any = null;
 	let babelAst: any = null;
+	let escayaAst: any = null;
 	await new Suite(name + " parsing")
 		.add("custom parse", () => {
 			customAst = parse(code);
@@ -60,6 +66,9 @@ async function runPhaseBenchmark(name: string, code: string) {
 		})
 		.add("babel parse", () => {
 			babelAst = babelParse.parse(code);
+		})
+		.add("escaya parse", () => {
+			escayaAst = escaya.parseModule(code);
 		})
 		.run();
 
@@ -72,6 +81,9 @@ async function runPhaseBenchmark(name: string, code: string) {
 		})
 		.add("babel serialize", () => {
 			return babelGen(babelAst);
+		})
+		.add("escaya serialize", () => {
+			return escayaAst;
 		})
 		.run();
 }
@@ -96,7 +108,7 @@ function bench2() {
 
 async function benchPreact() {
 	const code = await fs.readFile(path.join(__dirname, "preact.js"), "utf-8");
-	await runBenchmark("Preact", code);
+	// await runBenchmark("Preact", code);
 	await runPhaseBenchmark("Preact", code);
 }
 
