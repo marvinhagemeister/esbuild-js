@@ -1,5 +1,6 @@
 // Note: Order is used for comparison
 export const enum Token {
+	Unknown,
 	EndOfFile,
 	SyntaxError,
 
@@ -80,6 +81,7 @@ export const enum Token {
 	// Assignment
 	Identifier,
 	EscapedKeyword,
+	IdentifierOrKeyword,
 
 	// Keywords
 	Break,
