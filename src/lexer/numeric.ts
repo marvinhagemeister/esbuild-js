@@ -23,9 +23,17 @@ export function scanNumberLiteral(lexer: Lexer) {
 	}
 
 	if (base === 0) {
-		// TODO: Validate underscores (must not be two or more in a row)
 		// Floating Point Literal
+		let lastUnderscore = -1;
 		while ((lexer.flags & CharFlags.Number) === CharFlags.Number) {
+			if (lexer.char === Char["_"]) {
+				if (lastUnderscore === lexer.i - 1) {
+					throw new SyntaxError(
+						`Underscore can't occur multiple times in a row in numeric literals`
+					);
+				}
+				lastUnderscore = lexer.i;
+			}
 			step(lexer);
 		}
 	} else {

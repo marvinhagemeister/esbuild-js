@@ -1,4 +1,4 @@
-import { createLexer, getRaw, newLexer, step } from "../lexer";
+import { createLexer, getRaw, step } from "../lexer";
 import expect from "expect";
 import { Token } from "../tokens";
 import { scanNumberLiteral } from "./numeric";
@@ -48,18 +48,19 @@ describe.only("Lexer", () => {
 			expectNumber("0987.6543", 987.6543);
 		});
 
-		it.skip("should scan base2", () => {
+		it.skip("should scan Binary (base2)", () => {
 			// TODO
 		});
-		it.skip("should scan base8", () => {
+		it.skip("should scan Octal (base8)", () => {
 			// TODO
 		});
-		it.skip("should scan base16", () => {
+		it.skip("should scan Hex (base16)", () => {
 			// TODO
 		});
 
 		it("should scan with underscore", () => {
 			expectNumber("1_000_000", 1_000_000);
+			expect(() => lex("1__000_000")).toThrowError(SyntaxError as any);
 		});
 
 		it("should throw if identifier follows immediately after number", () => {
