@@ -2711,6 +2711,11 @@ kolorist@^1.2.6:
   resolved "https://registry.yarnpkg.com/kolorist/-/kolorist-1.2.6.tgz#5c8cef18165193493c34e02adc5029411f7c326e"
   integrity sha512-vl2Lj39Bd0C16UkQLRmm54khy7Ejp89iESwLwMPX3nY2BPEk25+oTSJGElWcHtmjEGJ06aHvpZkGqFXAJxiEnA==
 
+kolorist@^1.2.7:
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/kolorist/-/kolorist-1.2.7.tgz#7de9002661fb23713fc57d2fc5c4a3c06bbdffbe"
+  integrity sha512-OuFA1+AkZveh3t0vti3zyMj0Vfk4mhwJcNcHcZ/y1TDYiZc+Ik3RY3kSLWAzxB0ns6eTZk65I42QYvVuqZF7iQ==
+
 leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"

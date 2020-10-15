@@ -13,7 +13,7 @@
 		"bench-write": "DEBUG=true ts-node benchmark/custom-test.js",
 		"build": "rimraf dist/ && tsc -p tsconfig.cjs.json && tsc -p tsconfig.module.json",
 		"format": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
-		"test": "mocha -r ts-node/register --extensions ts,tsx --watch-files src/ src/**/*.test.ts"
+		"test": "mocha -r ts-node/register --extensions ts,tsx --watch-files src/ src/*.test.ts src/**/*.test.ts"
 	},
 	"author": "Marvin Hagemeister <hello@marvinh.dev>",
 	"license": "MIT",
@@ -40,7 +40,8 @@
 		"typescript": "^3.9.7"
 	},
 	"dependencies": {
-		"@types/estree": "^0.0.45"
+		"@types/estree": "^0.0.45",
+		"kolorist": "^1.2.7"
 	},
 	"prettier": {
 		"useTabs": true,

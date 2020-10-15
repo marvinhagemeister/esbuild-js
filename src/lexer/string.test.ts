@@ -2,11 +2,18 @@ import { createLexer, step } from "./core";
 import expect from "expect";
 import { Token } from "../tokens";
 import { scanStringLiteral } from "./string";
+import { newCodeFrameFromErr } from "../diagnostics/code-frame";
 
 function lex(code: string) {
-	const lexer = createLexer(code);
-	step(lexer);
-	scanStringLiteral(lexer);
+	let lexer;
+	try {
+		lexer = createLexer(code);
+		step(lexer);
+		scanStringLiteral(lexer);
+	} catch (err) {
+		console.log(newCodeFrameFromErr(err));
+		throw err;
+	}
 	return lexer;
 }
 

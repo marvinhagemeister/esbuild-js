@@ -1,7 +1,7 @@
 import { CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { Token } from "../tokens";
-import { Lexer2, step } from "./core";
+import { Lexer2, step, throwSyntaxError } from "./core";
 
 export function scanStringLiteral(lexer: Lexer2) {
 	const quote = lexer.char;
@@ -18,7 +18,8 @@ export function scanStringLiteral(lexer: Lexer2) {
 			quote !== Char.Backtick &&
 			(lexer.flags & CharFlags.NewLine) === CharFlags.NewLine
 		) {
-			throw new SyntaxError(
+			throwSyntaxError(
+				lexer,
 				`Unterminated string literal. Newline characters need to be escaped.`
 			);
 		}
@@ -40,7 +41,7 @@ export function scanStringLiteral(lexer: Lexer2) {
 	}
 
 	if (quote !== Char.Backtick && lexer.char !== quote) {
-		throw new SyntaxError("Unterminated string literal");
+		throwSyntaxError(lexer, "Unterminated string literal");
 	}
 
 	lexer.string = lexer.source.slice(lexer.start + 1, lexer.i - suffixLen);

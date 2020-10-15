@@ -41,6 +41,7 @@ export function createLexer(source: string): Lexer2 {
 export function step(lexer: Lexer2) {
 	const source = lexer.source;
 	const i = ++lexer.i;
+	lexer.column++;
 	lexer.char = i < source.length ? source.charCodeAt(i)! : Char.EndOfFile;
 	lexer.flags =
 		lexer.char !== Char.EndOfFile ? char2Flag[lexer.char] : CharFlags.Unknown;
@@ -48,4 +49,18 @@ export function step(lexer: Lexer2) {
 
 export function getRaw(lexer: Lexer2) {
 	return lexer.source.slice(lexer.start, lexer.i);
+}
+
+export interface CustomSyntaxError extends SyntaxError {
+	source: string;
+	line: number;
+	column: number;
+}
+
+export function throwSyntaxError(lexer: Lexer2, message: string) {
+	const err = new SyntaxError(message) as CustomSyntaxError;
+	err.source = lexer.source;
+	err.line = lexer.line;
+	err.column = lexer.column;
+	throw err;
 }
