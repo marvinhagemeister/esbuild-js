@@ -55,7 +55,9 @@ export function scanNumberLiteral(lexer: Lexer) {
 		}
 	}
 
-	if ((lexer.flags & CharFlags.IdStart) === CharFlags.IdStart) {
+	if (lastUnderscore + 1 === lexer.end) {
+		throw new SyntaxError(`Numeric literal must not end with an underscore`);
+	} else if ((lexer.flags & CharFlags.IdStart) === CharFlags.IdStart) {
 		throw new SyntaxError(`Identifiers can't occur immediately after a number`);
 	}
 }
