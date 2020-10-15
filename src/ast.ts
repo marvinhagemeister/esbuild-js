@@ -1,5 +1,3 @@
-import * as t from "estree";
-
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
 export const enum Precedence {
 	Lowest,
@@ -47,7 +45,6 @@ export type AstNode =
 	| Identifier
 	| Program
 	| VariableDeclarator
-	| t.ImportDeclaration
 	| Statement
 	| Pattern
 	| Property
@@ -337,7 +334,7 @@ export type Statement =
 	| IfStatement
 	| Comment
 	| BlockStatement;
-export type ModuleDeclaration = t.ImportDeclaration;
+export type ModuleDeclaration = any;
 
 export interface ConditionalExpression extends BaseNode {
 	type: "ConditionalExpression";

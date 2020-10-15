@@ -18,6 +18,7 @@ export interface Lexer {
 	source: string;
 	hasNewLineBefore: boolean;
 	token: Token;
+	flags: CharFlags;
 	identifier: string;
 	number: number;
 	string: string;
@@ -29,9 +30,9 @@ export interface Lexer {
 	logger: logger.Logger;
 }
 
-export function newLexer(source: string): Lexer {
-	const lexer = {
-		i: 0,
+export function createLexer(source: string): Lexer {
+	return {
+		i: -1,
 		char: -1,
 		source,
 		hasNewLineBefore: false,
@@ -41,26 +42,31 @@ export function newLexer(source: string): Lexer {
 		string: "",
 		identifier: "",
 		commentBefore: null,
-		start: -1,
-		end: -1,
+		start: 0,
+		end: 0,
+		flags: CharFlags.Unknown,
 		isLogDisabled: false,
 		logger: {
 			logs: [],
 		},
 	};
+}
 
+export function newLexer(source: string): Lexer {
+	const lexer = createLexer(source);
 	step(lexer);
 	nextToken(lexer);
 
 	return lexer;
 }
 
-function step(lexer: Lexer) {
+export function step(lexer: Lexer) {
 	const source = lexer.source;
-	const i = lexer.i;
-	lexer.char = i < source.length ? source.charCodeAt(i)! : -1;
+	const i = ++lexer.i;
+	lexer.char = i < source.length ? source.charCodeAt(i)! : Char.EndOfFile;
 	lexer.end = i;
-	lexer.i++;
+	lexer.flags =
+		lexer.char !== Char.EndOfFile ? char2Flag[lexer.char] : CharFlags.Unknown;
 }
 
 function addError(lexer: Lexer, loc: number, text: string) {
@@ -137,8 +143,9 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 	const first = lexer.char;
 	step(lexer);
 
+	let flags = lexer.flags;
 	// Dot without a digit after it
-	if (first === Char.Dot && (lexer.char < Char.n0 || lexer.char > Char.n9)) {
+	if (first === Char.Dot && (flags & CharFlags.Number) === 0) {
 		// "..."
 		if (
 			lexer.char === Char.Dot &&
@@ -165,6 +172,12 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 	// Assume this is a number, but potentially change to a bigint later
 	lexer.token = Token.NumericLiteral;
 
+	if (lexer.char === Char.EndOfFile) {
+		return;
+	}
+
+	let legacyOctalLiteral = false;
+	flags = lexer.flags;
 	// Check for binary, octal, or hexadecimal literal
 	if (first === Char.n0) {
 		switch (lexer.char) {
@@ -181,18 +194,6 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 			case Char.x:
 			case Char.X:
 				base = 16;
-				break;
-
-			case Char.n0:
-			case Char.n1:
-			case Char.n2:
-			case Char.n3:
-			case Char.n4:
-			case Char.n5:
-			case Char.n6:
-			case Char.n7:
-				base = 8;
-				isLegacyOctalLiteral = true;
 		}
 	}
 
@@ -306,7 +307,8 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 
 		// Initial digits
 		while (true) {
-			if (lexer.char < Char.n0 || lexer.char > Char.n9) {
+			const flags = char2Flag[lexer.char];
+			if ((flags & CharFlags.Number) === CharFlags.Number) {
 				if (lexer.char !== Char._) {
 					break;
 				}
@@ -750,663 +752,519 @@ function scanCommentText(lexer: Lexer) {
 	lexer.commentBefore.push(text);
 }
 
+function scanIdentifier(lexer: Lexer) {
+	step(lexer);
+
+	while (isIdentifierContinue(lexer.char)) {
+		step(lexer);
+	}
+
+	// TODO: Escape chars
+	// TODO: Double backslash?
+	// @ts-ignore
+	if (lexer.char === Char.BackSlash) {
+		lexer.token = scanIdentifierWithEscapes(
+			lexer,
+			IdenitfierKind.NormalIdentifier
+		);
+	} else {
+		const content = getRaw(lexer);
+		lexer.identifier = content;
+
+		lexer.token =
+			content !== "constructor" && content in keywords
+				? (keywords as any)[content]
+				: Token.Identifier;
+	}
+}
+
 export function nextToken(lexer: Lexer) {
 	lexer.hasNewLineBefore = lexer.end === 0;
 
-	while (true) {
-		lexer.start = lexer.end;
-		lexer.token = Token.Unknown;
+	// Skip whitespace
+	let flags = char2Flag[lexer.char];
+	while ((flags & CharFlags.WhiteSpace) === CharFlags.WhiteSpace) {
+		if ((flags & CharFlags.NewLine) === CharFlags.NewLine) {
+			lexer.hasNewLineBefore = true;
+		}
+		step(lexer);
 
-		switch (lexer.char) {
-			case Char.EndOfFile:
-				lexer.token = Token.EndOfFile;
-				break;
-			case Char["#"]:
-				// Hashbang
-				if (lexer.i === 1 && lexer.source.startsWith("#!")) {
-					// "#!/usr/bin/env node"
-					lexer.token = Token.Hashbang;
-					hashbang: while (true) {
+		flags = char2Flag[lexer.char] || 0;
+	}
+
+	if (lexer.char === Char.EndOfFile) {
+		return;
+	}
+
+	lexer.start = lexer.end;
+	lexer.token = Token.Unknown;
+
+	if ((flags & CharFlags.IdStart) === CharFlags.IdStart) {
+		return scanIdentifier(lexer);
+	} else if ((flags & CharFlags.Number) === CharFlags.Number) {
+		return parseNumericLiteralOrDot(lexer);
+	} else if ((flags & CharFlags.Direct) === CharFlags.Direct) {
+		// Codes are synched with Token
+		lexer.token = lexer.char as any;
+		step(lexer);
+		return;
+	}
+
+	switch (lexer.char) {
+		case Char["#"]:
+			// Hashbang
+			if (lexer.i === 1 && lexer.source.startsWith("#!")) {
+				// "#!/usr/bin/env node"
+				lexer.token = Token.Hashbang;
+				hashbang: while (true) {
+					step(lexer);
+					switch (lexer.char as number) {
+						case Char["\r"]:
+						case Char.NewLine:
+						case Char["\u2028"]:
+						case Char["\u2029"]:
+							break hashbang;
+						case Char.EndOfFile:
+							break hashbang;
+					}
+				}
+				lexer.identifier = getRaw(lexer);
+			} else {
+				// TOOD: Private fields
+			}
+			break;
+
+		case Char.QuestionMark:
+			// '?' or '?.' or '??' or '??='
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.QuestionMark:
+					step(lexer);
+					switch (lexer.char as number) {
+						case Char.Equal:
+							step(lexer);
+							lexer.token = Token["??="];
+							break;
+						default:
+							lexer.token = Token["??"];
+					}
+					break;
+				case Char.Dot:
+					lexer.token = Token.Question;
+					let current = lexer.i;
+					let contents = lexer.source;
+
+					// Lookahead to disambiguate with 'a?.1:b'
+					if (current < contents.length) {
+						let c = contents.charCodeAt(current)!;
+						if (c < Char.n0 || c > Char.n9) {
+							step(lexer);
+							lexer.token = Token.QuestionDot;
+						}
+					}
+					break;
+				default:
+					lexer.token = Token.Question;
+			}
+			break;
+
+		case Char.Percent:
+			// '%' or '%='
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token.PercentEquals;
+					break;
+				default:
+					lexer.token = Token.Percent;
+			}
+			break;
+
+		case Char.Ampersand:
+			// '&' or '&=' or '&&' or '&&='
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token["&="];
+					break;
+				case Char.Ampersand:
+					step(lexer);
+					switch (lexer.char as number) {
+						case Char.Equal:
+							step(lexer);
+							lexer.token = Token["&&="];
+							break;
+						default:
+							lexer.token = Token["&&"];
+					}
+					break;
+				default:
+					lexer.token = Token.Ampersand;
+			}
+			break;
+
+		case Char.Pipe:
+			// '|' or '|=' or '||' or '||='
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token["|="];
+					break;
+				case Char.Pipe:
+					step(lexer);
+					switch (lexer.char as number) {
+						case Char.Equal:
+							step(lexer);
+							lexer.token = Token["||="];
+							break;
+						default:
+							lexer.token = Token["||"];
+					}
+					break;
+				default:
+					lexer.token = Token.Bar;
+			}
+
+			break;
+
+		case Char.Circonflex:
+			// '^' or '^='
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token["^="];
+					break;
+				default:
+					lexer.token = Token.Caret;
+			}
+			break;
+
+		case Char.Plus:
+			// '+' or '+=' or '++'
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token["+="];
+					break;
+				case Char.Plus:
+					step(lexer);
+					lexer.token = Token["++"];
+					break;
+				default:
+					lexer.token = Token.Plus;
+			}
+			break;
+
+		case Char.Minus:
+			// '-' or '-=' or '--'
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token["-="];
+					break;
+				case Char.Minus:
+					step(lexer);
+
+					lexer.token = Token["--"];
+					break;
+				default:
+					lexer.token = Token.Minus;
+			}
+			break;
+
+		case Char.Asteriks:
+			// '*' or '*=' or '**' or '**='
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token["*="];
+					break;
+
+				case Char.Asteriks:
+					step(lexer);
+					if ((lexer.char as number) === Char.Equal) {
+						step(lexer);
+						lexer.token = Token["**="];
+					} else {
+						lexer.token = Token["**"];
+					}
+					break;
+				default:
+					lexer.token = Token["*"];
+			}
+
+			break;
+
+		case Char.Slash:
+			// '/' or '/=' or '//' or '/* ... */'
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal: {
+					step(lexer);
+					lexer.token = Token["/="];
+					break;
+				}
+				case Char.Slash: {
+					singleLineComment: while (true) {
 						step(lexer);
 						switch (lexer.char as number) {
 							case Char["\r"]:
 							case Char.NewLine:
 							case Char["\u2028"]:
 							case Char["\u2029"]:
-								break hashbang;
 							case Char.EndOfFile:
-								break hashbang;
+								break singleLineComment;
 						}
 					}
-					lexer.identifier = getRaw(lexer);
-				} else {
-					// TOOD: Private fields
+					scanCommentText(lexer);
+					return;
 				}
-				break;
-
-			case Char["\r"]:
-			case Char.NewLine:
-			case Char["\u2028"]:
-			case Char["\u2029"]:
-				step(lexer);
-				lexer.hasNewLineBefore = true;
-				continue;
-
-			case Char.Tab:
-			case Char.Space:
-				step(lexer);
-				continue;
-
-			case Char["("]:
-				step(lexer);
-				lexer.token = Token.OpenParen;
-				break;
-
-			case Char[")"]:
-				step(lexer);
-				lexer.token = Token.CloseParen;
-				break;
-
-			case Char["["]:
-				step(lexer);
-				lexer.token = Token.OpenBracket;
-				break;
-
-			case Char["]"]:
-				step(lexer);
-				lexer.token = Token.CloseBracket;
-				break;
-
-			case Char["{"]:
-				step(lexer);
-				lexer.token = Token.OpenBrace;
-				break;
-
-			case Char["}"]:
-				step(lexer);
-				lexer.token = Token.CloseBrace;
-				break;
-
-			case Char.Comma:
-				step(lexer);
-				lexer.token = Token.Comma;
-				break;
-
-			case Char.Colon:
-				step(lexer);
-				lexer.token = Token.Colon;
-				break;
-
-			case Char.SemiColon:
-				step(lexer);
-				lexer.token = Token.SemiColon;
-				break;
-
-			case Char.At:
-				step(lexer);
-				lexer.token = Token.At;
-				break;
-
-			case Char.Tilde:
-				step(lexer);
-				lexer.token = Token.Tilde;
-				break;
-
-			case Char.QuestionMark:
-				// '?' or '?.' or '??' or '??='
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.QuestionMark:
-						step(lexer);
+				case Char.Asteriks: {
+					step(lexer);
+					multiLineComment: while (true) {
 						switch (lexer.char as number) {
-							case Char.Equal:
+							case Char.Asteriks: {
 								step(lexer);
-								lexer.token = Token["??="];
-								break;
-							default:
-								lexer.token = Token["??"];
-						}
-						break;
-					case Char.Dot:
-						lexer.token = Token.Question;
-						let current = lexer.i;
-						let contents = lexer.source;
-
-						// Lookahead to disambiguate with 'a?.1:b'
-						if (current < contents.length) {
-							let c = contents.charCodeAt(current)!;
-							if (c < Char.n0 || c > Char.n9) {
-								step(lexer);
-								lexer.token = Token.QuestionDot;
-							}
-						}
-						break;
-					default:
-						lexer.token = Token.Question;
-				}
-				break;
-
-			case Char.Percent:
-				// '%' or '%='
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token.PercentEquals;
-						break;
-					default:
-						lexer.token = Token.Percent;
-				}
-				break;
-
-			case Char.Ampersand:
-				// '&' or '&=' or '&&' or '&&='
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token["&="];
-						break;
-					case Char.Ampersand:
-						step(lexer);
-						switch (lexer.char as number) {
-							case Char.Equal:
-								step(lexer);
-								lexer.token = Token["&&="];
-								break;
-							default:
-								lexer.token = Token["&&"];
-						}
-						break;
-					default:
-						lexer.token = Token.Ampersand;
-				}
-				break;
-
-			case Char.Pipe:
-				// '|' or '|=' or '||' or '||='
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token["|="];
-						break;
-					case Char.Pipe:
-						step(lexer);
-						switch (lexer.char as number) {
-							case Char.Equal:
-								step(lexer);
-								lexer.token = Token["||="];
-								break;
-							default:
-								lexer.token = Token["||"];
-						}
-						break;
-					default:
-						lexer.token = Token.Bar;
-				}
-
-				break;
-
-			case Char.Circonflex:
-				// '^' or '^='
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token["^="];
-						break;
-					default:
-						lexer.token = Token.Caret;
-				}
-				break;
-
-			case Char.Plus:
-				// '+' or '+=' or '++'
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token["+="];
-						break;
-					case Char.Plus:
-						step(lexer);
-						lexer.token = Token["++"];
-						break;
-					default:
-						lexer.token = Token.Plus;
-				}
-				break;
-
-			case Char.Minus:
-				// '-' or '-=' or '--' or '-->'
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token["-="];
-						break;
-					case Char.Minus:
-						step(lexer);
-
-						// Handle legacy HTML-style comments
-						if (
-							(lexer.char as number) === Char.GreaterThan &&
-							lexer.hasNewLineBefore
-						) {
-							step(lexer);
-							// lexer.log.AddRangeWarning(&lexer.source, lexer.Range(),
-							// 	"Treating \"-->\" as the start of a legacy HTML single-line comment")
-							singleLineHTMLCloseComment: while (true) {
-								switch (lexer.char as number) {
-									case Char["\r"]:
-									case Char.NewLine:
-									case Char["\u2028"]:
-									case Char["\u2029"]:
-										break singleLineHTMLCloseComment;
-
-									case -1: // This indicates the end of the file
-										break singleLineHTMLCloseComment;
+								if (lexer.char === Char.Slash) {
+									step(lexer);
+									break multiLineComment;
 								}
+								break;
+							}
+							case Char["\r"]:
+							case Char.NewLine:
+							case Char["\u2028"]:
+							case Char["\u2029"]:
+							case Char.EndOfFile: {
+								step(lexer);
+								lexer.hasNewLineBefore = true;
+								break;
+							}
+							case Char.EndOfFile: {
+								lexer.start = lexer.end;
+								throw new Error("Unterminated multiline comment");
+							}
+							default:
+								step(lexer);
+						}
+					}
+					scanCommentText(lexer);
+					return;
+				}
+				default:
+					lexer.token = Token["/"];
+			}
+			break;
+
+		case Char.Equal:
+			// '=' or '=>' or '==' or '==='
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.GreaterThan:
+					step(lexer);
+					lexer.token = Token["=>"];
+					break;
+				case Char.Equal:
+					step(lexer);
+					if (lexer.char === Char.Equal) {
+						step(lexer);
+						lexer.token = Token["==="];
+					} else {
+						lexer.token = Token["=="];
+					}
+					break;
+				default:
+					lexer.token = Token.Equals;
+			}
+
+			break;
+
+		case Char.LessThan:
+			// '<' or '<<' or '<=' or '<<=' or '<!--'
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token["<="];
+					break;
+				case Char.LessThan:
+					step(lexer);
+					if ((lexer.char as number) === Char.Equal) {
+						step(lexer);
+						lexer.token = Token["<<="];
+					} else {
+						lexer.token = Token["<<"];
+					}
+					break;
+				default:
+					lexer.token = Token["<"];
+			}
+			break;
+
+		case Char.Bang:
+			// '!' or '!=' or '!=='
+			step(lexer);
+
+			// != or !==
+			if ((lexer.char as number) === Char.Equal) {
+				step(lexer);
+				if ((lexer.char as number) === Char.Equal) {
+					step(lexer);
+					lexer.token = Token["!=="];
+				} else {
+					lexer.token = Token["!="];
+				}
+			} else {
+				lexer.token = Token["!"];
+			}
+			break;
+
+		case Char.GreaterThan:
+			// '>' or '>>' or '>>>' or '>=' or '>>=' or '>>>='
+			step(lexer);
+			switch (lexer.char as number) {
+				case Char.Equal:
+					step(lexer);
+					lexer.token = Token[">="];
+					break;
+				case Char.GreaterThan:
+					step(lexer);
+					switch (lexer.char as number) {
+						case Char.Equal:
+							step(lexer);
+							lexer.token = Token[">>="];
+							break;
+						case Char.GreaterThan:
+							step(lexer);
+							lexer.token = Token[">>>"];
+							break;
+						default:
+							lexer.token = Token[">>"];
+					}
+					break;
+				default:
+					lexer.token = Token[">"];
+			}
+
+			break;
+
+		case Char.Quote:
+		case Char.DoubleQuote:
+		case Char.Backtick: {
+			const quote = lexer.char;
+			let hasEscape = false;
+			let suffixLen = 1;
+			let isASCII = true;
+
+			if (quote !== Char.Backtick) {
+				lexer.token = Token.StringLiteral;
+			} else if (lexer.rescanCloseBraceAsTemplateToken) {
+				lexer.token = Token.TemplateTail;
+			} else {
+				lexer.token = Token.NoSubstitutionTemplateLiteral;
+			}
+			step(lexer);
+
+			stringLiteral: while (true) {
+				switch (lexer.char as number) {
+					case Char.Backtick:
+						hasEscape = true;
+						step(lexer);
+
+						// Handle Windows CRLF
+						// if ((lexer.char as number) === CodePoint['\r'] && !lexer.json.parse) {
+						if ((lexer.char as number) === Char["\r"]) {
+							step(lexer);
+							if ((lexer.char as number) == Char.NewLine) {
 								step(lexer);
 							}
 							continue;
 						}
 
-						lexer.token = Token["--"];
-						break;
-					default:
-						lexer.token = Token.Minus;
-				}
-				break;
+					case -1: // This indicates the end of the file
+						throwSyntaxError(lexer);
 
-			case Char.Asteriks:
-				// '*' or '*=' or '**' or '**='
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token["*="];
-						break;
+					case Char["\r"]:
+					case Char.NewLine:
+						if (quote !== Char.Backtick) {
+							addError(lexer, lexer.end, "Unterminated string literal");
+							throw new Error("PANIC");
+						}
 
-					case Char.Asteriks:
-						step(lexer);
-						if ((lexer.char as number) === Char.Equal) {
+					case Char.$:
+						if (quote === Char.Backtick) {
 							step(lexer);
-							lexer.token = Token["**="];
-						} else {
-							lexer.token = Token["**"];
-						}
-						break;
-					default:
-						lexer.token = Token["*"];
-				}
-
-				break;
-
-			case Char.Slash:
-				// '/' or '/=' or '//' or '/* ... */'
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal: {
-						step(lexer);
-						lexer.token = Token["/="];
-						break;
-					}
-					case Char.Slash: {
-						singleLineComment: while (true) {
-							step(lexer);
-							switch (lexer.char as number) {
-								case Char["\r"]:
-								case Char.NewLine:
-								case Char["\u2028"]:
-								case Char["\u2029"]:
-								case Char.EndOfFile:
-									break singleLineComment;
-							}
-						}
-						scanCommentText(lexer);
-						continue;
-					}
-					case Char.Asteriks: {
-						step(lexer);
-						multiLineComment: while (true) {
-							switch (lexer.char as number) {
-								case Char.Asteriks: {
-									step(lexer);
-									if (lexer.char === Char.Slash) {
-										step(lexer);
-										break multiLineComment;
-									}
-									break;
-								}
-								case Char["\r"]:
-								case Char.NewLine:
-								case Char["\u2028"]:
-								case Char["\u2029"]:
-								case Char.EndOfFile: {
-									step(lexer);
-									lexer.hasNewLineBefore = true;
-									break;
-								}
-								case Char.EndOfFile: {
-									lexer.start = lexer.end;
-									throw new Error("Unterminated multiline comment");
-								}
-								default:
-									step(lexer);
-							}
-						}
-						scanCommentText(lexer);
-						continue;
-					}
-					default:
-						lexer.token = Token["/"];
-				}
-				break;
-
-			case Char.Equal:
-				// '=' or '=>' or '==' or '==='
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.GreaterThan:
-						step(lexer);
-						lexer.token = Token["=>"];
-						break;
-					case Char.Equal:
-						step(lexer);
-						if (lexer.char === Char.Equal) {
-							step(lexer);
-							lexer.token = Token["==="];
-						} else {
-							lexer.token = Token["=="];
-						}
-						break;
-					default:
-						lexer.token = Token.Equals;
-				}
-
-				break;
-
-			case Char.LessThan:
-				// '<' or '<<' or '<=' or '<<=' or '<!--'
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token["<="];
-						break;
-					case Char.LessThan:
-						step(lexer);
-						if ((lexer.char as number) === Char.Equal) {
-							step(lexer);
-							lexer.token = Token["<<="];
-						} else {
-							lexer.token = Token["<<"];
-						}
-						break;
-					default:
-						lexer.token = Token["<"];
-				}
-				break;
-
-			case Char.Bang:
-				// '!' or '!=' or '!=='
-				step(lexer);
-
-				// != or !==
-				if ((lexer.char as number) === Char.Equal) {
-					step(lexer);
-					if ((lexer.char as number) === Char.Equal) {
-						step(lexer);
-						lexer.token = Token["!=="];
-					} else {
-						lexer.token = Token["!="];
-					}
-				} else {
-					lexer.token = Token["!"];
-				}
-				break;
-
-			case Char.GreaterThan:
-				// '>' or '>>' or '>>>' or '>=' or '>>=' or '>>>='
-				step(lexer);
-				switch (lexer.char as number) {
-					case Char.Equal:
-						step(lexer);
-						lexer.token = Token[">="];
-						break;
-					case Char.GreaterThan:
-						step(lexer);
-						switch (lexer.char as number) {
-							case Char.Equal:
+							if ((lexer.char as number) === Char["{"]) {
+								suffixLen = 2;
 								step(lexer);
-								lexer.token = Token[">>="];
-								break;
-							case Char.GreaterThan:
-								step(lexer);
-								lexer.token = Token[">>>"];
-								break;
-							default:
-								lexer.token = Token[">>"];
+								if (lexer.rescanCloseBraceAsTemplateToken) {
+									lexer.token = Token.TemplateMiddle;
+								} else {
+									lexer.token = Token.TemplateHead;
+								}
+								break stringLiteral;
+							}
+							continue stringLiteral;
 						}
-						break;
+
+					case quote:
+						step(lexer);
+						break stringLiteral;
+
 					default:
-						lexer.token = Token[">"];
-				}
-
-				break;
-
-			case Char.Quote:
-			case Char.DoubleQuote:
-			case Char.Backtick: {
-				const quote = lexer.char;
-				let hasEscape = false;
-				let suffixLen = 1;
-				let isASCII = true;
-
-				if (quote !== Char.Backtick) {
-					lexer.token = Token.StringLiteral;
-				} else if (lexer.rescanCloseBraceAsTemplateToken) {
-					lexer.token = Token.TemplateTail;
-				} else {
-					lexer.token = Token.NoSubstitutionTemplateLiteral;
+						// Non-ASCII strings need the slow path
+						if (lexer.char >= 0x80) {
+							isASCII = false;
+							// } else if (lexer.json.parse && lexer.codePoint < 0x20) {
+							// 	lexer.SyntaxError()
+						}
 				}
 				step(lexer);
-
-				stringLiteral: while (true) {
-					switch (lexer.char as number) {
-						case Char.Backtick:
-							hasEscape = true;
-							step(lexer);
-
-							// Handle Windows CRLF
-							// if ((lexer.char as number) === CodePoint['\r'] && !lexer.json.parse) {
-							if ((lexer.char as number) === Char["\r"]) {
-								step(lexer);
-								if ((lexer.char as number) == Char.NewLine) {
-									step(lexer);
-								}
-								continue;
-							}
-
-						case -1: // This indicates the end of the file
-							throwSyntaxError(lexer);
-
-						case Char["\r"]:
-						case Char.NewLine:
-							if (quote !== Char.Backtick) {
-								addError(lexer, lexer.end, "Unterminated string literal");
-								throw new Error("PANIC");
-							}
-
-						case Char.$:
-							if (quote === Char.Backtick) {
-								step(lexer);
-								if ((lexer.char as number) === Char["{"]) {
-									suffixLen = 2;
-									step(lexer);
-									if (lexer.rescanCloseBraceAsTemplateToken) {
-										lexer.token = Token.TemplateMiddle;
-									} else {
-										lexer.token = Token.TemplateHead;
-									}
-									break stringLiteral;
-								}
-								continue stringLiteral;
-							}
-
-						case quote:
-							step(lexer);
-							break stringLiteral;
-
-						default:
-							// Non-ASCII strings need the slow path
-							if (lexer.char >= 0x80) {
-								isASCII = false;
-								// } else if (lexer.json.parse && lexer.codePoint < 0x20) {
-								// 	lexer.SyntaxError()
-							}
-					}
-					step(lexer);
-				}
-
-				const text = lexer.source.slice(lexer.start + 1, lexer.end - suffixLen);
-
-				if (hasEscape || !isASCII) {
-					// Slow path
-					lexer.string = decodeEscapeSequences(lexer, lexer.start + 1, text);
-				} else {
-					lexer.string = text;
-				}
-
-				// if (quote == '\'' && lexer.json.parse) {
-				// 	lexer.addRangeError(lexer.Range(), "JSON strings must use double quotes")
-				// }
-
-				break;
 			}
-			case Char._:
-			case Char.$:
-			case Char.a:
-			case Char.b:
-			case Char.c:
-			case Char.d:
-			case Char.e:
-			case Char.f:
-			case Char.g:
-			case Char.h:
-			case Char.i:
-			case Char.j:
-			case Char.k:
-			case Char.l:
-			case Char.m:
-			case Char.n:
-			case Char.o:
-			case Char.p:
-			case Char.q:
-			case Char.r:
-			case Char.s:
-			case Char.t:
-			case Char.u:
-			case Char.v:
-			case Char.w:
-			case Char.x:
-			case Char.y:
-			case Char.z:
-			case Char.A:
-			case Char.B:
-			case Char.C:
-			case Char.D:
-			case Char.E:
-			case Char.F:
-			case Char.G:
-			case Char.H:
-			case Char.I:
-			case Char.J:
-			case Char.K:
-			case Char.L:
-			case Char.M:
-			case Char.N:
-			case Char.O:
-			case Char.P:
-			case Char.Q:
-			case Char.R:
-			case Char.S:
-			case Char.T:
-			case Char.U:
-			case Char.V:
-			case Char.W:
-			case Char.X:
-			case Char.Y:
-			case Char.Z:
+
+			const text = lexer.source.slice(lexer.start + 1, lexer.end - suffixLen);
+
+			if (hasEscape || !isASCII) {
+				// Slow path
+				lexer.string = decodeEscapeSequences(lexer, lexer.start + 1, text);
+			} else {
+				lexer.string = text;
+			}
+
+			// if (quote == '\'' && lexer.json.parse) {
+			// 	lexer.addRangeError(lexer.Range(), "JSON strings must use double quotes")
+			// }
+
+			break;
+		}
+
+		case Char.DoubleBackSlash:
+			// lexer.Identifier,
+			// 	(lexer.Token = lexer.scanIdentifierWithEscapes(normalIdentifier));
+			throw new Error("Escaped Identifiers are not supported yet");
+
+		default:
+			if (isIdentifierStart(lexer.char)) {
 				step(lexer);
 
 				while (isIdentifierContinue(lexer.char)) {
 					step(lexer);
 				}
 
-				// TODO: Escape chars
-				// TODO: Double backslash?
-				// @ts-ignore
-				if (lexer.char === Char.BackSlash) {
-					lexer.token = scanIdentifierWithEscapes(
-						lexer,
-						IdenitfierKind.NormalIdentifier
-					);
-				} else {
-					const content = getRaw(lexer);
-					lexer.identifier = content;
-
-					lexer.token =
-						content !== "constructor" && content in keywords
-							? (keywords as any)[content]
-							: Token.Identifier;
-				}
+				// TODO: Identifiers can have escape chars
+				lexer.token = Token.Identifier;
+				lexer.identifier = getRaw(lexer);
 				break;
+			}
 
-			case Char.DoubleBackSlash:
-				// lexer.Identifier,
-				// 	(lexer.Token = lexer.scanIdentifierWithEscapes(normalIdentifier));
-				throw new Error("Escaped Identifiers are not supported yet");
-
-			case Char.Dot:
-			case Char.n0:
-			case Char.n1:
-			case Char.n2:
-			case Char.n3:
-			case Char.n4:
-			case Char.n5:
-			case Char.n6:
-			case Char.n7:
-			case Char.n8:
-			case Char.n9:
-				parseNumericLiteralOrDot(lexer);
-				break;
-
-			default:
-				if (isWhitespace(lexer.char)) {
-					step(lexer);
-					continue;
-				}
-
-				if (isIdentifierStart(lexer.char)) {
-					step(lexer);
-
-					while (isIdentifierContinue(lexer.char)) {
-						step(lexer);
-					}
-
-					// TODO: Identifiers can have escape chars
-					lexer.token = Token.Identifier;
-					lexer.identifier = getRaw(lexer);
-					break;
-				}
-
-				lexer.end = lexer.i;
-				lexer.token = Token.SyntaxError;
-		}
-
-		return;
+			lexer.end = lexer.i;
+			lexer.token = Token.SyntaxError;
 	}
 }
