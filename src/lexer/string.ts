@@ -1,7 +1,7 @@
 import { CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { Token } from "../tokens";
-import { Lexer2, step, throwSyntaxError } from "./core";
+import { Lexer2, step, throwSyntaxError } from "./index";
 
 export function scanStringLiteral(lexer: Lexer2) {
 	const quote = lexer.char;

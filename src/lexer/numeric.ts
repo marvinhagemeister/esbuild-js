@@ -1,12 +1,13 @@
 import { CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { Token } from "../tokens";
-import { Lexer2, step } from "./core";
+import { Lexer2, step, throwSyntaxError } from "./index";
 
 function assertUnderscore(lexer: Lexer2, last: number) {
 	if (lexer.char === Char["_"]) {
 		if (last === lexer.i - 1) {
-			throw new SyntaxError(
+			throwSyntaxError(
+				lexer,
 				"Underscore can't occur multiple times in a row in numeric literals"
 			);
 		}
@@ -56,8 +57,11 @@ export function scanNumberLiteral(lexer: Lexer2, ch: number) {
 	}
 
 	if (lastUnderscore + 1 === lexer.i) {
-		throw new SyntaxError(`Numeric literal must not end with an underscore`);
+		throwSyntaxError(lexer, `Numeric literal must not end with an underscore`);
 	} else if ((lexer.flags & CharFlags.IdStart) === CharFlags.IdStart) {
-		throw new SyntaxError(`Identifiers can't occur immediately after a number`);
+		throwSyntaxError(
+			lexer,
+			`Identifiers can't occur immediately after a number`
+		);
 	}
 }

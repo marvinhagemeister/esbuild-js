@@ -1,5 +1,5 @@
 import * as kl from "kolorist";
-import { CustomSyntaxError } from "../lexer/core";
+import { CustomSyntaxError } from "../lexer/index";
 import { Char } from "../lexer_helpers";
 
 export function indexToLoc(source: string, n: number) {

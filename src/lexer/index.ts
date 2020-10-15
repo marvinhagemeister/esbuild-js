@@ -1,6 +1,9 @@
 import { char2Flag, CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { Token } from "../tokens";
+import { scanIdentifier, scanIdentifierOrKeyword } from "./identifier";
+import { scanNumberLiteral } from "./numeric";
+import { scanStringLiteral } from "./string";
 
 export interface Lexer2 {
 	i: number;
@@ -63,4 +66,32 @@ export function throwSyntaxError(lexer: Lexer2, message: string) {
 	err.line = lexer.line;
 	err.column = lexer.column;
 	throw err;
+}
+
+export function scanSingleToken(lexer: Lexer2) {
+	//
+
+	const ch = lexer.source.charCodeAt(lexer.i);
+
+	if (ch > 127) {
+		// TODO: Unicode
+		throw new Error("TODO: Unicode");
+	}
+
+	const token = char2Flag[ch];
+
+	switch (token) {
+		// a..z
+		case Token.IdentifierOrKeyword:
+			return scanIdentifierOrKeyword(lexer, ch);
+		// A...Z or _ or $
+		case Token.Identifier:
+			return scanIdentifier(lexer, ch);
+		// 0..9
+		case Token.NumericLiteral:
+			return scanNumberLiteral(lexer, ch);
+		// 'string' or "string"
+		case Token.StringLiteral:
+			return scanStringLiteral(lexer);
+	}
 }

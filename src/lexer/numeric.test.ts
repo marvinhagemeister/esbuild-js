@@ -1,6 +1,6 @@
 import expect from "expect";
 import { Token } from "../tokens";
-import { createLexer, getRaw, step } from "./core";
+import { createLexer, getRaw, step } from "./index";
 import { scanNumberLiteral } from "./numeric";
 
 function lex(code: string) {

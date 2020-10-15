@@ -1,8 +1,7 @@
-import { identifier } from "../ast";
 import { char2Flag, CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { Token } from "../tokens";
-import { Lexer2, getRaw } from "./core";
+import { Lexer2 } from "./index";
 
 export const keywords = {
 	instanceof: Token.Instanceof,

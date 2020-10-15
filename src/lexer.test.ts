@@ -70,7 +70,7 @@ function expectLexerError(input: string, typeOrRegex: any) {
 	}
 }
 
-describe("lexer", () => {
+describe.skip("lexer", () => {
 	it("should parse '('", () => {
 		expectToken("(", Token.OpenParen);
 	});
