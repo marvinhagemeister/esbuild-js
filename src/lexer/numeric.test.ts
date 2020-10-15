@@ -1,12 +1,12 @@
-import { createLexer, getRaw, step } from "../lexer";
 import expect from "expect";
 import { Token } from "../tokens";
+import { createLexer, getRaw, step } from "./core";
 import { scanNumberLiteral } from "./numeric";
 
 function lex(code: string) {
 	const lexer = createLexer(code);
 	step(lexer);
-	scanNumberLiteral(lexer);
+	scanNumberLiteral(lexer, lexer.char);
 	return lexer;
 }
 

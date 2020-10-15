@@ -1,4 +1,4 @@
-import { createLexer, getRaw, step } from "../lexer";
+import { createLexer, step } from "./core";
 import expect from "expect";
 import { Token } from "../tokens";
 import { scanStringLiteral } from "./string";

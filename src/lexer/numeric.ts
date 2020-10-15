@@ -1,9 +1,9 @@
-import { Lexer, step } from "../lexer";
 import { CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { Token } from "../tokens";
+import { Lexer2, step } from "./core";
 
-function assertUnderscore(lexer: Lexer, last: number) {
+function assertUnderscore(lexer: Lexer2, last: number) {
 	if (lexer.char === Char["_"]) {
 		if (last === lexer.i - 1) {
 			throw new SyntaxError(
@@ -17,10 +17,10 @@ function assertUnderscore(lexer: Lexer, last: number) {
 	return last;
 }
 
-export function scanNumberLiteral(lexer: Lexer) {
+export function scanNumberLiteral(lexer: Lexer2, ch: number) {
 	lexer.token = Token.NumericLiteral;
 
-	const first = lexer.char;
+	const first = ch;
 
 	// Check for binary, octal, or hexadecimal literal
 	let isLegacyOctalLiteral = false;
@@ -55,7 +55,7 @@ export function scanNumberLiteral(lexer: Lexer) {
 		}
 	}
 
-	if (lastUnderscore + 1 === lexer.end) {
+	if (lastUnderscore + 1 === lexer.i) {
 		throw new SyntaxError(`Numeric literal must not end with an underscore`);
 	} else if ((lexer.flags & CharFlags.IdStart) === CharFlags.IdStart) {
 		throw new SyntaxError(`Identifiers can't occur immediately after a number`);

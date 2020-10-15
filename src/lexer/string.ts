@@ -1,9 +1,9 @@
-import { Lexer, step } from "../lexer";
 import { CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { Token } from "../tokens";
+import { Lexer2, step } from "./core";
 
-export function scanStringLiteral(lexer: Lexer) {
+export function scanStringLiteral(lexer: Lexer2) {
 	const quote = lexer.char;
 	// TODO: Template literals
 	lexer.token =
@@ -43,5 +43,5 @@ export function scanStringLiteral(lexer: Lexer) {
 		throw new SyntaxError("Unterminated string literal");
 	}
 
-	lexer.string = lexer.source.slice(lexer.start + 1, lexer.end - suffixLen);
+	lexer.string = lexer.source.slice(lexer.start + 1, lexer.i - suffixLen);
 }

@@ -20,6 +20,7 @@ export const enum Token {
 
 	// Assignment
 	Identifier,
+	IdentifierOrKeyword,
 	EscapedKeyword,
 
 	// Special Punctuation (Must be synced with char codes)
