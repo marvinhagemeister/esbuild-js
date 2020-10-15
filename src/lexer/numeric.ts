@@ -3,6 +3,20 @@ import { CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { Token } from "../tokens";
 
+function assertUnderscore(lexer: Lexer, last: number) {
+	if (lexer.char === Char["_"]) {
+		if (last === lexer.i - 1) {
+			throw new SyntaxError(
+				"Underscore can't occur multiple times in a row in numeric literals"
+			);
+		}
+
+		last = lexer.i;
+	}
+
+	return last;
+}
+
 export function scanNumberLiteral(lexer: Lexer) {
 	lexer.token = Token.NumericLiteral;
 
@@ -22,18 +36,11 @@ export function scanNumberLiteral(lexer: Lexer) {
 		}
 	}
 
+	let lastUnderscore = -1;
 	if (base === 0) {
 		// Floating Point Literal
-		let lastUnderscore = -1;
 		while ((lexer.flags & CharFlags.Number) === CharFlags.Number) {
-			if (lexer.char === Char["_"]) {
-				if (lastUnderscore === lexer.i - 1) {
-					throw new SyntaxError(
-						`Underscore can't occur multiple times in a row in numeric literals`
-					);
-				}
-				lastUnderscore = lexer.i;
-			}
+			lastUnderscore = assertUnderscore(lexer, lastUnderscore);
 			step(lexer);
 		}
 	} else {
@@ -43,6 +50,7 @@ export function scanNumberLiteral(lexer: Lexer) {
 		}
 
 		while ((lexer.flags & CharFlags.Number) === CharFlags.Number) {
+			lastUnderscore = assertUnderscore(lexer, lastUnderscore);
 			step(lexer);
 		}
 	}

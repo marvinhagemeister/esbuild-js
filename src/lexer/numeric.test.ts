@@ -61,6 +61,7 @@ describe.only("Lexer", () => {
 		it("should scan with underscore", () => {
 			expectNumber("1_000_000", 1_000_000);
 			expect(() => lex("1__000_000")).toThrowError(SyntaxError as any);
+			expect(() => lex("01_2.2__1")).toThrowError(SyntaxError as any);
 		});
 
 		it("should throw if identifier follows immediately after number", () => {
