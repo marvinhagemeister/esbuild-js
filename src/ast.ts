@@ -85,13 +85,11 @@ export function emptyExpression(): EmptyExpression {
 
 export interface EmptyStatement extends BaseNode {
 	type: "EmptyStatement";
-	text: string;
 }
 
-export function emptyStatement(text: string): EmptyStatement {
+export function emptyStatement(): EmptyStatement {
 	return {
 		type: "EmptyStatement",
-		text,
 		start: 0,
 		len: 0,
 	};

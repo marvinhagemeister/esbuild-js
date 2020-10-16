@@ -68,9 +68,24 @@ export function throwSyntaxError(lexer: Lexer2, message: string) {
 	throw err;
 }
 
-export function scanSingleToken(lexer: Lexer2) {
-	//
+export function expectToken2(lexer: Lexer2, token: Token) {
+	if (lexer.token !== token) {
+		throwSyntaxError(lexer, "Unexpected token");
+	}
 
+	scanSingleToken(lexer);
+}
+
+export function consumeOp(lexer: Lexer2, token: Token) {
+	if (lexer.token === token) {
+		scanSingleToken(lexer);
+		return true;
+	}
+
+	return false;
+}
+
+export function scanSingleToken(lexer: Lexer2) {
 	const ch = lexer.source.charCodeAt(lexer.i);
 
 	if (ch > 127) {
