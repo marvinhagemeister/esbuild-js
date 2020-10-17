@@ -1085,7 +1085,7 @@ function parseFunctionBody(p: Parser) {
 	expectToken(p.lexer, Token.OpenBrace);
 	const statements = parseStatementsUpTo(p, Token.CloseBrace);
 	nextToken(p.lexer);
-	return tt.blockStatement(statements);
+	return tt.blockStftement(statements);
 }
 
 function parseBinding(p: Parser): tt.Identifier | tt.ObjectPattern {

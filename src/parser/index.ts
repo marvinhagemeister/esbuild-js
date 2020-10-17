@@ -6,8 +6,9 @@ import {
 	expectToken2,
 	consumeOp,
 	getRaw,
+	expectOrInsertSemicolon2,
 } from "../lexer/index";
-import { Token, TokenFlags } from "../tokens";
+import { keywordTable, Token, TokenFlags } from "../tokens";
 
 export interface ParserState extends Lexer2 {}
 
@@ -79,15 +80,31 @@ function parseStatementList(state: ParserState) {
 //   TryStatement
 //   DebuggerStatement
 function parseStatement(state: ParserState): tt.Statement {
+	const { start } = state;
 	//
 	switch (state.token) {
 		case TokenFlags.SemiColon:
 			return parseEmptyStatement(state);
 		case TokenFlags.Function:
 			return parseFunctionDeclartion(state);
+		case TokenFlags.Break:
+			return parseBreakStatement(state);
 		default:
 			return parseExpressionOrLabelledStatement(state);
 	}
+}
+
+function parseBreakStatement(state: ParserState) {
+	const start = state.start;
+	nextToken2(state);
+
+	let name = null;
+	if (consumeOp(state, TokenFlags.Colon)) {
+		name = parseExpression(state);
+	}
+
+	expectOrInsertSemicolon2(state);
+	return finishNode(state, start, tt.breakStatement(name));
 }
 
 // EmptyStatement ::
@@ -199,7 +216,17 @@ function parseIdentifier(state: ParserState): tt.Identifier {
 // LogicalAssignmentOperator : one of
 //   &&= ||= ??=
 function parseAssignmentExpression(state: ParserState, left: any) {
-	if ((state.token & Token.AssignOp) === Token.AssignOp) {
+	if ((state.token & Token.BinaryExpression) === Token.BinaryExpression) {
+		console.log(
+			state.token,
+			state.token - TokenFlags["!=="],
+			state.token & 0xff
+		);
+		const op = keywordTable[state.token - Token["!=="]] as any;
+		nextToken2(state);
+		const right = parseExpression(state);
+		return finishNode(state, left.start, tt.binaryExpression(op, left, right));
+	} else if ((state.token & Token.AssignOp) === Token.AssignOp) {
 		nextToken2(state);
 		const right = parseExpression(state);
 		return finishNode(state, left.start, tt.assignmentExpression(left, right));

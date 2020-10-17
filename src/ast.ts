@@ -449,9 +449,9 @@ export function continueStatement(name: Identifier | null): ContinueStatement {
 
 export interface BreakStatement extends BaseNode {
 	type: "BreakStatement";
-	name: Identifier | null;
+	name: Expression | null;
 }
-export function breakStatement(name: Identifier | null): BreakStatement {
+export function breakStatement(name: Expression | null): BreakStatement {
 	return {
 		type: "BreakStatement",
 		name,

@@ -82,9 +82,20 @@ export function expectToken2(lexer: Lexer2, token: TokenFlags) {
 	scanSingleToken(lexer);
 }
 
+export function expectOrInsertSemicolon2(lexer: Lexer2) {
+	if (
+		lexer.token === TokenFlags.SemiColon ||
+		(!lexer.hasNewLineBefore &&
+			lexer.token !== TokenFlags.CloseParen &&
+			lexer.token !== TokenFlags.EndOfFile)
+	) {
+		expectToken2(lexer, TokenFlags.SemiColon);
+	}
+}
+
 export function consumeOp(lexer: Lexer2, token: TokenFlags) {
 	if (lexer.token === token) {
-		scanSingleToken(lexer);
+		lexer.token = scanSingleToken(lexer);
 		return true;
 	}
 
@@ -121,11 +132,11 @@ export function nextToken2(lexer: Lexer2) {
 	lexer.token = scanSingleToken(lexer);
 }
 
-export function scanSingleToken(lexer: Lexer2) {
+export function scanSingleToken(lexer: Lexer2): TokenFlags {
 	skipWhiteSpace(lexer);
 
 	let ch = lexer.source.charCodeAt(lexer.i);
-	if (ch === Char.EndOfFile) return Token.EndOfFile;
+	if (ch === Char.EndOfFile) return TokenFlags.EndOfFile;
 
 	if (ch > Char.z) {
 		// TODO: Unicode
@@ -134,6 +145,9 @@ export function scanSingleToken(lexer: Lexer2) {
 
 	const token = firstChar[ch];
 	switch (token) {
+		case TokenFlags.Colon:
+			lexer.i++;
+			return token;
 		// a..z
 		case TokenFlags.IdentifierOrKeyword:
 			return scanIdentifierOrKeyword(lexer, ch);
@@ -152,6 +166,7 @@ export function scanSingleToken(lexer: Lexer2) {
 			if (ch === Char.Equal) {
 				ch = lexer.source.charCodeAt(++lexer.i);
 				if (ch === Char.Equal) {
+					lexer.i++;
 					return TokenFlags["==="];
 				}
 				return TokenFlags["=="];

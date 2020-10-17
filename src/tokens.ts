@@ -223,12 +223,12 @@ export const enum TokenFlags {
 	Static,
 	Yield,
 
-	// Punctuation (unsynched)
+	// Punctuation (sync order with mapping table if you change this)
+	DotDotDot,
+	Dot,
 	"!==",
 	"!=",
 	"!" = Token["!"] | Token.UnaryExpression,
-	DotDotDot,
-	Dot,
 	"/",
 	"/=" = Token["/="] | Token.AssignOp | Token.BinaryExpression,
 	"+=" = Token["+="] | Token.AssignOp | Token.BinaryExpression,
@@ -241,14 +241,15 @@ export const enum TokenFlags {
 	"**",
 	"*",
 	"*=" = Token["*="] | Token.AssignOp | Token.BinaryExpression,
-	"=>",
-	"===",
-	"==",
 	Equals = Token.Equals | Token.AssignOp,
+	"==" = Token["=="] | Token.BinaryExpression,
+	"===" = Token["=="] | Token.BinaryExpression,
+	"=>",
 	"<",
-	"<=",
-	"<<=" = Token["<<="] | Token.AssignOp | Token.BinaryExpression,
 	"<<",
+	"<<=" = Token["<<="] | Token.AssignOp | Token.BinaryExpression,
+	"<<<",
+	"<=",
 	">=",
 	GreaterThanGreaterThanEquals,
 	">>=",
@@ -275,6 +276,55 @@ export const enum TokenFlags {
 	Question,
 	QuestionDot,
 }
+
+export const keywordTable = [
+	"!==", // "!==",
+	"!=", // "!=",
+	"!", // "!"
+	"/", // "/",
+	"/=", // "/="
+	"+=", // "+="
+	"++", // "++"
+	"+", // Plus
+	"**=", // "**=",
+	"**", // "**",
+	"*", // "*",
+	"*=", // "*="
+	"=", // Equals
+	"==", // "=="
+	"===", // "==="
+	"=>", // "=>",
+	"<", // "<",
+	"<<", // "<<",
+	"<<=", // "<<="
+	"<<<", // "<<<",
+	"<=", // "<=",
+	">=", // ">=",
+	">>=", // GreaterThanGreaterThanEquals,
+	"", // ">>=", // FIXME
+	">>>", // ">>>",
+	">>", // ">>",
+	">", // ">",
+	"%=", // PercentEquals,
+	"%", // Percent,
+	"&=", // "&=",
+	"&&=", // "&&=",
+	"&&", // "&&",
+	"&", // Ampersand,
+	"|=", // "|=",
+	"||=", // "||=",
+	"||", // "||",
+	"|", // Bar,
+	"^=", // "^=",
+	"^", // Caret,
+	"-=", // "-=",
+	"--", // "--"
+	"-", // Minus
+	"??=", // "??=",
+	"??", // "??",
+	"?", // Question,
+	"?.", // QuestionDot,
+];
 
 export const keywords = {
 	// Reserved words
