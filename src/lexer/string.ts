@@ -1,16 +1,13 @@
-import { Token } from "acorn";
 import { char2Flag, CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
-import { TokenFlags } from "../tokens";
+import { Token } from "../tokens";
 import { Lexer2, step, throwSyntaxError } from "./index";
 
 export function scanStringLiteral(lexer: Lexer2) {
 	const quote = lexer.source.charCodeAt(lexer.i);
 	// TODO: Template literals
 	const token =
-		quote === Char.Backtick
-			? TokenFlags.TemplateHead
-			: TokenFlags.StringLiteral;
+		quote === Char.Backtick ? Token.TemplateHead : Token.StringLiteral;
 
 	let ch = lexer.source.charCodeAt(++lexer.i);
 
@@ -32,7 +29,7 @@ export function scanStringLiteral(lexer: Lexer2) {
 			// if (quote === Char.Backtick) {
 			// 	ch = lexer.source.charCodeAt(++lexer.i);
 			// 	if (ch === Char["{"]) {
-			// 		lexer.token = TokenFlags.TemplateHead;
+			// 		lexer.token = Token.TemplateHead;
 			// 		suffixLen = 2;
 			// 		ch = lexer.source.charCodeAt(++lexer.i);
 			// 		break;

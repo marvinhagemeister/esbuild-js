@@ -8,13 +8,13 @@ import {
 	getRaw,
 	expectOrInsertSemicolon2,
 } from "../lexer/index";
-import { keywordTable, Token, TokenFlags } from "../tokens";
+import { keywordTable, Token } from "../tokens";
 
 export interface ParserState extends Lexer2 {}
 
 export function parse(source: string): tt.Program {
 	const state: ParserState = {
-		token: TokenFlags.Unknown,
+		token: Token.Unknown,
 		char: source.charCodeAt(0),
 		column: 0,
 		commentBefore: null,
@@ -47,7 +47,7 @@ export function parse(source: string): tt.Program {
 //   StatementList StatementListItem
 function parseStatementList(state: ParserState) {
 	const statements: tt.Statement[] = [];
-	while (state.token !== TokenFlags.EndOfFile) {
+	while (state.token !== Token.EndOfFile) {
 		statements.push(parseStatement(state));
 	}
 
@@ -71,11 +71,11 @@ function parseStatementList(state: ParserState) {
 //   DebuggerStatement
 function parseStatement(state: ParserState): tt.Statement {
 	switch (state.token) {
-		case TokenFlags.SemiColon:
+		case Token.SemiColon:
 			return parseEmptyStatement(state);
-		case TokenFlags.Function:
+		case Token.Function:
 			return parseFunctionDeclartion(state);
-		case TokenFlags.Break:
+		case Token.Break:
 			return parseBreakStatement(state);
 		default:
 			return parseExpressionOrLabelledStatement(state);
@@ -87,7 +87,7 @@ function parseBreakStatement(state: ParserState) {
 	nextToken2(state);
 
 	let name = null;
-	if (consumeOp(state, TokenFlags.Colon)) {
+	if (consumeOp(state, Token.Colon)) {
 		name = parseExpression(state);
 	}
 
@@ -119,7 +119,7 @@ function parseExpressionOrLabelledStatement(
 	const start = state.start;
 
 	let expr = parseLeftHandSideExpression(state);
-	if (state.token === TokenFlags.Colon) {
+	if (state.token === Token.Colon) {
 		nextToken2(state);
 		const body = parseStatement(state);
 		return tt.labeledStatement(tt.identifier(name), body);
@@ -150,27 +150,28 @@ function parseExpression(state: ParserState): tt.Expression {
 // LeftHandSideExpression :
 //  (PrimaryExpression | MemberExpression) ...
 function parseLeftHandSideExpression(state: ParserState) {
-	const raw = getRaw(state);
 	const start = state.start;
 	const token = state.token;
 
-	if (token === TokenFlags.StringLiteral) {
+	if (token === Token.StringLiteral) {
+		const raw = getRaw(state);
 		nextToken2(state);
 		return tt.literal(state.string, raw, start, state.end);
 	} else if ((token & Token.Literal) === Token.Literal) {
-		const value = token === TokenFlags.NumericLiteral ? Number(raw) : raw;
+		const raw = getRaw(state);
+		const value = token === Token.NumericLiteral ? Number(raw) : raw;
 		nextToken2(state);
 		return tt.literal(value, raw, start, state.end);
 	} else if ((token & Token.UnaryExpression) === Token.UnaryExpression) {
 		nextToken2(state);
 		const value = parseExpression(state);
-		// FIXME: Operator type
-		return tt.unaryExpression("void", value, start, state.end);
+		const op = keywordTable[state.token & Token.FlagSpace] as any;
+		return tt.unaryExpression(op, value, start, state.end);
 	} else if ((token & Token.UpdateExpression) === Token.UpdateExpression) {
 		nextToken2(state);
 		const value = parseExpression(state);
-		// FIXME: operator
-		return tt.updateExpression("--", value, true, start, state.end);
+		const op = keywordTable[state.token & Token.FlagSpace] as any;
+		return tt.updateExpression(op, value, true, start, state.end);
 	} else {
 		return parseIdentifier(state);
 	}
@@ -204,12 +205,7 @@ function parseIdentifier(state: ParserState): tt.Identifier {
 //   &&= ||= ??=
 function parseAssignmentExpression(state: ParserState, left: any) {
 	if ((state.token & Token.BinaryExpression) === Token.BinaryExpression) {
-		console.log(
-			state.token,
-			state.token - TokenFlags["!=="],
-			state.token & 0xff
-		);
-		const op = keywordTable[state.token - Token["!=="]] as any;
+		const op = keywordTable[state.token & Token.FlagSpace] as any;
 		nextToken2(state);
 		const right = parseExpression(state);
 		return tt.binaryExpression(op, left, right, left.start, state.end);
@@ -228,34 +224,34 @@ function parseFunctionDeclartion(state: ParserState) {
 
 	// TODO: Async
 	const isAsync = false;
-	const isGenerator = consumeOp(state, TokenFlags["*"]);
+	const isGenerator = consumeOp(state, Token["*"]);
 
 	// The name is optional
 	let name = "";
-	if (state.token === TokenFlags.Identifier) {
+	if (state.token === Token.Identifier) {
 		name = state.value;
 		// TODO: Don't declare name "arguments"
 		nextToken2(state);
 	}
 
-	expectToken2(state, TokenFlags.OpenParen);
+	expectToken2(state, Token.OpenParen);
 
 	const args = [];
-	while (state.token !== TokenFlags.CloseParen) {
+	while (state.token !== Token.CloseParen) {
 		// TODO: Rest args
 		// TODO: Default arguments
 
 		const arg = parseBinding(state);
 		args.push(arg);
 
-		if (state.token !== TokenFlags.Comma) {
+		if (state.token !== Token.Comma) {
 			break;
 		}
 
 		nextToken2(state);
 	}
 
-	expectToken2(state, TokenFlags.CloseParen);
+	expectToken2(state, Token.CloseParen);
 
 	const body = parseFunctionBody(state);
 	return tt.functionDeclaration(

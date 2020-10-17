@@ -1,6 +1,6 @@
 import { CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
-import { Token, TokenFlags } from "../tokens";
+import { Token } from "../tokens";
 import { Lexer2, step, throwSyntaxError } from "./index";
 
 function assertUnderscore(lexer: Lexer2, last: number) {
@@ -19,7 +19,7 @@ function assertUnderscore(lexer: Lexer2, last: number) {
 }
 
 export function scanNumberLiteral(lexer: Lexer2, ch: number) {
-	lexer.token = TokenFlags.NumericLiteral;
+	lexer.token = Token.NumericLiteral;
 
 	const first = ch;
 
@@ -67,5 +67,5 @@ export function scanNumberLiteral(lexer: Lexer2, ch: number) {
 
 	lexer.number = Number(lexer.source.slice(lexer.start, lexer.end));
 
-	return TokenFlags.NumericLiteral;
+	return Token.NumericLiteral;
 }

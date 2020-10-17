@@ -154,12 +154,12 @@ function parseNumericLiteralOrDot(lexer: Lexer) {
 		) {
 			step(lexer);
 			step(lexer);
-			lexer.token = Token.DotDotDot;
+			lexer.token = Token["..."];
 			return;
 		}
 
 		// "."
-		lexer.token = Token.Dot;
+		lexer.token = Token["."];
 		return;
 	}
 
@@ -850,7 +850,7 @@ export function nextToken(lexer: Lexer) {
 					}
 					break;
 				case Char.Dot:
-					lexer.token = Token.Question;
+					lexer.token = Token["?"];
 					let current = lexer.i;
 					let contents = lexer.source;
 
@@ -859,12 +859,12 @@ export function nextToken(lexer: Lexer) {
 						let c = contents.charCodeAt(current)!;
 						if (c < Char.n0 || c > Char.n9) {
 							step(lexer);
-							lexer.token = Token.QuestionDot;
+							lexer.token = Token["?."];
 						}
 					}
 					break;
 				default:
-					lexer.token = Token.Question;
+					lexer.token = Token["?"];
 			}
 			break;
 
@@ -874,10 +874,10 @@ export function nextToken(lexer: Lexer) {
 			switch (lexer.char as number) {
 				case Char.Equal:
 					step(lexer);
-					lexer.token = Token.PercentEquals;
+					lexer.token = Token["%="];
 					break;
 				default:
-					lexer.token = Token.Percent;
+					lexer.token = Token["%"];
 			}
 			break;
 
@@ -901,7 +901,7 @@ export function nextToken(lexer: Lexer) {
 					}
 					break;
 				default:
-					lexer.token = Token.Ampersand;
+					lexer.token = Token["&"];
 			}
 			break;
 
@@ -925,7 +925,7 @@ export function nextToken(lexer: Lexer) {
 					}
 					break;
 				default:
-					lexer.token = Token.Bar;
+					lexer.token = Token["|"];
 			}
 
 			break;
@@ -939,7 +939,7 @@ export function nextToken(lexer: Lexer) {
 					lexer.token = Token["^="];
 					break;
 				default:
-					lexer.token = Token.Caret;
+					lexer.token = Token["^"];
 			}
 			break;
 
@@ -956,7 +956,7 @@ export function nextToken(lexer: Lexer) {
 					lexer.token = Token["++"];
 					break;
 				default:
-					lexer.token = Token.Plus;
+					lexer.token = Token["+"];
 			}
 			break;
 
@@ -974,7 +974,7 @@ export function nextToken(lexer: Lexer) {
 					lexer.token = Token["--"];
 					break;
 				default:
-					lexer.token = Token.Minus;
+					lexer.token = Token["-"];
 			}
 			break;
 
@@ -1081,7 +1081,7 @@ export function nextToken(lexer: Lexer) {
 					}
 					break;
 				default:
-					lexer.token = Token.Equals;
+					lexer.token = Token["-"];
 			}
 
 			break;

@@ -1,7 +1,7 @@
 import { stat } from "fs";
 import { char2Flag, CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
-import { Token, TokenFlags } from "../tokens";
+import { Token } from "../tokens";
 import { scanIdentifier, scanIdentifierOrKeyword } from "./identifier";
 import { scanNumberLiteral } from "./numeric";
 import { scanStringLiteral } from "./string";
@@ -11,7 +11,7 @@ export interface Lexer2 {
 	i: number;
 	char: number;
 	source: string;
-	token: TokenFlags;
+	token: Token;
 	flags: CharFlags;
 	value: string;
 	number: number;
@@ -30,7 +30,7 @@ export function createLexer(source: string): Lexer2 {
 		i: 0,
 		char: source.charCodeAt(0),
 		source,
-		token: TokenFlags.Unknown,
+		token: Token.Unknown,
 		flags: CharFlags.Unknown,
 		value: "",
 		number: 0,
@@ -74,7 +74,7 @@ export function throwSyntaxError(lexer: Lexer2, message: string) {
 	throw err;
 }
 
-export function expectToken2(lexer: Lexer2, token: TokenFlags) {
+export function expectToken2(lexer: Lexer2, token: Token) {
 	if (lexer.token !== token) {
 		throwSyntaxError(lexer, "Unexpected token");
 	}
@@ -84,16 +84,16 @@ export function expectToken2(lexer: Lexer2, token: TokenFlags) {
 
 export function expectOrInsertSemicolon2(lexer: Lexer2) {
 	if (
-		lexer.token === TokenFlags.SemiColon ||
+		lexer.token === Token.SemiColon ||
 		(!lexer.hasNewLineBefore &&
-			lexer.token !== TokenFlags.CloseParen &&
-			lexer.token !== TokenFlags.EndOfFile)
+			lexer.token !== Token.CloseParen &&
+			lexer.token !== Token.EndOfFile)
 	) {
-		expectToken2(lexer, TokenFlags.SemiColon);
+		expectToken2(lexer, Token.SemiColon);
 	}
 }
 
-export function consumeOp(lexer: Lexer2, token: TokenFlags) {
+export function consumeOp(lexer: Lexer2, token: Token) {
 	if (lexer.token === token) {
 		lexer.token = scanSingleToken(lexer);
 		return true;
@@ -132,11 +132,11 @@ export function nextToken2(lexer: Lexer2) {
 	lexer.token = scanSingleToken(lexer);
 }
 
-export function scanSingleToken(lexer: Lexer2): TokenFlags {
+export function scanSingleToken(lexer: Lexer2): Token {
 	skipWhiteSpace(lexer);
 
 	let ch = lexer.source.charCodeAt(lexer.i);
-	if (ch === Char.EndOfFile) return TokenFlags.EndOfFile;
+	if (ch === Char.EndOfFile) return Token.EndOfFile;
 
 	if (ch > Char.z) {
 		// TODO: Unicode
@@ -145,37 +145,37 @@ export function scanSingleToken(lexer: Lexer2): TokenFlags {
 
 	const token = firstChar[ch];
 	switch (token) {
-		case TokenFlags.Colon:
+		case Token.Colon:
 			lexer.i++;
 			return token;
 		// a..z
-		case TokenFlags.IdentifierOrKeyword:
+		case Token.IdentifierOrKeyword:
 			return scanIdentifierOrKeyword(lexer, ch);
 		// A...Z or _ or $
-		case TokenFlags.Identifier:
+		case Token.Identifier:
 			return scanIdentifier(lexer, ch);
 		// 0..9
-		case TokenFlags.NumericLiteral:
+		case Token.NumericLiteral:
 			return scanNumberLiteral(lexer, ch);
 		// 'string' or "string"
-		case TokenFlags.StringLiteral:
+		case Token.StringLiteral:
 			return scanStringLiteral(lexer);
 		// `=` or `==` or `===` or `=>`
-		case TokenFlags.Equals:
+		case Token["="]:
 			ch = lexer.source.charCodeAt(++lexer.i);
 			if (ch === Char.Equal) {
 				ch = lexer.source.charCodeAt(++lexer.i);
 				if (ch === Char.Equal) {
 					lexer.i++;
-					return TokenFlags["==="];
+					return Token["==="];
 				}
-				return TokenFlags["=="];
+				return Token["=="];
 			}
 
-			return TokenFlags.Equals;
+			return Token["="];
 		default:
 			// throwSyntaxError(lexer, "nope " + ch + " " + String.fromCharCode(ch));
 			lexer.i++;
-			return TokenFlags.EndOfFile;
+			return Token.EndOfFile;
 	}
 }

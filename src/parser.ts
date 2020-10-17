@@ -364,7 +364,7 @@ function parseDeclarations(p: Parser): tt.VariableDeclarator[] {
 
 		let value: tt.Expression | null = null;
 
-		if (p.lexer.token === Token.Equals) {
+		if (p.lexer.token === Token["="]) {
 			nextToken(p.lexer);
 			value = parseExpression(p, tt.Precedence.Comma);
 		}
@@ -461,7 +461,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 			const identifier = tt.identifier(name);
 			return identifier;
 		}
-		case Token.Plus: {
+		case Token["+"]: {
 			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			if ((p.lexer.token as number) === Token["**"]) {
@@ -470,7 +470,7 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 
 			return tt.unaryExpression("+", value);
 		}
-		case Token.Minus: {
+		case Token["-"]: {
 			nextToken(p.lexer);
 			const value = parseExpression(p, tt.Precedence.Prefix);
 			if ((p.lexer.token as number) === Token["**"]) {
@@ -594,7 +594,7 @@ function parseSuffix(
 ): tt.Expression {
 	while (true) {
 		switch (p.lexer.token) {
-			case Token.Dot: {
+			case Token["."]: {
 				nextToken(p.lexer);
 				// a.b
 				if (!isIdentifierOrKeyword(p.lexer)) {
@@ -622,7 +622,7 @@ function parseSuffix(
 				left = tt.callExpression(left, args);
 				break;
 			}
-			case Token.Question: {
+			case Token["?"]: {
 				if (level >= tt.Precedence.Conditional) {
 					return left;
 				}
@@ -651,7 +651,7 @@ function parseSuffix(
 				left = tt.updateExpression("++", left, false);
 				break;
 			}
-			case Token.Plus: {
+			case Token["+"]: {
 				if (level >= tt.Precedence.Add) {
 					return left;
 				}
@@ -675,7 +675,7 @@ function parseSuffix(
 				);
 				break;
 			}
-			case Token.Minus: {
+			case Token["-"]: {
 				if (level >= tt.Precedence.Add) {
 					return left;
 				}
@@ -824,7 +824,7 @@ function parseSuffix(
 				left = tt.binaryExpression("&&", left, right);
 				break;
 			}
-			case Token.Equals: {
+			case Token["="]: {
 				if (level >= tt.Precedence.Assign) {
 					return left;
 				}
@@ -1085,7 +1085,7 @@ function parseFunctionBody(p: Parser) {
 	expectToken(p.lexer, Token.OpenBrace);
 	const statements = parseStatementsUpTo(p, Token.CloseBrace);
 	nextToken(p.lexer);
-	return tt.blockStftement(statements);
+	return tt.blockStatement(statements);
 }
 
 function parseBinding(p: Parser): tt.Identifier | tt.ObjectPattern {
@@ -1153,7 +1153,7 @@ export function parsePropertyBinding(p: Parser) {
 	//
 
 	switch (p.lexer.token) {
-		case Token.DotDotDot:
+		case Token["..."]:
 			nextToken(p.lexer);
 			const value = tt.identifier(p.lexer.identifier);
 			// TODO: Expect identifier
