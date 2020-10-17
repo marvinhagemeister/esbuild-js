@@ -12,15 +12,6 @@ import { keywordTable, Token, TokenFlags } from "../tokens";
 
 export interface ParserState extends Lexer2 {}
 
-/**
- * Add mapping information to a node
- */
-function finishNode(state: ParserState, start: number, node: any) {
-	node.start = start;
-	node.end = state.end; // TODO: Constant should not be necessary
-	return node;
-}
-
 export function parse(source: string): tt.Program {
 	const state: ParserState = {
 		token: TokenFlags.Unknown,
@@ -44,8 +35,7 @@ export function parse(source: string): tt.Program {
 	nextToken2(state);
 
 	const statements = parseStatementList(state);
-	const program = tt.program("module", statements);
-	return finishNode(state, 0, program);
+	return tt.program("module", statements, 0, state.end);
 }
 
 // ModuleItemList ::
@@ -80,8 +70,6 @@ function parseStatementList(state: ParserState) {
 //   TryStatement
 //   DebuggerStatement
 function parseStatement(state: ParserState): tt.Statement {
-	const { start } = state;
-	//
 	switch (state.token) {
 		case TokenFlags.SemiColon:
 			return parseEmptyStatement(state);
@@ -104,7 +92,7 @@ function parseBreakStatement(state: ParserState) {
 	}
 
 	expectOrInsertSemicolon2(state);
-	return finishNode(state, start, tt.breakStatement(name));
+	return tt.breakStatement(name, start, state.end);
 }
 
 // EmptyStatement ::
@@ -112,7 +100,7 @@ function parseBreakStatement(state: ParserState) {
 function parseEmptyStatement(state: ParserState): tt.EmptyStatement {
 	const start = state.start;
 	nextToken2(state);
-	return finishNode(state, start, tt.emptyStatement());
+	return tt.emptyStatement(start, state.end);
 }
 
 // ExpressionStatement :
@@ -148,7 +136,7 @@ function parseExpressionStatement(
 	start: number,
 	expr: tt.Expression
 ) {
-	return finishNode(state, start, tt.expressionStatement(expr));
+	return tt.expressionStatement(expr, start, state.end);
 }
 
 // Expression :
@@ -168,21 +156,21 @@ function parseLeftHandSideExpression(state: ParserState) {
 
 	if (token === TokenFlags.StringLiteral) {
 		nextToken2(state);
-		return finishNode(state, start, tt.literal(state.string, raw));
+		return tt.literal(state.string, raw, start, state.end);
 	} else if ((token & Token.Literal) === Token.Literal) {
 		const value = token === TokenFlags.NumericLiteral ? Number(raw) : raw;
 		nextToken2(state);
-		return finishNode(state, start, tt.literal(value, raw));
+		return tt.literal(value, raw, start, state.end);
 	} else if ((token & Token.UnaryExpression) === Token.UnaryExpression) {
 		nextToken2(state);
 		const value = parseExpression(state);
 		// FIXME: Operator type
-		return finishNode(state, start, tt.unaryExpression("void", value));
+		return tt.unaryExpression("void", value, start, state.end);
 	} else if ((token & Token.UpdateExpression) === Token.UpdateExpression) {
 		nextToken2(state);
 		const value = parseExpression(state);
 		// FIXME: operator
-		return finishNode(state, start, tt.updateExpression("--", value, true));
+		return tt.updateExpression("--", value, true, start, state.end);
 	} else {
 		return parseIdentifier(state);
 	}
@@ -197,8 +185,7 @@ function parseIdentifier(state: ParserState): tt.Identifier {
 	// TODO: await
 	// TODO: yield
 
-	const identifier = tt.identifier(name);
-	return finishNode(state, start, identifier);
+	return tt.identifier(name, start, state.end);
 }
 
 // AssignmentExpression :
@@ -225,11 +212,11 @@ function parseAssignmentExpression(state: ParserState, left: any) {
 		const op = keywordTable[state.token - Token["!=="]] as any;
 		nextToken2(state);
 		const right = parseExpression(state);
-		return finishNode(state, left.start, tt.binaryExpression(op, left, right));
+		return tt.binaryExpression(op, left, right, left.start, state.end);
 	} else if ((state.token & Token.AssignOp) === Token.AssignOp) {
 		nextToken2(state);
 		const right = parseExpression(state);
-		return finishNode(state, left.start, tt.assignmentExpression(left, right));
+		return tt.assignmentExpression(left, right, left.start, state.end);
 	}
 
 	return left;
@@ -271,10 +258,14 @@ function parseFunctionDeclartion(state: ParserState) {
 	expectToken2(state, TokenFlags.CloseParen);
 
 	const body = parseFunctionBody(state);
-	return finishNode(
-		state,
+	return tt.functionDeclaration(
+		name,
+		args,
+		body,
+		isGenerator,
+		isAsync,
 		start,
-		tt.functionDeclaration(name, args, body, isGenerator, isAsync)
+		state.end
 	);
 }
 

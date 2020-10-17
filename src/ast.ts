@@ -75,11 +75,11 @@ export interface EmptyExpression extends BaseNode {
 	type: "EmptyExpression";
 }
 
-export function emptyExpression(): EmptyExpression {
+export function emptyExpression(start = 0, end = 0): EmptyExpression {
 	return {
 		type: "EmptyExpression",
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -87,11 +87,11 @@ export interface EmptyStatement extends BaseNode {
 	type: "EmptyStatement";
 }
 
-export function emptyStatement(): EmptyStatement {
+export function emptyStatement(start = 0, end = 0): EmptyStatement {
 	return {
 		type: "EmptyStatement",
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -101,13 +101,18 @@ export interface Literal extends BaseNode {
 	value: string | number | boolean | null | undefined;
 	raw: string;
 }
-export function literal(value: Literal["value"], raw: string): Literal {
+export function literal(
+	value: Literal["value"],
+	raw: string,
+	start = 0,
+	end = 0
+): Literal {
 	return {
 		type: "Literal",
 		value,
 		raw,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -115,12 +120,16 @@ export interface RegExpLiteral extends BaseNode {
 	type: "RegExpLiteral";
 	value: string;
 }
-export function regexpLiteral(value: string): RegExpLiteral {
+export function regexpLiteral(
+	value: string,
+	start = 0,
+	end = 0
+): RegExpLiteral {
 	return {
 		type: "RegExpLiteral",
 		value,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -128,12 +137,12 @@ export interface Comment extends BaseNode {
 	type: "Comment";
 	text: string;
 }
-export function comment(text: string): Comment {
+export function comment(text: string, start = 0, end = 0): Comment {
 	return {
 		type: "Comment",
 		text,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -142,13 +151,15 @@ export interface ArrayExpression extends BaseNode {
 	elements: Expression[];
 }
 export function arrayExpression(
-	elements: ArrayExpression["elements"]
+	elements: ArrayExpression["elements"],
+	start = 0,
+	end = 0
 ): ArrayExpression {
 	return {
 		type: "ArrayExpression",
 		elements,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -159,14 +170,16 @@ export interface CallExpression extends BaseNode {
 }
 export function callExpression(
 	callee: Expression,
-	callArguments: Expression[]
+	callArguments: Expression[],
+	start = 0,
+	end = 0
 ): CallExpression {
 	return {
 		type: "CallExpression",
 		callee,
 		arguments: callArguments,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -177,25 +190,27 @@ export interface NewExpression extends BaseNode {
 }
 export function newExpression(
 	callee: Expression,
-	callArguments: Expression[]
+	callArguments: Expression[],
+	start = 0,
+	end = 0
 ): NewExpression {
 	return {
 		type: "NewExpression",
 		callee,
 		arguments: callArguments,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
 export interface ThisExpression extends BaseNode {
 	type: "ThisExpression";
 }
-export function thisExpression(): ThisExpression {
+export function thisExpression(start = 0, end = 0): ThisExpression {
 	return {
 		type: "ThisExpression",
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -228,15 +243,17 @@ export interface BinaryExpression extends BaseNode {
 export function binaryExpression(
 	operator: BinaryExpression["operator"],
 	left: Expression,
-	right: Expression
+	right: Expression,
+	start = 0,
+	end = 0
 ): BinaryExpression {
 	return {
 		type: "BinaryExpression",
 		left,
 		right,
 		operator,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -253,7 +270,9 @@ export function functionDeclaration(
 	params: any[],
 	body: BlockStatement,
 	generator: boolean,
-	async: boolean
+	async: boolean,
+	start = 0,
+	end = 0
 ): FunctionDeclaration {
 	return {
 		type: "FunctionDeclaration",
@@ -262,8 +281,8 @@ export function functionDeclaration(
 		params,
 		body,
 		async,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -277,14 +296,16 @@ export interface VariableDeclarator extends BaseNode {
 
 export function variableDeclarator(
 	id: VariableDeclarator["id"],
-	init: VariableDeclarator["init"]
+	init: VariableDeclarator["init"],
+	start = 0,
+	end = 0
 ): VariableDeclarator {
 	return {
 		type: "VariableDeclarator",
 		id,
 		init,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -296,14 +317,16 @@ export interface VariableDeclaration extends BaseNode {
 
 export function variableDeclaration(
 	kind: VariableDeclaration["kind"],
-	declarations: VariableDeclaration["declarations"]
+	declarations: VariableDeclaration["declarations"],
+	start = 0,
+	end = 0
 ): VariableDeclaration {
 	return {
 		type: "VariableDeclaration",
 		kind,
 		declarations,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -344,15 +367,17 @@ export interface ConditionalExpression extends BaseNode {
 export function conditionalExpression(
 	test: Expression,
 	body: Expression,
-	alternate: Expression
+	alternate: Expression,
+	start = 0,
+	end = 0
 ): ConditionalExpression {
 	return {
 		type: "ConditionalExpression",
 		test,
 		body,
 		alternate,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -365,15 +390,17 @@ export interface IfStatement extends BaseNode {
 export function ifStatement(
 	test: Expression | null,
 	body: Statement,
-	alternate: Statement | null
+	alternate: Statement | null,
+	start = 0,
+	end = 0
 ): IfStatement {
 	return {
 		type: "IfStatement",
 		body,
 		test,
 		alternate,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -386,15 +413,17 @@ export interface TryStatement extends BaseNode {
 export function tryStatement(
 	body: Statement,
 	handler: CatchClause | null,
-	finallyHandler: Statement | null
+	finallyHandler: Statement | null,
+	start = 0,
+	end = 0
 ): TryStatement {
 	return {
 		type: "TryStatement",
 		body,
 		handler,
 		finallyHandler,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -405,14 +434,16 @@ export interface CatchClause extends BaseNode {
 }
 export function catchClause(
 	param: CatchClause["param"],
-	body: Statement
+	body: Statement,
+	start = 0,
+	end = 0
 ): CatchClause {
 	return {
 		type: "CatchClause",
 		param,
 		body,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -423,14 +454,16 @@ export interface WhileStatement extends BaseNode {
 }
 export function whileStatement(
 	test: Expression,
-	body: Statement
+	body: Statement,
+	start = 0,
+	end = 0
 ): WhileStatement {
 	return {
 		type: "WhileStatement",
 		test,
 		body,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -438,12 +471,16 @@ export interface ContinueStatement extends BaseNode {
 	type: "ContinueStatement";
 	name: Identifier | null;
 }
-export function continueStatement(name: Identifier | null): ContinueStatement {
+export function continueStatement(
+	name: Identifier | null,
+	start = 0,
+	end = 0
+): ContinueStatement {
 	return {
 		type: "ContinueStatement",
 		name,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -451,12 +488,16 @@ export interface BreakStatement extends BaseNode {
 	type: "BreakStatement";
 	name: Expression | null;
 }
-export function breakStatement(name: Expression | null): BreakStatement {
+export function breakStatement(
+	name: Expression | null,
+	start = 0,
+	end = 0
+): BreakStatement {
 	return {
 		type: "BreakStatement",
 		name,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -467,14 +508,16 @@ export interface LabeledStatement extends BaseNode {
 }
 export function labeledStatement(
 	name: Identifier,
-	body: Statement
+	body: Statement,
+	start = 0,
+	end = 0
 ): LabeledStatement {
 	return {
 		type: "LabeledStatement",
 		name,
 		body,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -482,12 +525,16 @@ export interface ReturnStatement extends BaseNode {
 	type: "ReturnStatement";
 	value: Expression | null;
 }
-export function returnStatement(value: Expression | null): ReturnStatement {
+export function returnStatement(
+	value: Expression | null,
+	start = 0,
+	end = 0
+): ReturnStatement {
 	return {
 		type: "ReturnStatement",
 		value,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -495,23 +542,27 @@ export interface BlockStatement extends BaseNode {
 	type: "BlockStatement";
 	body: Statement[];
 }
-export function blockStatement(body: Statement[]): BlockStatement {
+export function blockStatement(
+	body: Statement[],
+	start = 0,
+	end = 0
+): BlockStatement {
 	return {
 		type: "BlockStatement",
 		body,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
 export interface DebuggerStatement extends BaseNode {
 	type: "DebuggerStatement";
 }
-export function debuggerStatement(): DebuggerStatement {
+export function debuggerStatement(start = 0, end = 0): DebuggerStatement {
 	return {
 		type: "DebuggerStatement",
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -519,11 +570,15 @@ export interface ThrowStatement extends BaseNode {
 	type: "ThrowStatement";
 	value: Expression;
 }
-export function throwStatement(value: Expression): ThrowStatement {
+export function throwStatement(
+	value: Expression,
+	start = 0,
+	end = 0
+): ThrowStatement {
 	return {
 		type: "ThrowStatement",
-		end: 0,
-		start: 0,
+		end,
+		start,
 		value,
 	};
 }
@@ -533,13 +588,15 @@ export interface ExpressionStatement extends BaseNode {
 	expression: Expression;
 }
 export function expressionStatement(
-	expression: Expression
+	expression: Expression,
+	start = 0,
+	end = 0
 ): ExpressionStatement {
 	return {
 		type: "ExpressionStatement",
 		expression,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -552,15 +609,17 @@ export interface MemberExpression extends BaseNode {
 export function memberExpression(
 	left: Expression,
 	right: Expression,
-	computed: boolean
+	computed: boolean,
+	start = 0,
+	end = 0
 ): MemberExpression {
 	return {
 		type: "MemberExpression",
 		computed,
 		left,
 		right,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -571,14 +630,16 @@ export interface UnaryExpression extends BaseNode {
 }
 export function unaryExpression(
 	operator: UnaryExpression["operator"],
-	argument: Expression
+	argument: Expression,
+	start = 0,
+	end = 0
 ): UnaryExpression {
 	return {
 		type: "UnaryExpression",
 		operator,
 		argument,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -590,15 +651,17 @@ export interface AssignmentExpression extends BaseNode {
 }
 export function assignmentExpression(
 	left: Expression,
-	right: Expression
+	right: Expression,
+	start = 0,
+	end = 0
 ): AssignmentExpression {
 	return {
 		type: "AssignmentExpression",
 		left,
-		end: 0,
+		end,
 		operator: "=",
 		right,
-		start: 0,
+		start,
 	};
 }
 
@@ -607,13 +670,15 @@ export interface SequenceExpression extends BaseNode {
 	expressions: Expression[];
 }
 export function sequenceExpression(
-	expressions: Expression[]
+	expressions: Expression[],
+	start = 0,
+	end = 0
 ): SequenceExpression {
 	return {
 		type: "SequenceExpression",
 		expressions,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
 
@@ -626,15 +691,17 @@ export interface UpdateExpression extends BaseNode {
 export function updateExpression(
 	operator: UpdateExpression["operator"],
 	argument: UpdateExpression["argument"],
-	prefix: boolean
+	prefix: boolean,
+	start = 0,
+	end = 0
 ): UpdateExpression {
 	return {
 		type: "UpdateExpression",
 		operator,
 		argument,
 		prefix,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -647,15 +714,17 @@ export interface Program extends BaseNode {
 
 export function program(
 	sourceType: Program["sourceType"],
-	body: Program["body"]
+	body: Program["body"],
+	start = 0,
+	end = 0
 ): Program {
 	return {
 		type: "Program",
 		sourceType,
 		body,
 		hashbang: null,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -664,12 +733,12 @@ export interface Identifier extends BaseNode {
 	name: string;
 }
 
-export function identifier(name: string): Identifier {
+export function identifier(name: string, start = 0, end = 0): Identifier {
 	return {
 		type: "Identifier",
 		name,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -685,14 +754,16 @@ export function forStatement(
 	body: ForStatement["body"],
 	init: ForStatement["init"],
 	update: ForStatement["update"],
-	test: ForStatement["test"]
+	test: ForStatement["test"],
+	start = 0,
+	end = 0
 ): ForStatement {
 	return {
 		type: "ForStatement",
 		body,
 		init,
-		start: 0,
-		end: 0,
+		start,
+		end,
 		test,
 		update,
 	};
@@ -707,15 +778,17 @@ export interface ForInStatement extends BaseNode {
 export function forInStatement(
 	left: ForInStatement["left"],
 	right: ForInStatement["right"],
-	body: ForInStatement["body"]
+	body: ForInStatement["body"],
+	start = 0,
+	end = 0
 ): ForInStatement {
 	return {
 		type: "ForInStatement",
 		left,
 		right,
 		body,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -731,7 +804,9 @@ export function forOfStatement(
 	left: ForOfStatement["left"],
 	right: ForOfStatement["right"],
 	body: ForOfStatement["body"],
-	awaited: ForOfStatement["await"]
+	awaited: ForOfStatement["await"],
+	start = 0,
+	end = 0
 ): ForOfStatement {
 	return {
 		type: "ForOfStatement",
@@ -739,8 +814,8 @@ export function forOfStatement(
 		left,
 		right,
 		body,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -750,13 +825,15 @@ export interface ObjectPattern extends BaseNode {
 }
 
 export function objectPattern(
-	properties: ObjectPattern["properties"]
+	properties: ObjectPattern["properties"],
+	start = 0,
+	end = 0
 ): ObjectPattern {
 	return {
 		type: "ObjectPattern",
 		properties,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -764,12 +841,16 @@ export interface ObjectExpression extends BaseNode {
 	type: "ObjectExpression";
 	properties: Property[];
 }
-export function objectExpression(properties: Property[]): ObjectExpression {
+export function objectExpression(
+	properties: Property[],
+	start = 0,
+	end = 0
+): ObjectExpression {
 	return {
 		type: "ObjectExpression",
-		end: 0,
+		end,
 		properties,
-		start: 0,
+		start,
 	};
 }
 
@@ -794,7 +875,9 @@ export function property(
 	key: Property["key"],
 	value: Property["value"],
 	computed: boolean,
-	method: boolean
+	method: boolean,
+	start = 0,
+	end = 0
 ): Property {
 	return {
 		type: "Property",
@@ -804,8 +887,8 @@ export function property(
 		kind: "init",
 		key,
 		value,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -814,12 +897,16 @@ export interface ArrayPattern extends BaseNode {
 	elements: Array<Identifier | RestElement>;
 }
 
-export function arrayPattern(elements: ArrayPattern["elements"]): ArrayPattern {
+export function arrayPattern(
+	elements: ArrayPattern["elements"],
+	start = 0,
+	end = 0
+): ArrayPattern {
 	return {
 		type: "ArrayPattern",
 		elements,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -829,12 +916,16 @@ export interface RestElement extends BaseNode {
 }
 
 // TODO: Benchmark if it's faster to use a property on Bindings instead
-export function restElement(argument: RestElement["argument"]): RestElement {
+export function restElement(
+	argument: RestElement["argument"],
+	start = 0,
+	end = 0
+): RestElement {
 	return {
 		type: "RestElement",
 		argument,
-		start: 0,
-		end: 0,
+		start,
+		end,
 	};
 }
 
@@ -847,14 +938,16 @@ export interface ClassDeclaration extends BaseNode {
 export function classDeclaration(
 	id: ClassDeclaration["name"],
 	extend: ClassDeclaration["extend"],
-	properties: ClassDeclaration["properties"]
+	properties: ClassDeclaration["properties"],
+	start = 0,
+	end = 0
 ): ClassDeclaration {
 	return {
 		type: "ClassDeclaration",
 		name: id,
 		extend,
 		properties,
-		end: 0,
-		start: 0,
+		end,
+		start,
 	};
 }
