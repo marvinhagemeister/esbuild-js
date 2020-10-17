@@ -1,6 +1,6 @@
 import { CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
-import { Token } from "../tokens";
+import { Token, TokenFlags } from "../tokens";
 import { Lexer2, step, throwSyntaxError } from "./index";
 
 function assertUnderscore(lexer: Lexer2, last: number) {
@@ -19,8 +19,9 @@ function assertUnderscore(lexer: Lexer2, last: number) {
 }
 
 export function scanNumberLiteral(lexer: Lexer2, ch: number) {
-	lexer.token = Token.NumericLiteral;
+	lexer.token = TokenFlags.NumericLiteral;
 
+	const start = lexer.start;
 	const first = ch;
 
 	// Check for binary, octal, or hexadecimal literal
@@ -31,7 +32,7 @@ export function scanNumberLiteral(lexer: Lexer2, ch: number) {
 			base = 2;
 		} else if ((lexer.flags & CharFlags.Base8) === CharFlags.Base8) {
 			base = 8;
-			isLegacyOctalLiteral = lexer.char < Char.O;
+			isLegacyOctalLiteral = ch < Char.O;
 		} else if ((lexer.flags & CharFlags.Base16) === CharFlags.Base16) {
 			base = 16;
 		}
@@ -64,4 +65,6 @@ export function scanNumberLiteral(lexer: Lexer2, ch: number) {
 			`Identifiers can't occur immediately after a number`
 		);
 	}
+
+	return TokenFlags.NumericLiteral;
 }

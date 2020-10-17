@@ -70,18 +70,19 @@ export const enum CharFlags {
 	Unknown = 0,
 	IdStart = 1 << 0,
 	IdPart = 1 << 1,
-	WhiteSpace = 1 << 2,
-	NewLine = 1 << 3,
-	Number = 1 << 4,
-	Separator = 1 << 5,
-	StringLiteralLineTerminator = 1 << 6,
-	Hex = 1 << 7,
-	OctHexBin = 1 << 8,
-	RegExp = 1 << 9,
-	Direct = 1 << 10,
-	Base2 = 1 << 11,
-	Base8 = 1 << 12,
-	Base16 = 1 << 13,
+	Identifier = 1 << 2,
+	WhiteSpace = 1 << 3,
+	NewLine = 1 << 4,
+	Number = 1 << 5,
+	Separator = 1 << 6,
+	StringLiteralLineTerminator = 1 << 7,
+	Hex = 1 << 8,
+	OctHexBin = 1 << 9,
+	RegExp = 1 << 10,
+	Direct = 1 << 11,
+	Base2 = 1 << 12,
+	Base8 = 1 << 13,
+	Base16 = 1 << 14,
 }
 
 // DO NOT EDIT
@@ -97,7 +98,7 @@ for (let i = 0; i < 127; i++) {
 
 	let flags: string[] = [];
 	if (idStart.has(ch)) {
-		flags.push("CharFlags.IdStart", "CharFlags.IdPart");
+		flags.push("CharFlags.Identifier", "CharFlags.IdStart", "CharFlags.IdPart");
 	}
 
 	if (Numbers.has(ch)) {

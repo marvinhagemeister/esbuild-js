@@ -79,7 +79,7 @@ function parseStatement(p: Parser): tt.Statement {
 	switch (p.lexer.token) {
 		case Token.SemiColon:
 			nextToken(p.lexer);
-			return tt.emptyStatement("");
+			return tt.emptyStatement();
 		case Token.Export: {
 			nextToken(p.lexer);
 			break;

@@ -70,5 +70,5 @@ export function newCodeFrameFromErr(err: CustomSyntaxError) {
 			indent(frame, 2)
 		);
 	}
-	return "";
+	return err;
 }

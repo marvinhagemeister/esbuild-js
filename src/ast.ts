@@ -37,7 +37,7 @@ export const enum Precedence {
 export interface BaseNode {
 	type: string;
 	start: number;
-	len: number;
+	end: number;
 }
 
 export type AstNode =
@@ -79,7 +79,7 @@ export function emptyExpression(): EmptyExpression {
 	return {
 		type: "EmptyExpression",
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -91,12 +91,13 @@ export function emptyStatement(): EmptyStatement {
 	return {
 		type: "EmptyStatement",
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
 export interface Literal extends BaseNode {
 	type: "Literal";
+
 	value: string | number | boolean | null | undefined;
 	raw: string;
 }
@@ -106,7 +107,7 @@ export function literal(value: Literal["value"]): Literal {
 		value,
 		raw: "" + value,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -118,7 +119,7 @@ export function regexpLiteral(value: string): RegExpLiteral {
 	return {
 		type: "RegExpLiteral",
 		value,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -132,7 +133,7 @@ export function comment(text: string): Comment {
 		type: "Comment",
 		text,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -147,7 +148,7 @@ export function arrayExpression(
 		type: "ArrayExpression",
 		elements,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -164,7 +165,7 @@ export function callExpression(
 		type: "CallExpression",
 		callee,
 		arguments: callArguments,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -182,7 +183,7 @@ export function newExpression(
 		type: "NewExpression",
 		callee,
 		arguments: callArguments,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -193,7 +194,7 @@ export interface ThisExpression extends BaseNode {
 export function thisExpression(): ThisExpression {
 	return {
 		type: "ThisExpression",
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -235,7 +236,7 @@ export function binaryExpression(
 		right,
 		operator,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -262,7 +263,7 @@ export function functionDeclaration(
 		body,
 		async,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -283,7 +284,7 @@ export function variableDeclarator(
 		id,
 		init,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -302,7 +303,7 @@ export function variableDeclaration(
 		kind,
 		declarations,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -350,7 +351,7 @@ export function conditionalExpression(
 		test,
 		body,
 		alternate,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -372,7 +373,7 @@ export function ifStatement(
 		test,
 		alternate,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -392,7 +393,7 @@ export function tryStatement(
 		body,
 		handler,
 		finallyHandler,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -410,7 +411,7 @@ export function catchClause(
 		type: "CatchClause",
 		param,
 		body,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -428,7 +429,7 @@ export function whileStatement(
 		type: "WhileStatement",
 		test,
 		body,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -441,7 +442,7 @@ export function continueStatement(name: Identifier | null): ContinueStatement {
 	return {
 		type: "ContinueStatement",
 		name,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -454,7 +455,7 @@ export function breakStatement(name: Identifier | null): BreakStatement {
 	return {
 		type: "BreakStatement",
 		name,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -472,7 +473,7 @@ export function labeledStatement(
 		type: "LabeledStatement",
 		name,
 		body,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -485,7 +486,7 @@ export function returnStatement(value: Expression | null): ReturnStatement {
 	return {
 		type: "ReturnStatement",
 		value,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -499,7 +500,7 @@ export function blockStatement(body: Statement[]): BlockStatement {
 		type: "BlockStatement",
 		body,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -509,7 +510,7 @@ export interface DebuggerStatement extends BaseNode {
 export function debuggerStatement(): DebuggerStatement {
 	return {
 		type: "DebuggerStatement",
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -521,7 +522,7 @@ export interface ThrowStatement extends BaseNode {
 export function throwStatement(value: Expression): ThrowStatement {
 	return {
 		type: "ThrowStatement",
-		len: 0,
+		end: 0,
 		start: 0,
 		value,
 	};
@@ -537,7 +538,7 @@ export function expressionStatement(
 	return {
 		type: "ExpressionStatement",
 		expression,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -559,7 +560,7 @@ export function memberExpression(
 		left,
 		right,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -577,7 +578,7 @@ export function unaryExpression(
 		operator,
 		argument,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -594,7 +595,7 @@ export function assignmentExpression(
 	return {
 		type: "AssignmentExpression",
 		left,
-		len: 0,
+		end: 0,
 		operator: "=",
 		right,
 		start: 0,
@@ -611,7 +612,7 @@ export function sequenceExpression(
 	return {
 		type: "SequenceExpression",
 		expressions,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }
@@ -633,7 +634,7 @@ export function updateExpression(
 		argument,
 		prefix,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -654,7 +655,7 @@ export function program(
 		body,
 		hashbang: null,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -668,7 +669,7 @@ export function identifier(name: string): Identifier {
 		type: "Identifier",
 		name,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -691,7 +692,7 @@ export function forStatement(
 		body,
 		init,
 		start: 0,
-		len: 0,
+		end: 0,
 		test,
 		update,
 	};
@@ -714,7 +715,7 @@ export function forInStatement(
 		right,
 		body,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -739,7 +740,7 @@ export function forOfStatement(
 		right,
 		body,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -755,7 +756,7 @@ export function objectPattern(
 		type: "ObjectPattern",
 		properties,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -766,7 +767,7 @@ export interface ObjectExpression extends BaseNode {
 export function objectExpression(properties: Property[]): ObjectExpression {
 	return {
 		type: "ObjectExpression",
-		len: 0,
+		end: 0,
 		properties,
 		start: 0,
 	};
@@ -804,7 +805,7 @@ export function property(
 		key,
 		value,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -818,7 +819,7 @@ export function arrayPattern(elements: ArrayPattern["elements"]): ArrayPattern {
 		type: "ArrayPattern",
 		elements,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -833,7 +834,7 @@ export function restElement(argument: RestElement["argument"]): RestElement {
 		type: "RestElement",
 		argument,
 		start: 0,
-		len: 0,
+		end: 0,
 	};
 }
 
@@ -853,7 +854,7 @@ export function classDeclaration(
 		name: id,
 		extend,
 		properties,
-		len: 0,
+		end: 0,
 		start: 0,
 	};
 }

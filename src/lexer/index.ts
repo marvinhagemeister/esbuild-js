@@ -1,17 +1,19 @@
+import { stat } from "fs";
 import { char2Flag, CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
-import { Token } from "../tokens";
+import { Token, TokenFlags } from "../tokens";
 import { scanIdentifier, scanIdentifierOrKeyword } from "./identifier";
 import { scanNumberLiteral } from "./numeric";
 import { scanStringLiteral } from "./string";
+import { firstChar } from "./utils";
 
 export interface Lexer2 {
 	i: number;
 	char: number;
 	source: string;
-	token: Token;
+	token: TokenFlags;
 	flags: CharFlags;
-	identifier: string;
+	value: string;
 	number: number;
 	string: string;
 	start: number;
@@ -25,11 +27,11 @@ export interface Lexer2 {
 export function createLexer(source: string): Lexer2 {
 	return {
 		i: 0,
-		char: -1,
+		char: source.charCodeAt(0),
 		source,
-		token: Token.Unknown,
+		token: TokenFlags.Unknown,
 		flags: CharFlags.Unknown,
-		identifier: "",
+		value: "",
 		number: 0,
 		string: "",
 		start: 0,
@@ -45,9 +47,11 @@ export function step(lexer: Lexer2) {
 	const source = lexer.source;
 	const i = ++lexer.i;
 	lexer.column++;
-	lexer.char = i < source.length ? source.charCodeAt(i)! : Char.EndOfFile;
+	lexer.char = i < source.length ? source.charCodeAt(i) : Char.EndOfFile;
 	lexer.flags =
 		lexer.char !== Char.EndOfFile ? char2Flag[lexer.char] : CharFlags.Unknown;
+
+	return lexer.char;
 }
 
 export function getRaw(lexer: Lexer2) {
@@ -68,7 +72,7 @@ export function throwSyntaxError(lexer: Lexer2, message: string) {
 	throw err;
 }
 
-export function expectToken2(lexer: Lexer2, token: Token) {
+export function expectToken2(lexer: Lexer2, token: TokenFlags) {
 	if (lexer.token !== token) {
 		throwSyntaxError(lexer, "Unexpected token");
 	}
@@ -76,7 +80,7 @@ export function expectToken2(lexer: Lexer2, token: Token) {
 	scanSingleToken(lexer);
 }
 
-export function consumeOp(lexer: Lexer2, token: Token) {
+export function consumeOp(lexer: Lexer2, token: TokenFlags) {
 	if (lexer.token === token) {
 		scanSingleToken(lexer);
 		return true;
@@ -85,28 +89,75 @@ export function consumeOp(lexer: Lexer2, token: Token) {
 	return false;
 }
 
-export function scanSingleToken(lexer: Lexer2) {
-	const ch = lexer.source.charCodeAt(lexer.i);
+function skipWhiteSpace(lexer: Lexer2) {
+	while (lexer.i < lexer.source.length) {
+		const ch = lexer.source.charCodeAt(lexer.i);
+		switch (ch) {
+			case Char.NewLine:
+			case Char["\r"]:
+				lexer.line++;
+				lexer.column = 0;
+				break;
+			case Char.Tab:
+			case Char.LineTab:
+			case Char.FormFeed:
+			case Char.EmSpace:
+			case Char.NoBreakSpace:
+			case Char.Space:
+				step(lexer);
+				break;
+			default:
+				lexer.start = lexer.i;
+				return;
+		}
+	}
+}
 
-	if (ch > 127) {
+export function nextToken2(lexer: Lexer2) {
+	lexer.start = lexer.i;
+	lexer.token = scanSingleToken(lexer);
+}
+
+export function scanSingleToken(lexer: Lexer2) {
+	skipWhiteSpace(lexer);
+
+	let ch = lexer.source.charCodeAt(lexer.i);
+	if (ch === Char.EndOfFile) return Token.EndOfFile;
+
+	if (ch > Char.z) {
 		// TODO: Unicode
 		throw new Error("TODO: Unicode");
 	}
 
-	const token = char2Flag[ch];
-
+	const token = firstChar[ch];
 	switch (token) {
 		// a..z
-		case Token.IdentifierOrKeyword:
+		case TokenFlags.IdentifierOrKeyword:
 			return scanIdentifierOrKeyword(lexer, ch);
 		// A...Z or _ or $
-		case Token.Identifier:
+		case TokenFlags.Identifier:
 			return scanIdentifier(lexer, ch);
 		// 0..9
-		case Token.NumericLiteral:
+		case TokenFlags.NumericLiteral:
 			return scanNumberLiteral(lexer, ch);
 		// 'string' or "string"
-		case Token.StringLiteral:
+		case TokenFlags.StringLiteral:
 			return scanStringLiteral(lexer);
+		// `=` or `==` or `===` or `=>`
+		case TokenFlags.Equals:
+			ch = lexer.source.charCodeAt(++lexer.i);
+			if (ch === Char.Equal) {
+				ch = lexer.source.charCodeAt(++lexer.i);
+				if (ch === Char.Equal) {
+					return TokenFlags["==="];
+				}
+				return TokenFlags["=="];
+			}
+
+			return TokenFlags.Equals;
+		default:
+			// throwSyntaxError(lexer, "nope " + ch + " " + String.fromCharCode(ch));
+			lexer.i++;
+			return TokenFlags.EndOfFile;
 	}
 }

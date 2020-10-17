@@ -244,7 +244,7 @@ export const enum TokenFlags {
 	"=>",
 	"===",
 	"==",
-	Equals,
+	Equals = Token.Equals | Token.AssignOp,
 	"<",
 	"<=",
 	"<<=" = Token["<<="] | Token.AssignOp | Token.BinaryExpression,

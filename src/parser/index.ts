@@ -1,7 +1,7 @@
 import * as tt from "../ast";
 import { CharFlags } from "../lexer-ascii";
 import {
-	scanSingleToken,
+	nextToken2,
 	Lexer2,
 	expectToken2,
 	consumeOp,
@@ -14,10 +14,36 @@ export interface ParserState extends Lexer2 {}
 /**
  * Add mapping information to a node
  */
-function finishNode(state: ParserState, node: any) {
-	node.start = -1;
-	node.end = -1;
+function finishNode(state: ParserState, start: number, node: any) {
+	node.start = start;
+	node.end = state.i - 1; // TODO: Constant should not be necessary
 	return node;
+}
+
+export function parse(source: string): tt.Program {
+	const state: ParserState = {
+		token: TokenFlags.Unknown,
+		char: source.charCodeAt(0),
+		column: 0,
+		commentBefore: null,
+		flags: CharFlags.Unknown,
+		hasNewLineBefore: false,
+		i: 0,
+		value: "",
+		line: 0,
+		number: 0,
+		rescanCloseBraceAsTemplateToken: false,
+		source,
+		start: 0,
+		string: "",
+	};
+
+	// Off we go!
+	nextToken2(state);
+
+	const statements = parseStatementList(state);
+	const program = tt.program("module", statements);
+	return finishNode(state, 0, program);
 }
 
 // ModuleItemList ::
@@ -28,8 +54,8 @@ function finishNode(state: ParserState, node: any) {
 //   StatementListItem
 //   StatementList StatementListItem
 function parseStatementList(state: ParserState) {
-	const statements = [];
-	while (state.token !== Token.EndOfFile) {
+	const statements: tt.Statement[] = [];
+	while (state.token !== TokenFlags.EndOfFile) {
 		statements.push(parseStatement(state));
 	}
 
@@ -51,21 +77,60 @@ function parseStatementList(state: ParserState) {
 //   ThrowStatement
 //   TryStatement
 //   DebuggerStatement
-function parseStatement(state: ParserState) {
+function parseStatement(state: ParserState): tt.Statement {
 	//
 	switch (state.token) {
-		case Token.SemiColon:
+		case TokenFlags.SemiColon:
 			return parseEmptyStatement(state);
-		case Token.Function:
+		case TokenFlags.Function:
 			return parseFunctionDeclartion(state);
+		default:
+			return parseExpressionOrLabelledStatement(state);
 	}
 }
 
 // EmptyStatement ::
 // ';'
 function parseEmptyStatement(state: ParserState): tt.EmptyStatement {
-	scanSingleToken(state);
-	return finishNode(state, tt.emptyStatement());
+	const start = state.start;
+	nextToken2(state);
+	return finishNode(state, start, tt.emptyStatement());
+}
+
+// ExpressionStatement :
+//   [lookahead != `{`, `function`, `async` [no LineTerminator here] `function`, `class`, `let` `[` ] Expression `;`
+//
+// LabelledStatement :
+//   LabelIdentifier : LabelledItem
+//
+// LabelledItem :
+//   Statement
+//   FunctionDeclaration
+function parseExpressionOrLabelledStatement(
+	state: ParserState
+): tt.LabeledStatement | tt.ExpressionStatement {
+	const name = getRaw(state);
+	const start = state.start;
+
+	let expr = parseLeftHandSideExpression(state);
+	if (state.token === TokenFlags.Colon) {
+		nextToken2(state);
+		const body = parseStatement(state);
+		return tt.labeledStatement(tt.identifier(name), body);
+	}
+
+	expr = parseAssignmentExpression(state, expr);
+	return parseExpressionStatement(state, start, expr);
+}
+
+// ExpressionStatement :
+//   [lookahead != `{`, `function`, `async` [no LineTerminator here] `function`, `class`, `let` `[` ] Expression `;`
+function parseExpressionStatement(
+	state: ParserState,
+	start: number,
+	expr: tt.Expression
+) {
+	return finishNode(state, start, tt.expressionStatement(expr));
 }
 
 // Expression :
@@ -79,44 +144,41 @@ function parseExpression(state: ParserState): tt.Expression {
 // LeftHandSideExpression :
 //  (PrimaryExpression | MemberExpression) ...
 function parseLeftHandSideExpression(state: ParserState) {
+	const start = state.start;
 	const token = state.token;
 	if ((token & Token.Literal) === Token.Literal) {
-		scanSingleToken(state);
-		return finishNode(state, tt.literal("FIXME"));
+		const value = Number(getRaw(state));
+		const start = state.start;
+		nextToken2(state);
+		return finishNode(state, start, tt.literal(value));
 	} else if ((token & Token.UnaryExpression) === Token.UnaryExpression) {
-		scanSingleToken(state);
+		nextToken2(state);
 		const value = parseExpression(state);
 		// FIXME: Operator type
-		return finishNode(state, tt.unaryExpression("void", value));
+		return finishNode(state, start, tt.unaryExpression("void", value));
 	} else if ((token & Token.UpdateExpression) === Token.UpdateExpression) {
-		scanSingleToken(state);
+		nextToken2(state);
 		const value = parseExpression(state);
 		// FIXME: operator
-		return finishNode(state, tt.updateExpression("--", value, true));
+		return finishNode(state, start, tt.updateExpression("--", value, true));
 	} else {
 		return parseIdentifier(state);
 	}
 }
 
 function parseIdentifier(state: ParserState): tt.Identifier {
-	const name = state.identifier;
-	const raw = getRaw(state);
-	scanSingleToken(state);
+	const start = state.start;
+	const name = getRaw(state);
+	console.log(state);
+	nextToken2(state);
+	console.log(state);
 
-	switch (name) {
-		case "async": {
-			if (raw === "async") {
-				// return parseAsyncPrefixExpression(p);
-			}
-
-			break;
-			// TODO: await
-			// TODO: yield
-		}
-	}
+	// TODO: async
+	// TODO: await
+	// TODO: yield
 
 	const identifier = tt.identifier(name);
-	return finishNode(state, identifier);
+	return finishNode(state, start, identifier);
 }
 
 // AssignmentExpression :
@@ -135,80 +197,58 @@ function parseIdentifier(state: ParserState): tt.Identifier {
 //   &&= ||= ??=
 function parseAssignmentExpression(state: ParserState, left: any) {
 	if ((state.token & Token.AssignOp) === Token.AssignOp) {
-		scanSingleToken(state);
+		nextToken2(state);
 		const right = parseExpression(state);
-		return finishNode(state, right);
+		return finishNode(state, left.start, tt.assignmentExpression(left, right));
 	}
 
 	return left;
 }
 
 function parseFunctionDeclartion(state: ParserState) {
-	scanSingleToken(state);
+	const start = state.start;
+	nextToken2(state);
 
 	// TODO: Async
 	const isAsync = false;
-	const isGenerator = consumeOp(state, Token["*"]);
+	const isGenerator = consumeOp(state, TokenFlags["*"]);
 
 	// The name is optional
 	let name = "";
-	if (state.token === Token.Identifier) {
-		name = state.identifier;
+	if (state.token === TokenFlags.Identifier) {
+		name = state.value;
 		// TODO: Don't declare name "arguments"
-		scanSingleToken(state);
+		nextToken2(state);
 	}
 
-	expectToken2(state, Token.OpenParen);
+	expectToken2(state, TokenFlags.OpenParen);
 
 	const args = [];
-	while (state.token !== Token.CloseParen) {
+	while (state.token !== TokenFlags.CloseParen) {
 		// TODO: Rest args
 		// TODO: Default arguments
 
 		const arg = parseBinding(state);
 		args.push(arg);
 
-		if (state.token !== Token.Comma) {
+		if (state.token !== TokenFlags.Comma) {
 			break;
 		}
 
-		scanSingleToken(state);
+		nextToken2(state);
 	}
 
-	expectToken2(state, Token.CloseParen);
+	expectToken2(state, TokenFlags.CloseParen);
 
 	const body = parseFunctionBody(state);
 	return finishNode(
 		state,
+		start,
 		tt.functionDeclaration(name, args, body, isGenerator, isAsync)
 	);
 }
 
-function parseFunctionBody(state: ParserState) {}
-function parseBinding(state: ParserState) {}
-
-export function parse(source: string): tt.Program {
-	const state: ParserState = {
-		token: Token.Unknown,
-		char: 0,
-		column: 0,
-		commentBefore: null,
-		flags: CharFlags.Unknown,
-		hasNewLineBefore: false,
-		i: 0,
-		identifier: "",
-		line: 0,
-		number: 0,
-		rescanCloseBraceAsTemplateToken: false,
-		source,
-		start: 0,
-		string: "",
-	};
-
-	// Off we go!
-	scanSingleToken(state);
-
-	const statements = parseStatementList(state);
-	const program = tt.program("module", statements);
-	return program;
+function parseFunctionBody(state: ParserState) {
+	return tt.blockStatement([]);
 }
+function parseBinding(state: ParserState) {}
