@@ -1,4 +1,4 @@
-import { Lexer } from "./lexer";
+import { Lexer } from "./old/lexer";
 import { char2Flag, CharFlags } from "./lexer-ascii";
 
 export const enum IdenitfierKind {

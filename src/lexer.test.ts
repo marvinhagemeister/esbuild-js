@@ -1,4 +1,4 @@
-import { newLexer, nextToken } from "./lexer";
+import { newLexer, nextToken } from "./old/lexer";
 import { Token } from "./tokens";
 import expect from "expect";
 import { Char } from "./lexer_helpers";

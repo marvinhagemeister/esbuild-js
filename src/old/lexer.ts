@@ -1,5 +1,5 @@
-import { Token, keywords } from "./tokens";
-import * as logger from "./logger";
+import { Token, keywords } from "../tokens";
+import * as logger from "../logger";
 import {
 	isIdentifierStart,
 	isIdentifierContinue,
@@ -9,8 +9,8 @@ import {
 	isIdentifier,
 	isKeyword,
 	formatLexerPosition,
-} from "./lexer_helpers";
-import { char2Flag, CharFlags } from "./lexer-ascii";
+} from "../lexer_helpers";
+import { char2Flag, CharFlags } from "../lexer-ascii";
 
 export interface Lexer {
 	i: number;

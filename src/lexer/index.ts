@@ -17,6 +17,7 @@ export interface Lexer2 {
 	number: number;
 	string: string;
 	start: number;
+	end: number;
 	line: number;
 	column: number;
 	hasNewLineBefore: boolean;
@@ -35,6 +36,7 @@ export function createLexer(source: string): Lexer2 {
 		number: 0,
 		string: "",
 		start: 0,
+		end: 0,
 		line: 0,
 		column: 0,
 		hasNewLineBefore: false,
@@ -115,6 +117,7 @@ function skipWhiteSpace(lexer: Lexer2) {
 
 export function nextToken2(lexer: Lexer2) {
 	lexer.start = lexer.i;
+	lexer.end = lexer.i;
 	lexer.token = scanSingleToken(lexer);
 }
 

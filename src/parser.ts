@@ -8,7 +8,7 @@ import {
 	newLexer,
 	nextToken,
 	scanRegExp,
-} from "./lexer";
+} from "./old/lexer";
 import { formatLexerPosition, strictModeReservedWords } from "./lexer_helpers";
 import { Token } from "./tokens";
 import * as tt from "./ast";
@@ -392,6 +392,7 @@ function parseExpression(p: Parser, level: number): tt.Expression {
 }
 
 function parsePrefix(p: Parser, level: number): tt.Expression {
+	const raw = getRaw(p.lexer);
 	switch (p.lexer.token) {
 		case Token.OpenParen: {
 			nextToken(p.lexer);
@@ -399,25 +400,25 @@ function parsePrefix(p: Parser, level: number): tt.Expression {
 		}
 		case Token.False:
 			nextToken(p.lexer);
-			return tt.literal(false);
+			return tt.literal(false, raw);
 		case Token.True:
 			nextToken(p.lexer);
-			return tt.literal(true);
+			return tt.literal(true, raw);
 		case Token.Null:
 			nextToken(p.lexer);
-			return tt.literal(null);
+			return tt.literal(null, raw);
 		case Token.This:
 			nextToken(p.lexer);
 			return tt.thisExpression();
 		case Token.StringLiteral: {
 			const value = p.lexer.string;
 			nextToken(p.lexer);
-			return tt.literal(value);
+			return tt.literal(value, raw);
 		}
 		case Token.NumericLiteral: {
 			const value = p.lexer.number;
 			nextToken(p.lexer);
-			return tt.literal(value);
+			return tt.literal(value, raw);
 		}
 		case Token["/"]: {
 			scanRegExp(p.lexer);
@@ -937,7 +938,7 @@ function parseProperty(p: Parser, kind: tt.PropertyKind, isClass: boolean) {
 			const raw = getRaw(p.lexer);
 			// FIXME: Add proper Number literals, so that we can print
 			// numbers in their original form in the input code
-			key = tt.literal(Number(raw));
+			key = tt.literal(Number(raw), raw);
 			nextToken(p.lexer);
 			break;
 		}

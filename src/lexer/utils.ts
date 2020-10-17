@@ -41,7 +41,7 @@ export const firstChar = [
   /*  36 - $ */ TokenFlags.Identifier,
   /*  37 - % */ TokenFlags.Unknown,
   /*  38 - & */ TokenFlags.Unknown,
-  /*  39 - ' */ TokenFlags.Unknown,
+  /*  39 - ' */ TokenFlags.StringLiteral,
   /*  40 - ( */ TokenFlags.OpenParen,
   /*  41 - ) */ TokenFlags.CloseParen,
   /*  42 - * */ TokenFlags.Unknown,

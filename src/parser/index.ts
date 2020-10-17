@@ -16,7 +16,7 @@ export interface ParserState extends Lexer2 {}
  */
 function finishNode(state: ParserState, start: number, node: any) {
 	node.start = start;
-	node.end = state.i - 1; // TODO: Constant should not be necessary
+	node.end = state.end; // TODO: Constant should not be necessary
 	return node;
 }
 
@@ -29,6 +29,7 @@ export function parse(source: string): tt.Program {
 		flags: CharFlags.Unknown,
 		hasNewLineBefore: false,
 		i: 0,
+		end: 0,
 		value: "",
 		line: 0,
 		number: 0,
@@ -144,13 +145,17 @@ function parseExpression(state: ParserState): tt.Expression {
 // LeftHandSideExpression :
 //  (PrimaryExpression | MemberExpression) ...
 function parseLeftHandSideExpression(state: ParserState) {
+	const raw = getRaw(state);
 	const start = state.start;
 	const token = state.token;
-	if ((token & Token.Literal) === Token.Literal) {
-		const value = Number(getRaw(state));
-		const start = state.start;
+
+	if (token === TokenFlags.StringLiteral) {
 		nextToken2(state);
-		return finishNode(state, start, tt.literal(value));
+		return finishNode(state, start, tt.literal(state.string, raw));
+	} else if ((token & Token.Literal) === Token.Literal) {
+		const value = token === TokenFlags.NumericLiteral ? Number(raw) : raw;
+		nextToken2(state);
+		return finishNode(state, start, tt.literal(value, raw));
 	} else if ((token & Token.UnaryExpression) === Token.UnaryExpression) {
 		nextToken2(state);
 		const value = parseExpression(state);
@@ -169,9 +174,7 @@ function parseLeftHandSideExpression(state: ParserState) {
 function parseIdentifier(state: ParserState): tt.Identifier {
 	const start = state.start;
 	const name = getRaw(state);
-	console.log(state);
 	nextToken2(state);
-	console.log(state);
 
 	// TODO: async
 	// TODO: await

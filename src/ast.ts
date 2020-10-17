@@ -101,11 +101,11 @@ export interface Literal extends BaseNode {
 	value: string | number | boolean | null | undefined;
 	raw: string;
 }
-export function literal(value: Literal["value"]): Literal {
+export function literal(value: Literal["value"], raw: string): Literal {
 	return {
 		type: "Literal",
 		value,
-		raw: "" + value,
+		raw,
 		start: 0,
 		end: 0,
 	};

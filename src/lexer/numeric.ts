@@ -21,7 +21,6 @@ function assertUnderscore(lexer: Lexer2, last: number) {
 export function scanNumberLiteral(lexer: Lexer2, ch: number) {
 	lexer.token = TokenFlags.NumericLiteral;
 
-	const start = lexer.start;
 	const first = ch;
 
 	// Check for binary, octal, or hexadecimal literal
@@ -65,6 +64,8 @@ export function scanNumberLiteral(lexer: Lexer2, ch: number) {
 			`Identifiers can't occur immediately after a number`
 		);
 	}
+
+	lexer.number = Number(lexer.source.slice(lexer.start, lexer.end));
 
 	return TokenFlags.NumericLiteral;
 }

@@ -1,50 +1,54 @@
-import { CharFlags } from "../lexer-ascii";
+import { Token } from "acorn";
+import { char2Flag, CharFlags } from "../lexer-ascii";
 import { Char } from "../lexer_helpers";
 import { TokenFlags } from "../tokens";
 import { Lexer2, step, throwSyntaxError } from "./index";
 
 export function scanStringLiteral(lexer: Lexer2) {
-	const quote = lexer.char;
+	const quote = lexer.source.charCodeAt(lexer.i);
 	// TODO: Template literals
-	lexer.token =
+	const token =
 		quote === Char.Backtick
 			? TokenFlags.TemplateHead
 			: TokenFlags.StringLiteral;
-	step(lexer);
+
+	let ch = lexer.source.charCodeAt(++lexer.i);
 
 	let suffixLen = 0;
 	// TODO: Add support for escaped codes
 	// TODO: Unicode
-	while (lexer.char !== quote && lexer.char !== Char.EndOfFile) {
-		if (
-			quote !== Char.Backtick &&
-			(lexer.flags & CharFlags.NewLine) === CharFlags.NewLine
-		) {
-			throwSyntaxError(
-				lexer,
-				`Unterminated string literal. Newline characters need to be escaped.`
-			);
-		}
-
-		if (lexer.char === Char.$) {
-			if (quote === Char.Backtick) {
-				step(lexer);
-
-				if ((lexer.char as number) === Char["{"]) {
-					lexer.token = TokenFlags.TemplateHead;
-					suffixLen = 2;
-					step(lexer);
-					break;
-				}
+	while (ch !== quote && ch !== Char.EndOfFile) {
+		if (quote !== Char.Backtick) {
+			const flags = char2Flag[ch];
+			if ((flags & CharFlags.NewLine) === CharFlags.NewLine) {
+				throwSyntaxError(
+					lexer,
+					`Unterminated string literal. Newline characters need to be escaped.`
+				);
 			}
 		}
 
-		step(lexer);
+		if (ch === Char.$) {
+			// if (quote === Char.Backtick) {
+			// 	ch = lexer.source.charCodeAt(++lexer.i);
+			// 	if (ch === Char["{"]) {
+			// 		lexer.token = TokenFlags.TemplateHead;
+			// 		suffixLen = 2;
+			// 		ch = lexer.source.charCodeAt(++lexer.i);
+			// 		break;
+			// 	}
+			// }
+		}
+
+		if (lexer.i >= lexer.source.length) break;
+		ch = lexer.source.charCodeAt(++lexer.i);
 	}
 
-	if (quote !== Char.Backtick && lexer.char !== quote) {
+	if (quote !== Char.Backtick && ch !== quote) {
 		throwSyntaxError(lexer, "Unterminated string literal");
 	}
 
 	lexer.string = lexer.source.slice(lexer.start + 1, lexer.i - suffixLen);
+	lexer.i++;
+	return token;
 }

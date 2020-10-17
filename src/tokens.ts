@@ -151,7 +151,7 @@ export const enum TokenFlags {
 	// Literals
 	NoSubstitutionTemplateLiteral = Token.NoSubstitutionTemplateLiteral,
 	NumericLiteral = Token.NumericLiteral | Token.Literal,
-	StringLiteral = Token.StringLiteral,
+	StringLiteral = Token.StringLiteral | Token.Literal,
 	BigIntLiteral = Token.BigIntLiteral,
 
 	// Pseudo literals

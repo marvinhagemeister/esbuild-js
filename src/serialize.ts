@@ -44,10 +44,6 @@ function serializeAst(
 		case "Identifier":
 			return node.name;
 		case "Literal":
-			// TODO: Quotes
-			if (typeof node.value === "string") {
-				return '"' + node.raw + '"';
-			}
 			return node.raw;
 		case "ObjectPattern": {
 			out += "{";
