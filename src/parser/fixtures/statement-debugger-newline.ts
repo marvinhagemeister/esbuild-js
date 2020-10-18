@@ -1,5 +1,8 @@
+import { Token } from "../../tokens";
+
 export const source = "debugger\nfoo;";
 export const serialized = "debugger: foo;\n";
+export const tokens = [Token.Debugger];
 export const ast = {
 	type: "Program",
 	sourceType: "module",

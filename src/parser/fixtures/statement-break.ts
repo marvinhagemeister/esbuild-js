@@ -1,5 +1,8 @@
+import { Token } from "../../tokens";
+
 export const source = "break;";
 export const serialized = "break;\n";
+export const tokens = [Token.Break];
 export const ast = {
 	type: "Program",
 	sourceType: "module",

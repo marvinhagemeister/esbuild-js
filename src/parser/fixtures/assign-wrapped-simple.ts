@@ -1,8 +1,14 @@
 import { Token } from "../../tokens";
 
-export const source = "x = 1";
-export const serialized = "x = 1;\n";
-export const tokens = [Token.Identifier, Token["="], Token.NumericLiteral];
+export const source = "(x) = y";
+export const serialized = "(x) = y;\n";
+export const tokens = [
+	Token.OpenParen,
+	Token.Identifier,
+	Token.CloseParen,
+	Token["="],
+	Token.Identifier,
+];
 export const ast = {
 	type: "Program",
 	sourceType: "module",
@@ -20,9 +26,8 @@ export const ast = {
 				end: 5,
 				operator: "=",
 				right: {
-					type: "Literal",
-					value: 1,
-					raw: "1",
+					type: "Identifier",
+					name: "y",
 					start: 4,
 					end: 5,
 				},

@@ -1,5 +1,8 @@
+import { Token } from "../../tokens";
+
 export const source = "x === y";
 export const serialized = "x === y;\n";
+export const tokens = [Token.Identifier, Token["==="], Token.Identifier];
 export const ast = {
 	type: "Program",
 	sourceType: "module",

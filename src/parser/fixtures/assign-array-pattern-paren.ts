@@ -1,8 +1,16 @@
 import { Token } from "../../tokens";
 
-export const source = "x = y";
-export const serialized = "x = y;\n";
-export const tokens = [Token.Identifier, Token["="], Token.Identifier];
+export const source = "[(x)] = y";
+export const serialized = "[x] = y;\n";
+export const tokens = [
+	Token.OpenBracket,
+	Token.OpenParen,
+	Token.Identifier,
+	Token.CloseParen,
+	Token.CloseBracket,
+	Token["="],
+	Token.Identifier,
+];
 export const ast = {
 	type: "Program",
 	sourceType: "module",
@@ -12,10 +20,17 @@ export const ast = {
 			expression: {
 				type: "AssignmentExpression",
 				left: {
-					type: "Identifier",
-					name: "x",
+					type: "ArrayPattern",
+					elements: [
+						{
+							type: "Identifier",
+							name: "x",
+							start: 0,
+							end: 1,
+						},
+					],
 					start: 0,
-					end: 1,
+					end: 0,
 				},
 				end: 5,
 				operator: "=",
