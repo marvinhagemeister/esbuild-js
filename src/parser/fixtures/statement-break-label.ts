@@ -1,22 +1,22 @@
-export const source = "break: foo;";
-export const serialized = "break: foo;\n";
+export const source = "break foo;";
+export const serialized = "break foo;\n";
 export const ast = {
 	type: "Program",
 	sourceType: "module",
 	body: [
 		{
 			type: "BreakStatement",
-			end: 10,
+			end: 9,
 			name: {
 				type: "Identifier",
 				name: "foo",
-				start: 7,
-				end: 10,
+				start: 6,
+				end: 9,
 			},
 			start: 0,
 		},
 	],
 	hashbang: null,
 	start: 0,
-	end: 10,
+	end: 9,
 };

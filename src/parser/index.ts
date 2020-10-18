@@ -87,7 +87,7 @@ function parseBreakStatement(state: ParserState) {
 	nextToken2(state);
 
 	let name = null;
-	if (consumeOp(state, Token.Colon)) {
+	if (state.token === Token.Identifier) {
 		name = parseExpression(state);
 	}
 
