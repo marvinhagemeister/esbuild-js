@@ -469,10 +469,10 @@ export function whileStatement(
 
 export interface ContinueStatement extends BaseNode {
 	type: "ContinueStatement";
-	name: Identifier | null;
+	name: Expression | null;
 }
 export function continueStatement(
-	name: Identifier | null,
+	name: Expression | null,
 	start = 0,
 	end = 0
 ): ContinueStatement {

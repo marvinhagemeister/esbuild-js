@@ -70,20 +70,30 @@ function parseStatementList(state: ParserState) {
 //   TryStatement
 //   DebuggerStatement
 function parseStatement(state: ParserState): tt.Statement {
+	const { start } = state;
+	let label = null;
+
 	switch (state.token) {
 		case Token.SemiColon:
 			return parseEmptyStatement(state);
 		case Token.Function:
 			return parseFunctionDeclartion(state);
 		case Token.Break:
-			return parseBreakStatement(state);
+			label = parseLabel(state);
+			return tt.breakStatement(label, start, state.end);
+		case Token.Continue:
+			label = parseLabel(state);
+			return tt.continueStatement(label, start, state.end);
+		case Token.Debugger:
+			nextToken2(state);
+			expectOrInsertSemicolon2(state);
+			return tt.debuggerStatement(start, state.end);
 		default:
 			return parseExpressionOrLabelledStatement(state);
 	}
 }
 
-function parseBreakStatement(state: ParserState) {
-	const start = state.start;
+function parseLabel(state: ParserState): tt.Expression | null {
 	nextToken2(state);
 
 	let name = null;
@@ -92,7 +102,7 @@ function parseBreakStatement(state: ParserState) {
 	}
 
 	expectOrInsertSemicolon2(state);
-	return tt.breakStatement(name, start, state.end);
+	return name;
 }
 
 // EmptyStatement ::
